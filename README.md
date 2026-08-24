@@ -1,4 +1,4 @@
-# disagg-serving-lab
+# disagg-boundary
 
 Prefill/decode disaggregation for LLM serving, measured on 8×H200 nodes over InfiniBand at iso-GPU-count: where the saturation boundary sits, what the KV-transfer path costs a live request, what breaks under failure and what the client sees, and what it all costs per million tokens.
 
