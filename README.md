@@ -18,7 +18,7 @@ vLLM + llm-d (prefill/decode disaggregation, NIXL KV transfer, Gateway API Infer
 | `workloads/` | Input/output length distributions, arrival model, dataset references |
 | `infra/` | Terraform + Kubernetes manifests — one command to stand up, one to destroy |
 | `model/` | The analytical performance model, committed before the runs it is validated against |
-| `plugin/` | A load-aware prefill/decode decider for llm-d-router (Go), developed here and proposed upstream |
+| `plugin/` | A load-aware prefill/decode decider for llm-d-router (Go), designed and specified here, implemented with AI assistance, proposed upstream with its status stated |
 | `results/` | One self-contained directory per run: environment, rendered configs, timestamped command log, raw per-request latencies and token counts, seed, analysis |
 | `docs/` | [Methodology](docs/methodology.md) · [Reproducing](docs/reproducing.md) |
 
