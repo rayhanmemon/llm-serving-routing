@@ -1,8 +1,6 @@
 # Methodology
 
-> **Designed and specified by me; implemented with AI assistance; measured on real hardware.**
-
-That sentence applies to everything in this repository — the infrastructure, the scenario and workload files, the analytical performance model, the router plugin, and the analysis. I set the questions, the scope, the design rules and the acceptance criteria; I review, run and defend every line; most of the code and configuration was written with AI assistance. The measurements are taken on the real cluster the scenario describes, and every number in the report links to a run directory under `results/`.
+Every number in the report links to a run directory under `results/`, and the measurements are taken on the real cluster the scenario describes.
 
 *Status: stub — populated before the first measured run, and frozen before the sweep.* The two design rules below are already fixed; the sections after them are the outline of what the rest of this document will cover.
 

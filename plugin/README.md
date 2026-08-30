@@ -1,7 +1,5 @@
 # plugin — a load-aware prefill/decode decider for llm-d's router
 
-> **Designed and specified by me; implemented with AI assistance; measured on real hardware.**
-
 **Status: not started.** Nothing here runs yet. The design — the decision the plugin makes per request, the signals it reads, the interface it plugs into, and the tests that define it — is written and reviewed before any code; the code lands after it. When the plugin is proposed upstream to llm-d, this file carries the link and its status stated plainly (open, under review, merged, or closed) and keeps that line current.
 
 ## What it is
