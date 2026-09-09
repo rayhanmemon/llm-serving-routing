@@ -1,0 +1,194 @@
+# The PREFILL side of 1P(TP1)+1D(TP1) — one prefill server feeding one decode
+# server on another machine.
+#
+# TOY SETUP DISCLOSURE. Rehearsal shape from a two-machine session on
+# single-GPU L40S nodes over plain TCP, no InfiniBand, small model. On the
+# 8xH200 cluster the model, the tensor-parallel size and the replica count
+# change, an RDMA device request is added to the resources, and the InfiniBand
+# cluster block returns to the Terraform. Nothing measured in the rehearsal is
+# imported here.
+#
+# A strategic-merge patch on llm-d's prefill/decode base (named in
+# kustomization.yaml beside this file), which creates the Deployment named
+# `prefill`, declares the engine's port 8000 and the transfer side-channel port
+# 5600 on the container, and attaches nothing else to this pod.
+#
+# Every field name and flag was read out of llm-d v0.9.0's own
+# guides/pd-disaggregation/modelserver/{gpu,xpu}/vllm/patch-*.yaml; the
+# vLLM-side names (the connector JSON keys, the side-channel environment
+# variables, the keep-alive variable) were re-checked in the v0.26.0 source.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prefill
+spec:
+  replicas: 1            # <- the number BEFORE the P in the notation
+  # ROLLOUT STRATEGY. The default rolling update creates the NEW pod before
+  # killing the old one. When a node has exactly one GPU and the old pod holds
+  # it, the new pod sits Pending forever and the rollout deadlocks. Recreate
+  # kills the old pod first. Every re-apply against a fully-subscribed node
+  # depends on this line.
+  strategy:
+    type: Recreate
+  template:
+    spec:
+      containers:
+        - name: modelserver          # <- the base's container name; a typo here silently patches nothing
+          command: ["vllm", "serve"]
+          # STARTUP PROBE, overridden. llm-d's single-host prefill/decode base
+          # ships failureThreshold 3 x periodSeconds 10 = 30 seconds of grace,
+          # and a cold vLLM v0.26.0 engine on a fresh node (image just
+          # extracted, weights to download, graphs to capture) needs minutes.
+          # With the shipped value the kubelet killed both engines at exactly
+          # 30 seconds, repeatedly, and the crash log ends in a keyboard
+          # interrupt while the engine was still inspecting the model class —
+          # which reads like an engine bug and is not one. 90 x 10 s = 15
+          # minutes of grace. Readiness and liveness stay as the base has them.
+          startupProbe:
+            httpGet:
+              path: /v1/models
+              port: modelserver
+            periodSeconds: 10
+            failureThreshold: 90
+            timeoutSeconds: 5
+          args:
+            # The rehearsal model is ungated: its config.json returns HTTP 200
+            # with no token, so no credential and no licence click-through sits
+            # on the critical path while a GPU bills. It is also the model in
+            # vLLM's own NIXL prefill/decode accuracy test and in llm-d's
+            # shipped small-model overlay. It is re-pointed for the measured
+            # runs; nothing about it transfers except the method.
+            - "Qwen/Qwen3-0.6B"
+            - "--tensor-parallel-size=1"      # <- the number INSIDE the parentheses
+            # ---- ENGINE KNOBS: SET EXPLICITLY, AND IDENTICALLY, IN EVERY ARM ----
+            # Every disaggregated arm and the colocated baseline carry these same
+            # four lines. A baseline that inherits a different default for any of
+            # them is not a baseline. The values are not the point; that they are
+            # stated, and identical everywhere, is.
+            #   block size         - llm-d's small-model overlay uses 64 (its
+            #                        120-billion-parameter overlay uses 128)
+            #   max model length   - from the same overlay; this model supports
+            #                        40,960 positions
+            #   max sequences      - how many requests the engine batches at once
+            #   max batched tokens - the chunk size per scheduler pass; a prompt
+            #                        that fits in one chunk is not split
+            - "--block-size=64"
+            - "--max-model-len=32000"
+            - "--max-num-seqs=256"
+            - "--max-num-batched-tokens=8192"
+            # ---- the cache connector --------------------------------------
+            # kv_role kv_both on BOTH sides is what llm-d ships at v0.9.0.
+            #
+            # kv_buffer_device is deliberately NOT set: the cache stays in GPU
+            # memory and the decode side's transfer agent reads it from there,
+            # which is why the transport menu must keep cuda_copy (see below).
+            # Recorded fallback, tried only if the default transfer FAILS on
+            # NVIDIA and never as an arm of its own: add "kv_buffer_device":"cpu"
+            # to stage the cache through host memory, as llm-d's Intel-GPU
+            # overlay does.
+            #
+            # The failure drill shortens the lease so the prefill side's
+            # expired-request counter moves inside a session (the default lease
+            # is 30 seconds; heartbeats from decode extend it by two-thirds of
+            # the lease, verified in the v0.26.0 source). Set on BOTH sides so
+            # the lease and the heartbeat cadence agree, by replacing the JSON
+            # line below with:
+            #   '{"kv_connector":"NixlConnector", "kv_role":"kv_both", "kv_connector_extra_config":{"kv_lease_duration":10}}'
+            - "--kv-transfer-config"
+            - '{"kv_connector":"NixlConnector", "kv_role":"kv_both"}'
+            - "--disable-access-log-for-endpoints=/health,/metrics,/v1/models"
+          env:
+            # ---- the transport: the menu, and the instrument ----------------
+            # UCX_TLS is the MENU of transports the library MAY use. It is
+            # deliberately left UNSET here, identically in every disaggregated
+            # arm, so the library chooses from its full default menu and the
+            # assertion records what it chose. That default menu already
+            # contains TCP, which is how a silent fallback happens: with no
+            # fabric reachable the library picks TCP without a word, having
+            # always been allowed to. A menu is not permission, and permission
+            # is not selection — three different lists, and only the selection
+            # printout is evidence.
+            #
+            # THE INSTRUMENT. UCX_PROTO_INFO=y makes the transport library
+            # print, per operation, which protocol and which transport it
+            # actually selected. llm-d's own high-speed-networking notes name it
+            # as the way to check whether traffic is falling back to TCP. It
+            # goes on BOTH containers; infra/assert_transport.py reads the
+            # decode side's printout.
+            - name: UCX_PROTO_INFO
+              value: "y"
+            # ---- the cross-pod handshake ------------------------------------
+            # THE field that makes cross-pod transfer possible at all. Without
+            # it the handshake targets the documented default, "localhost", and
+            # the decode pod has no way to reach this pod's cache.
+            - name: VLLM_NIXL_SIDE_CHANNEL_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            # THE PORT, set explicitly on both sides. The containerPort the base
+            # declares is documentation for the reader and the scheduler; the
+            # engine's environment is what decides the listener. Both are set to
+            # 5600 so they agree. Set explicitly because two llm-d pages
+            # disagree about the default (the guides use 5600, the RDMA
+            # infrastructure page's table says 5557); vLLM v0.26.0's own default
+            # is 5600, and the benchmark tool's defaults file says 5557, which
+            # the scenario file overrides to match this.
+            - name: VLLM_NIXL_SIDE_CHANNEL_PORT
+              value: "5600"
+            # vLLM's HTTP keep-alive defaults to 5 seconds (v0.26.0). The decode
+            # pod's routing sidecar is a Go program whose idle-connection
+            # timeout is 90 seconds. The shorter side closes first, so a reused
+            # connection gets a TCP reset. 120 > 90, so the sidecar always closes
+            # first. Prefill-side only: it is the sidecar's connections to THIS
+            # pod that get reused.
+            - name: VLLM_HTTP_TIMEOUT_KEEP_ALIVE
+              value: "120"
+          resources:
+            limits:
+              cpu: "6"
+              memory: 24Gi
+              nvidia.com/gpu: "1"      # MUST equal --tensor-parallel-size
+            requests:
+              cpu: "6"
+              memory: 24Gi
+              nvidia.com/gpu: "1"      # ...and so must this one. Nothing reconciles the two files.
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: shm
+            - mountPath: /.cache
+              name: torch-compile-cache
+            - mountPath: /.config
+              name: vllm-config
+            - mountPath: /.triton
+              name: triton-cache
+      # HOW DIFFERENT MACHINES ARE GUARANTEED, stated rather than hoped. Two
+      # independent guarantees on single-GPU nodes: each node has exactly one
+      # allocatable GPU and each pod requests one, so the scheduler has no room
+      # to co-locate them; and this required anti-affinity on the role label by
+      # hostname. On eight-GPU nodes the first guarantee vanishes and this one
+      # is what survives — which is why it is here. It must be ABSENT in any arm
+      # that is meant to run prefill and decode on the SAME node: there it
+      # leaves every pod Pending forever, with an unschedulable event that names
+      # the affinity rule and reads like a capacity problem.
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: llm-d.ai/role
+                    operator: In
+                    values: ["decode"]
+              topologyKey: kubernetes.io/hostname
+      volumes:
+        # /dev/shm backed by RAM. At tensor-parallel size 1 this is
+        # belt-and-braces; the container's 64 MB default is fine for one shard.
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 8Gi
+        - name: torch-compile-cache
+          emptyDir: {}
+        - name: vllm-config
+          emptyDir: {}
+        - name: triton-cache
+          emptyDir: {}

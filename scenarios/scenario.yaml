@@ -1,0 +1,179 @@
+# The scenario: a declarative description of the whole serving stack, in
+# llm-d-benchmark's own format.
+#
+# TOY SETUP DISCLOSURE. This is the rehearsal shape from a two-machine session
+# on single-GPU L40S nodes over plain TCP, no InfiniBand, with a small model. On
+# the 8xH200 cluster the model, the accelerator count, the replica counts and
+# the tensor-parallel sizes are re-pointed, and the two RDMA keys below stop
+# being empty. The structure, the four topology fields, the transport keys and
+# the explicitly-disabled deploy methods carry over unchanged. No number
+# measured in the rehearsal is imported here.
+#
+# Every key path below was verified against a real llm-d-benchmark checkout at
+# tag v0.8.0 — its shipped scenario config/scenarios/guides/pd-disaggregation.yaml
+# and its shipped defaults config/templates/values/defaults.yaml. Nothing here is
+# guessed.
+#
+# WHAT THIS FILE DOES AND DOES NOT DO. When the engines are deployed by the
+# kustomize overlay in infra/modelserver/, the benchmark is run with
+# `run --endpoint-url <the endpoint picker's Service>` against that standing
+# deployment, and this scenario is what the tool needs to render its plan and
+# what publishes the stack in the field's format. In that mode the model-server
+# keys below DESCRIBE the arm and the overlay's patches are the truth; the two
+# must agree.
+#
+# THE CONFIGURATION NOTATION LIVES IN FOUR FIELDS:
+#     modelservice.prefill.replicas           <- the number BEFORE the P
+#     modelservice.prefill.parallelism.tensor <- the number INSIDE its parentheses
+#     modelservice.decode.replicas            <- the number BEFORE the D
+#     modelservice.decode.parallelism.tensor  <- the number INSIDE its parentheses
+# So this file describes 1P(TP1)+1D(TP1) on two GPUs.
+
+scenario:
+  - name: "disagg-boundary-1p1d"
+
+    # workDir set EXPLICITLY. Without it every invocation lands in a fresh
+    # temporary directory and nothing accumulates across runs — a different path
+    # every time and no history. Replace the placeholder with a real directory.
+    workDir: "<path-to-a-run-data-directory>"
+
+    common:
+      accelerator:
+        profile: auto
+        resource: auto
+        count: 1              # GPUs per worker
+
+      model:
+        name: Qwen/Qwen3-0.6B
+        shortName: qwen3-0-6b
+        path: models/Qwen/Qwen3-0.6B
+        huggingfaceId: Qwen/Qwen3-0.6B
+        size: 10Gi
+        maxModelLen: 32000
+        blockSize: 64
+        gpuMemoryUtilization: 0.90
+        cacheBase: /model-cache
+
+      vllmCommon:
+        # ---- the transport keys ------------------------------------------
+        # ucxTls is the transport MENU. The benchmark's defaults file ships it
+        # as "sm,cuda_ipc,cuda_copy,tcp" — it ALREADY CONTAINS tcp, which is
+        # precisely how a silent fallback happens: the library picks TCP without
+        # complaining, because TCP was always on the menu. The engine patches in
+        # infra/modelserver/ leave UCX_TLS unset so the library chooses from its
+        # full default menu and the selection is asserted rather than assumed,
+        # so the key is not pinned here either.
+        #
+        # AND THIS MATTERS FOR ANYONE READING THIS FILE: leaving ucxTls unset
+        # here does NOT leave UCX_TLS unset on the pods this file describes.
+        # When the tool deploys the pods itself, it renders
+        # UCX_TLS="sm,cuda_ipc,cuda_copy,tcp" and UCX_SOCKADDR_TLS_PRIORITY="tcp"
+        # into both containers from its shipped defaults. A stack deployed from
+        # this scenario would therefore ship a pinned menu with TCP on it and
+        # never say so. Assert the wire, never the file.
+        #
+        # The side-channel port MUST agree with the engine patches, which set it
+        # explicitly to 5600. The benchmark's defaults file says 5557, which is
+        # exactly why this override is here. That same defaults file is where
+        # the ucxTls and ucxSockaddrTlsPriority values quoted above come from.
+        nixlSideChannelPort: "5600"
+
+        kvTransfer:
+          enabled: true
+          connector: NixlConnector
+          role: kv_both
+          # No kv_buffer_device: the cache stays in GPU memory. Staging it
+          # through host memory (kv_buffer_device: cpu, llm-d's Intel-GPU
+          # example) is a recorded fallback tried only if the default transfer
+          # fails on NVIDIA — and then it is set in the engine patch's connector
+          # JSON, not here.
+
+        # EMPTY on purpose in the rehearsal shape. These two are the RDMA device
+        # request; setting them on hardware with no InfiniBand device just
+        # leaves pods Pending. On the H200 cluster they are filled in.
+        networkResource: ""
+        networkNr: ""
+
+        volumes:
+          - name: dshm
+            type: emptyDir
+            emptyDir:
+              medium: Memory
+              sizeLimit: 8Gi
+        volumeMounts:
+          - name: dshm
+            mountPath: /dev/shm
+
+      timeouts:
+        controlWait: 900000
+        harnessWait: 900000
+
+    # ---- EVERY DEPLOY METHOD NOT IN USE, EXPLICITLY OFF ---------------------
+    # This block is not decoration. `modelservice` is ON BY DEFAULT, and a
+    # scenario that does not turn the others off will fight you silently.
+    #
+    # `kustomize` is the dangerous one: when enabled it applies llm-d's UPSTREAM
+    # guide manifests verbatim and IGNORES almost this entire file — model,
+    # modelservice, decode/prefill, vllmCommon, storage, and the models flag.
+    # Editing decode.replicas in that mode and wondering why nothing changed is
+    # the predictable first hour lost. (The other flag trap: the workload flag
+    # names a profile FILE inside the benchmark repository, not a path in this
+    # repository.)
+    #
+    # All four are real top-level scenario keys with an `enabled` field, each
+    # shipped `false` in the v0.8.0 defaults, with modelservice shipped `true`.
+    kustomize:
+      enabled: false
+    standalone:
+      enabled: false
+    nok8s:
+      enabled: false
+    fma:
+      enabled: false
+
+    modelservice:
+      enabled: true
+
+      gateway:
+        # epponly = standalone endpoint picker, no Kubernetes Gateway. It must
+        # match the gateway-class flag on the command line, or the tool
+        # re-renders against the default and points at the wrong thing.
+        className: epponly
+
+      routing:
+        connector: nixlv2
+
+      prefill:
+        enabled: true
+        replicas: 1                    # <-- the P count
+        parallelism:
+          tensor: 1                    # <-- the TP inside P's parentheses
+        resources:
+          limits:   { memory: 24Gi, cpu: "6" }
+          requests: { memory: 24Gi, cpu: "6" }
+        extraEnvVars:
+          - name: UCX_PROTO_INFO       # the transport instrument, on both sides
+            value: "y"
+          - name: NIXL_LOG_LEVEL
+            value: debug
+
+      decode:
+        replicas: 1                    # <-- the D count
+        parallelism:
+          tensor: 1                    # <-- the TP inside D's parentheses
+        resources:
+          limits:   { memory: 24Gi, cpu: "6" }
+          requests: { memory: 24Gi, cpu: "6" }
+        extraEnvVars:
+          - name: UCX_PROTO_INFO
+            value: "y"
+          - name: NIXL_LOG_LEVEL
+            value: debug
+
+    harness:
+      # inference-perf is the shipped default harness. `experimentProfile` is a
+      # real key that many shipped scenarios set; the defaults file spells the
+      # same idea `harness.profile`, so this stays belt-and-braces — the
+      # workload flag on the command line is the authoritative path.
+      name: inference-perf
+      experimentProfile: rate_ladder.yaml

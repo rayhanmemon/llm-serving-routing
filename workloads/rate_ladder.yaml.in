@@ -1,0 +1,108 @@
+# The rate ladder, as an inference-perf workload profile.
+#
+# TOY SETUP DISCLOSURE. This is the rehearsal shape from a two-machine session
+# on single-GPU L40S nodes over plain TCP, no InfiniBand, with a small model.
+# For the measured runs the stages list grows into the full sweep and the length
+# distributions change; the shape, the template-token convention and the
+# reporting settings are identical. No rate, rate derivation input, or any other
+# number measured in the rehearsal is imported here — the rates below are
+# placeholders.
+#
+# It is a TEMPLATE (.yaml.in). The REPLACE_* tokens are substituted at run time
+# from the flags passed to the run; there is no envsubst pass. The .yaml form is
+# what the workload flag names, and the CLI falls back to the .in file.
+#
+# IT MUST LIVE IN <llm-d-benchmark-checkout>/workload/profiles/inference-perf/
+# to be found at all.
+
+load:
+  # ARRIVAL MODEL: constant, i.e. a fixed arrival RATE.
+  #
+  # Why, in one sentence: fixed-rate and fixed-concurrency answer different
+  # questions — fixed concurrency asks "how fast can N clients go?" and always
+  # produces a curve that bends, because the clients throttle themselves; fixed
+  # rate asks "what happens as demand rises past what the system can serve?",
+  # which is the question a saturation point is the answer to.
+  #
+  # FOUR RATES, so a curve exists rather than a point — and DERIVED, not fixed
+  # in advance. Before the ladder runs, the four tokens below are replaced from
+  # the transport assertion's own measurement on the hardware being measured:
+  #
+  #   sustainable rate R = measured transfer rate  /  measured bytes per request
+  #   stage rates        = 0.25 R, 0.5 R, 1.0 R, 1.5 R   (requests per second)
+  #
+  # so the ladder crosses the transfer path's capacity between the third and
+  # fourth rungs by construction, whatever that capacity turns out to be. Rates
+  # picked in advance are a guess about a wire nobody has measured, and a guess
+  # that is wrong in the fast direction puts every rung past saturation and
+  # produces four points that say nothing.
+  #
+  # Four rates at one input/output ratio is a curve only in the loosest sense —
+  # say "four points", never "the saturation curve". The full grid lives in the
+  # sweep, not here.
+  stages:
+    - rate: REPLACE_RATE_QUARTER_R     # 0.25 R
+      duration: 45
+    - rate: REPLACE_RATE_HALF_R        # 0.5 R
+      duration: 45
+    - rate: REPLACE_RATE_R             # 1.0 R
+      duration: 45
+    - rate: REPLACE_RATE_ONE_AND_HALF_R  # 1.5 R
+      duration: 45
+  num_workers: 8
+  worker_max_concurrency: 16
+  request_timeout: 120
+
+api:
+  type: completion
+  # STREAMING ON, or time to first token is not measurable AT ALL — without it
+  # the client only ever sees the whole response arriving at once.
+  streaming: true
+
+server:
+  type: vllm
+  model_name: REPLACE_ENV_LLMDBENCH_DEPLOY_CURRENT_MODEL
+  base_url: REPLACE_ENV_LLMDBENCH_HARNESS_STACK_ENDPOINT_URL
+  ignore_eos: true
+
+tokenizer:
+  pretrained_model_name_or_path: REPLACE_ENV_LLMDBENCH_DEPLOY_CURRENT_MODEL
+
+data:
+  type: random
+  # INPUT-TO-OUTPUT RATIO: 1800 in / 150 out = 12:1.
+  #
+  # Why, and this is the axis disaggregation lives or dies on: prefill cost
+  # scales with INPUT length, decode cost with OUTPUT length. A long-input,
+  # short-output workload is prefill-heavy, which is the regime where splitting
+  # prefill onto its own machines can pay. A short-input, long-output workload
+  # is decode-heavy, where the split buys nothing and costs a network hop. This
+  # ratio sits firmly in the first regime while staying small enough that a
+  # small model on two cards does not saturate at the very first rate.
+  #
+  # Deliberately NOT llm-d's own prefill/decode guide profile: that one drives
+  # 5000-token prompts at a high rate with many workers and per-worker
+  # concurrency 100, which against a small model on this hardware saturates
+  # instantly and produces a meaningless curve.
+  input_distribution:
+    min: 1700
+    max: 1900
+    mean: 1800
+    std_dev: 50
+    total_count: 200
+  output_distribution:
+    min: 140
+    max: 160
+    mean: 150
+    std_dev: 5
+    total_count: 200
+
+report:
+  request_lifecycle:
+    summary: true
+    per_stage: true      # <- REQUIRED, or you get one aggregate number and no curve
+    per_request: true
+
+storage:
+  local_storage:
+    path: /workspace

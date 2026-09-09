@@ -1,0 +1,69 @@
+# The engine overlay: one prefill server feeding one decode server on another
+# machine — 1P(TP1)+1D(TP1).
+#
+# TOY SETUP DISCLOSURE. These are the rehearsal shapes from a two-machine
+# session on single-GPU L40S nodes over plain TCP, no InfiniBand, with a small
+# model. On the 8xH200 cluster the model, the tensor-parallel sizes and replica
+# counts change, the engines request RDMA devices, and the cluster block returns
+# to the Terraform. Nothing measured in the rehearsal is imported here.
+#
+# Applied with:  kubectl apply -k <this directory> -n <namespace>
+# The manifests carry no namespace of their own, so every apply must name one.
+#
+# A kustomize overlay is a small directory of patches layered on manifests that
+# live elsewhere, without copying them. This file names the base, pins the
+# images, stamps the pool label, and points at the two patches.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # llm-d's single-host prefill/decode vLLM base, by remote URL pinned at a
+  # release tag. It gives, for free:
+  #   - a Deployment named `prefill` (engine on 8000, side-channel port 5600
+  #     declared on the container)
+  #   - a Deployment named `decode`  (engine port declared as 8200, side-channel 5600)
+  #   - the routing sidecar attached to decode as a NATIVE sidecar named
+  #     `routing-proxy` (an initContainer with restartPolicy: Always) listening
+  #     on 8000 with --kv-connector=nixlv2
+  #   - both Deployments already labelled llm-d.ai/role: prefill | decode, the
+  #     label the router's prefill-filter and decode-filter select on
+  - https://github.com/llm-d/llm-d//guides/recipes/modelserver/base/single-host/pd/vllm?ref=v0.9.0
+
+namePrefix: disagg-
+
+components:
+  # THE IMAGES ARE SET HERE, IN THE LEAF OVERLAY, NOT IN A SHARED BASE.
+  # kustomize resolves component image transforms at the base level, so a base
+  # that sets the image prevents any overlay from overriding the resolved name.
+  # Set them here or they cannot be changed later. llm-d's own base carries this
+  # warning verbatim.
+  #   gpu-vllm/release        -> docker.io/vllm/vllm-openai:v0.26.0 (plus the USER
+  #                              environment variable the component adds for a
+  #                              torch 2.11 issue)
+  - https://github.com/llm-d/llm-d//guides/recipes/modelserver/components/images/gpu-vllm/release?ref=v0.9.0
+  #   routing-sidecar/release -> ghcr.io/llm-d/llm-d-router-disagg-sidecar:v0.10.0
+  # RELEASE, not nightly. llm-d's own prefill/decode guide pulls the sidecar's
+  # `nightly` component, which resolves to tag `main` and floats. A measurement
+  # that must be re-runnable months later cannot float.
+  - https://github.com/llm-d/llm-d//guides/recipes/modelserver/components/images/routing-sidecar/release?ref=v0.9.0
+
+labels:
+  - pairs:
+      # THE pool label the router selects on. It must match the router values
+      # file's modelServers.matchLabels EXACTLY. Disagree and the pool is empty,
+      # nothing errors, and nothing serves — the endpoint picker's
+      # ready-endpoints gauge reads 0 while every pod is Running and Ready.
+      llm-d.ai/guide: disagg-boundary
+      llm-d.ai/model: Qwen3-0.6B
+      llm-d.ai/accelerator-variant: gpu
+      llm-d.ai/accelerator-vendor: nvidia
+      llm-d.ai/engine-type: vllm
+    # BOTH of these, or the labels stop at the Deployment's own metadata and
+    # never reach the pod template. The pool then comes up empty and, again,
+    # nothing errors.
+    includeSelectors: true
+    includeTemplates: true
+
+patches:
+  - path: patch-prefill.yaml
+  - path: patch-decode.yaml

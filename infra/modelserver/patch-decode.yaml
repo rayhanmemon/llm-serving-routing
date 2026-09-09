@@ -1,0 +1,164 @@
+# The DECODE side of 1P(TP1)+1D(TP1) — one prefill server feeding one decode
+# server on another machine.
+#
+# TOY SETUP DISCLOSURE. Rehearsal shape from a two-machine session on
+# single-GPU L40S nodes over plain TCP, no InfiniBand, small model. On the
+# 8xH200 cluster the model, the tensor-parallel size and the replica count
+# change, an RDMA device request is added to the resources, and the InfiniBand
+# cluster block returns to the Terraform. Nothing measured in the rehearsal is
+# imported here.
+#
+# A strategic-merge patch on llm-d's prefill/decode base (named in
+# kustomization.yaml beside this file), which creates the Deployment named
+# `decode`, declares the engine's port as 8200, the transfer side-channel port
+# 5600, and attaches the routing sidecar as a native sidecar named
+# `routing-proxy` listening on 8000 (image from the kustomization's
+# routing-sidecar/release component).
+#
+# Every field name and flag was read out of llm-d v0.9.0's own
+# guides/pd-disaggregation/modelserver/{gpu,xpu}/vllm/patch-*.yaml; the
+# vLLM-side names were re-checked in the v0.26.0 source.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: decode
+spec:
+  replicas: 1            # <- the number BEFORE the D in the notation
+  # ROLLOUT STRATEGY. The default rolling update creates the NEW pod before
+  # killing the old one. When a node has exactly one GPU and the old pod holds
+  # it, the new pod sits Pending forever and the rollout deadlocks. Recreate
+  # kills the old pod first. Every re-apply against a fully-subscribed node
+  # depends on this line.
+  strategy:
+    type: Recreate
+  template:
+    spec:
+      containers:
+        - name: modelserver          # <- the base's container name; a typo here silently patches nothing
+          command: ["vllm", "serve"]
+          # STARTUP PROBE, overridden. The base ships 30 seconds of grace and a
+          # cold engine on a fresh node needs minutes; see the prefill patch for
+          # what the shipped value looks like when it fires. 90 x 10 s = 15
+          # minutes. Readiness and liveness stay as the base has them.
+          startupProbe:
+            httpGet:
+              path: /v1/models
+              port: modelserver
+            periodSeconds: 10
+            failureThreshold: 90
+            timeoutSeconds: 5
+          args:
+            # Re-pointed for the measured runs; see the prefill patch for why
+            # this ungated small model is the rehearsal's.
+            - "Qwen/Qwen3-0.6B"
+            # Prefill's and decode's tensor-parallel sizes must divide one
+            # another (vLLM v0.26.0's handshake, read in the source). A decode
+            # NARROWER than prefill is refused only when prefill's size exceeds
+            # the model's key/value head count on non-MLA, non-Mamba models;
+            # otherwise decode reads from every prefill shard, block sizes
+            # equal. The often-repeated "decode must be at least as wide as
+            # prefill, the connector only fans out" rule is an operations-note
+            # headline, not what the code checks.
+            - "--tensor-parallel-size=1"
+            # ---- ENGINE KNOBS: SET EXPLICITLY, AND IDENTICALLY, IN EVERY ARM ----
+            # The same four lines as prefill, and as the colocated baseline. A
+            # baseline that inherits a different default for any of them is not
+            # a baseline.
+            - "--block-size=64"
+            - "--max-model-len=32000"
+            - "--max-num-seqs=256"
+            - "--max-num-batched-tokens=8192"
+            # ---- the cache connector --------------------------------------
+            # kv_role kv_both on BOTH sides is what llm-d ships at v0.9.0 (see
+            # the prefill patch for the kv_buffer_device fallback).
+            #
+            # kv_load_failure_policy is DECODE's field — decode is the side that
+            # pulls the cache and finds it missing. "fail", vLLM's default,
+            # stated explicitly here so the failure drill can name it, is loud:
+            # the client gets an error. Changing this one word to "recompute"
+            # makes decode silently redo the prefill locally, and the client
+            # sees a slower success instead — the silent fallback the failure
+            # drills exercise under both policies.
+            #
+            # The lease-expiry drill adds
+            # "kv_connector_extra_config":{"kv_lease_duration":10} here as well
+            # as on prefill; the prefill patch shows the full line.
+            - "--kv-transfer-config"
+            - '{"kv_connector":"NixlConnector", "kv_role":"kv_both", "kv_load_failure_policy":"fail"}'
+            - "--disable-access-log-for-endpoints=/health,/metrics,/v1/models"
+            # THE decode-only field. The routing sidecar, inherited from the
+            # base as a native sidecar named `routing-proxy`, listens on 8000 in
+            # front of this engine, so the engine moves to 8200 — the port the
+            # base already declares for it.
+            - "--port=8200"
+          env:
+            # ---- the transport: the menu, and the instrument ----------------
+            # UCX_TLS is the MENU of transports the library MAY use, and it is
+            # deliberately left UNSET in every disaggregated arm so the library
+            # chooses from its full default menu and the assertion records what
+            # it chose. That menu already contains TCP, which is how a silent
+            # fallback happens. A menu is not permission, and permission is not
+            # selection; only the library's own selection printout is evidence.
+            #
+            # THE INSTRUMENT. UCX_PROTO_INFO=y makes the library print which
+            # protocol and which transport it actually selected, per operation.
+            # On BOTH containers; infra/assert_transport.py reads this side's
+            # printout, because decode is the side that executes the pull.
+            - name: UCX_PROTO_INFO
+              value: "y"
+            # ---- the cross-pod handshake ------------------------------------
+            # Without this the handshake targets the documented default,
+            # "localhost", and the two pods cannot reach each other's caches.
+            - name: VLLM_NIXL_SIDE_CHANNEL_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            # Set explicitly on both sides so they agree; see the prefill patch
+            # for the two documented defaults that disagree.
+            - name: VLLM_NIXL_SIDE_CHANNEL_PORT
+              value: "5600"
+            # No VLLM_HTTP_TIMEOUT_KEEP_ALIVE here: the sidecar sits in FRONT of
+            # this engine on the same pod's loopback, so the connection-reuse
+            # problem the override solves is a prefill-side problem.
+          resources:
+            limits:
+              cpu: "6"
+              memory: 24Gi
+              nvidia.com/gpu: "1"      # MUST equal --tensor-parallel-size
+            requests:
+              cpu: "6"
+              memory: 24Gi
+              nvidia.com/gpu: "1"      # ...and so must this one. Nothing reconciles the two files.
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: shm
+            - mountPath: /.cache
+              name: torch-compile-cache
+            - mountPath: /.config
+              name: vllm-config
+            - mountPath: /.triton
+              name: triton-cache
+      # The mirror image of the prefill patch's anti-affinity, and the same
+      # note: on eight-GPU nodes this is the only guarantee left that prefill
+      # and decode land on different machines, and it must be absent in any arm
+      # deliberately colocating them.
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: llm-d.ai/role
+                    operator: In
+                    values: ["prefill"]
+              topologyKey: kubernetes.io/hostname
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 8Gi
+        - name: torch-compile-cache
+          emptyDir: {}
+        - name: vllm-config
+          emptyDir: {}
+        - name: triton-cache
+          emptyDir: {}
