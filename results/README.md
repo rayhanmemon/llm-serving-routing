@@ -32,13 +32,9 @@ it.
 
 ## Rerun rule, for preemptible (spot) nodes
 
-If a node is reclaimed mid-run, the node group is re-applied once and the
-affected measurement is rerun **in full**. The reclaimed node's name and id, the
-time, and what was in flight are written into that run's *Evictions* section. A
-second reclaim ends the session with whatever is already green.
+If a node is reclaimed during a comparison, retain the interrupted attempt and its charges. Record node identity, reclaim time and the requests in flight. Restore the configuration, recheck the node identities and selected transport, then rerun the **complete affected comparison block**, including both policies or architectures, within the remaining priced retry allowance. Stop or narrow the remaining scope when that allowance cannot fit.
 
-A partial run is never reported as complete, and a rerun is never stitched
-together from the surviving half of an interrupted one.
+A partial run is never reported as complete, and surviving samples are never stitched into a rerun. Keep interrupted blocks visible alongside complete-block performance and total cost. Application failures are outcomes to report, not a reason to relabel a run as a spot interruption.
 
 ## Traceability
 

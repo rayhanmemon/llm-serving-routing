@@ -6,7 +6,7 @@ Every number in the report links to a run directory under `results/`, and the me
 
 ## Design rules fixed before the sweep grid is frozen
 
-Both rules were fixed on 2026-08-29, ahead of the sweep grid being frozen; the commit that added them is the record of when. They are rules about what counts as data, not about what the data will say.
+The transport rule was fixed on August 29, 2026; the bounded grid below replaces the earlier pruning rule on September 10. Dated commits record their adoption. They are rules about what counts as data, not about what the data will say.
 
 ### 1. The transport check — a mismatch is a failed run, not a data point
 
@@ -22,14 +22,19 @@ If any of the three fails, the run is recorded as failed and its numbers are dis
 
 Why the rule exists: a fast transport listed as available says nothing about whether it was used. When the fast path is unavailable to a pair, the transfer library falls back to plain TCP without a word, and the result is a run that completes, returns a success status to every client, and produces plausible-looking numbers that measure the wrong thing.
 
-### 2. Grid pruning — what a small-scale rehearsal is allowed to change
+### 2. Bounded comparison, fixed before held-out evaluation
 
-Before the sweep, the same serving shapes were rehearsed at small scale on cheaper GPUs with no high-speed fabric and a small model. That rehearsal may change the sweep grid in exactly two ways:
+Use one model and precision, one tuned colocated configuration and one split configuration at equal total GPU count. H200 calibration selects three prompt lengths and three shared offered rates at fixed output length. Two configurations and three repeats give 54 architecture runs. A separate stock-versus-modified Go policy comparison uses two workload regimes and three repeats, giving 12 runs. Preserve a separate held-out set for analytical model validation.
 
-- **drop** a shape that was illegal or failed to start there;
-- **demote** a shape that the sweep plan already limits to a single spot-check cell from that spot check to not measured.
+Price the complete schedule, including startup, model loading, arm changes, interruptions and teardown, before freezing it. The first fallback removes one input-length slice before held-out evaluation: 36 architecture plus 12 policy runs. Do not remove a cell because its measured outcome is inconvenient, and do not force a crossover or a policy win.
 
-It may never remove or alter the primary disaggregated arm or the tuned colocated control arm (the baseline where prefill and decode share the same engine on the same GPUs, with chunked prefill, tuned by a published sweep). A performance ranking from the rehearsal is not a reason to change anything: a small model on a fabric-less tier cannot rank the shapes on the target hardware, and the rehearsal's own expectation was that the colocated baseline would win there. The freeze record lists, cell by cell, what changed and names the rehearsal as the reason without quoting a number from it. No number from the rehearsal enters the analytical performance model, a figure, a table or a claim; the one thing it may inform is scheduling — how long switching between arms takes. If the rehearsal did not run, the freeze record says so and nothing changes.
+The cheaper lab's shape comparison was cut and supplies no ranking or completed experiment. No lab throughput, latency or transfer rate enters the capstone model or figures. Its arm-change timing may inform scheduling, and its cache-bytes derivation may be reused as a method with the actual model's dimensions.
+
+### 3. Interruptions and failures
+
+Recorded runs may use preemptible nodes. If an interruption changes placement or breaks a comparison block, retain the failed attempt and its cost, restore node identity and transport checks, and repeat the complete affected comparison block within the priced retry allowance. Never stitch surviving samples into a complete result or compare one arm before replacement with another after it. Report interrupted attempts and their cost alongside performance from complete blocks. Do not label application failures as infrastructure interruptions to discard them.
+
+Failure drills distinguish confirmed process death from graceful deletion. An API force-delete alone does not prove that the serving process exited. The RDMA/TCP counterfactual uses separately verified static configurations; it is not evidence of live transport failover.
 
 ## Outline of the rest
 

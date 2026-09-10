@@ -2,9 +2,11 @@
 
 Prefill/decode disaggregation for LLM serving, measured on 8×H200 nodes over InfiniBand at iso-GPU-count: where the saturation boundary sits, what the KV-transfer path costs a live request, what breaks under failure and what the client sees, and what it all costs per million tokens.
 
-Most published disaggregation results come from rack-scale NVLink systems, where the prefill→decode KV transfer never crosses a network. Most of the world's GPU capacity is 8-GPU HGX baseboards stitched together with InfiniBand — the tier where the transfer cost is real. That tier is where this measurement runs, against a tuned chunked-prefill colocated baseline at the same total GPU count.
+The study compares one tuned chunked-prefill colocated configuration with one split configuration at the same total GPU count, using one model and precision on two nodes. It measures a bounded workload grid, the transfer cost of a live request, targeted failures, and a small Go routing extension. Results apply to the measured setting; a crossover or routing improvement is not assumed.
 
-**Status: work in progress.** Infrastructure and the analytical performance model land first; measured runs land October–November 2026; the technical report ships with the final results. Nothing in this repository is a result yet.
+**Status: work in progress.** The reduced scope was adopted September 10, 2026. Main acquisition targets September 24, paid reruns end September 26, and the report targets September 30. No capstone measurement result is claimed yet.
+
+The planned architecture comparison is 54 runs: three prompt lengths × three shared offered rates × two configurations × three repeats, at a fixed output length. A separate 12-run comparison evaluates stock routing against a congestion veto on an expected-benefit workload and an expected-weakness workload. Model calibration and held-out validation are separate. If the priced schedule requires a cut, remove one prompt-length slice before evaluation, retaining 36 architecture and all 12 policy runs.
 
 ## Stack
 
@@ -18,7 +20,7 @@ vLLM + llm-d (prefill/decode disaggregation, NIXL KV transfer, Gateway API Infer
 | `workloads/` | Input/output length distributions, arrival model, dataset references |
 | `infra/` | Terraform + Kubernetes manifests — one command to stand up, one to destroy |
 | `model/` | The analytical performance model, committed before the runs it is validated against |
-| `plugin/` | A load-aware prefill/decode decider for llm-d-router (Go), developed here and proposed upstream, with its status stated |
+| `plugin/` | A load-aware prefill/decode decider for llm-d-router (Go), developed and measured here, with implementation and any upstream status stated |
 | `results/` | One self-contained directory per run: environment, rendered configs, timestamped command log, raw per-request latencies and token counts, seed, analysis |
 | `docs/` | [Methodology](docs/methodology.md) · [Reproducing](docs/reproducing.md) |
 
