@@ -1,13 +1,14 @@
+# LEGACY 1P/1D SCAFFOLDING: this does not instantiate the selected topology
+# evaluation. It needs both a local and a remote decoder on distinct physical
+# GPUs, truthful placement labels and measured transfer asymmetry. Revise and
+# validate before use; no topology evaluation has been executed.
+#
 # The scenario: a declarative description of the whole serving stack, in
 # llm-d-benchmark's own format.
 #
-# TOY SETUP DISCLOSURE. This is the rehearsal shape from a two-machine session
-# on single-GPU L40S nodes over plain TCP, no InfiniBand, with a small model. On
-# the 8xH200 cluster the model, the accelerator count, the replica counts and
-# the tensor-parallel sizes are re-pointed, and the two RDMA keys below stop
-# being empty. The structure, the four topology fields, the transport keys and
-# the explicitly-disabled deploy methods carry over unchanged. No number
-# measured in the rehearsal is imported here.
+# STARTING CONFIGURATION. Two single-GPU L40S machines over TCP, with a small
+# model. Validate the settings against the router evaluation's pinned software
+# and hardware. This file supplies no measured result or calibrated threshold.
 #
 # Every key path below was verified against a real llm-d-benchmark checkout at
 # tag v0.8.0 — its shipped scenario config/scenarios/guides/pd-disaggregation.yaml
@@ -88,9 +89,8 @@ scenario:
           # fails on NVIDIA — and then it is set in the engine patch's connector
           # JSON, not here.
 
-        # EMPTY on purpose in the rehearsal shape. These two are the RDMA device
-        # request; setting them on hardware with no InfiniBand device just
-        # leaves pods Pending. On the H200 cluster they are filled in.
+        # Empty for this TCP configuration. Requesting unavailable RDMA devices
+        # would leave the pods Pending.
         networkResource: ""
         networkNr: ""
 

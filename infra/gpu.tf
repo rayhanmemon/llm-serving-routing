@@ -1,22 +1,13 @@
+# LEGACY 1P/1D SCAFFOLDING: this does not instantiate the selected topology
+# evaluation. It needs both a local and a remote decoder on distinct physical
+# GPUs, truthful placement labels and measured transfer asymmetry. Revise and
+# validate before use; no topology evaluation has been executed.
+#
 # GPU node group — the Terraform delta.
 #
-# TOY SETUP DISCLOSURE. This file is the rehearsal shape: a two-machine session
-# on single-GPU L40S nodes over plain TCP, no InfiniBand, with a small model. It
-# is published because the shape and the reasoning transfer, not because
-# anything was measured on it. On the 8xH200 cluster the platform and preset are
-# re-pointed, the model changes, the engines request RDMA devices, and the
-# InfiniBand GPU-cluster block below comes back. No number from the rehearsal is
-# imported into this repository.
-#
-# WHAT THE H200 VERSION CHANGES, precisely:
-#   1. `platform` and `preset` re-pointed to the 8xH200 machine type;
-#   2. the InfiniBand GPU-cluster resource added back
-#      (`nebius_compute_v1_gpu_cluster`) and this node group joined to it through
-#      a `gpu_cluster` block in the template — that is what puts both nodes on
-#      one fabric;
-#   3. `fixed_node_count` stays 2, but each node now carries eight cards, so the
-#      "one GPU per node" placement guarantee described at the bottom of this
-#      file disappears and only the pod anti-affinity survives.
+# STARTING CONFIGURATION. Two single-GPU L40S nodes over TCP, with a small
+# model. Validate this configuration for the router evaluation and derive
+# thresholds on that deployment. No measured result is supplied by this file.
 #
 # THIS FILE IS A DELTA, not a standalone configuration. It sits beside a base
 # `main.tf` (not published here) that declares three things: the managed
@@ -34,9 +25,8 @@ resource "nebius_mk8s_v1_node_group" "gpu" {
   version          = var.k8s_version
 
   template = {
-    # The Intel-host L40S platform offers only 1-GPU presets, which is what the
-    # rehearsal wants: two separate single-GPU machines. Re-pointed to the
-    # 8xH200 platform and preset for the measured runs.
+    # The Intel-host L40S platform uses single-GPU presets here, giving
+    # separate machines for prompt processing and generation.
     resources = {
       platform = "gpu-l40s-a"
       preset   = "1gpu-8vcpu-32gb"
@@ -64,8 +54,7 @@ resource "nebius_mk8s_v1_node_group" "gpu" {
   # here and no GPU-cluster resource beside it, because the L40S is a PCIe card
   # the provider documents as incompatible with its InfiniBand grouping. There
   # is no fabric to join, so the cache rides plain TCP over the ordinary virtual
-  # network. That is exactly why no rehearsal number can say anything about a
-  # fabric, and exactly what the H200 configuration adds back.
+  # network. Report this transport explicitly in any evaluation.
 }
 
 # HOW PREFILL AND DECODE ARE GUARANTEED TO LAND ON DIFFERENT MACHINES here:
@@ -73,5 +62,4 @@ resource "nebius_mk8s_v1_node_group" "gpu" {
 # scheduler has no room to place the second pod beside the first. That is a
 # guarantee from resource accounting, not a hope about spreading. The engine
 # patches carry a second, independent guarantee — a required pod anti-affinity
-# on the role label with topologyKey kubernetes.io/hostname — and on eight-GPU
-# nodes that second one is the only one left.
+# on the role label with topologyKey kubernetes.io/hostname.

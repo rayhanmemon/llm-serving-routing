@@ -1,12 +1,8 @@
 # The rate ladder, as an inference-perf workload profile.
 #
-# TOY SETUP DISCLOSURE. This is the rehearsal shape from a two-machine session
-# on single-GPU L40S nodes over plain TCP, no InfiniBand, with a small model.
-# For the measured runs the stages list grows into the full sweep and the length
-# distributions change; the shape, the template-token convention and the
-# reporting settings are identical. No rate, rate derivation input, or any other
-# number measured in the rehearsal is imported here — the rates below are
-# placeholders.
+# STARTING CONFIGURATION. Two single-GPU L40S machines over TCP, with a small
+# model. Validate the settings against the router evaluation's pinned software
+# and hardware. This file supplies no measured result or calibrated threshold.
 #
 # It is a TEMPLATE (.yaml.in). The REPLACE_* tokens are substituted at run time
 # from the flags passed to the run; there is no envsubst pass. The .yaml form is
@@ -38,8 +34,9 @@ load:
   # produces four points that say nothing.
   #
   # Four rates at one input/output ratio is a curve only in the loosest sense —
-  # say "four points", never "the saturation curve". The full grid lives in the
-  # sweep, not here.
+  # say "four points", never "the saturation curve". The router comparison
+  # selects its workloads separately during calibration; this transfer ladder
+  # does not establish the local/remote decoder-load tradeoff by itself.
   stages:
     - rate: REPLACE_RATE_QUARTER_R     # 0.25 R
       duration: 45

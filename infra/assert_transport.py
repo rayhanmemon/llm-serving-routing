@@ -3,19 +3,15 @@
 The transport assertion: a small client that FAILS THE RUN if the key/value
 cache did not move, or moved over a wire other than the one declared.
 
-TOY SETUP DISCLOSURE. The defaults here are the rehearsal shapes from a
-two-machine session on single-GPU L40S nodes over plain TCP, with no InfiniBand
-and a small model. On the 8xH200 cluster the namespace, the model and the
-declared transport all change, and the threshold for "this fell back" is
-re-derived on that hardware. No number measured in the rehearsal is imported.
+STARTING CONFIGURATION. The defaults describe two single-GPU L40S machines
+using TCP and a small model. Validate the namespace, model and declared
+transport for the actual router evaluation, and derive the transfer bands on
+that deployment. This script supplies no measured result.
 
-NOT a load generator.
-
-Why it exists: an earlier rehearsal found the transport library silently
-choosing TCP with every status light green. Nothing errored, every request
-succeeded, and the numbers looked plausible. The assertion existed before the
-run, which is the only reason it was caught. On the measured cluster this same
-script is what stops a TCP run from being published as an InfiniBand result.
+This is a path check, not a load generator. It prevents a successful request
+from being mistaken for proof that the declared transport carried the cache.
+Use it for remote-prefill probes; intentional local processing by the router
+legitimately transfers no remote cache.
 
 What it does, in this order:
   1. finds the prefill and decode pods (llm-d's role label plus the pool label)
@@ -271,8 +267,8 @@ print("UCX_TLS on the decode engine:", ucx_tls[0].split("=", 1)[1] if ucx_tls el
 # worker executes the pull; scraping the producing side for them returns nothing
 # at all, which reads like a broken transfer and is not one. The counter for
 # cache blocks that EXPIRED before the reader pulled them is on the PREFILL
-# side, and an earlier rehearsal found every lease expiring while every client
-# still saw a success. Scrape both.
+# side. A successful client status alone cannot establish that no cache
+# expired. Scrape both.
 e0 = scrape_epp(NS, REL)
 ready = total(e0, M_READY) if present(e0, M_READY) else None
 print(f"picker ready endpoints: {ready if ready is not None else 'gauge not present'}")
@@ -420,7 +416,7 @@ if ttfts:
           f"{100 * per_req_time / med:.0f}% of it   (true of the hardware this ran on and nothing else; re-derived per cluster)")
 print(f"expired on prefill: {exp0:.0f} -> {exp1:.0f}    failed transfers: {fail0:.0f} -> {fail1:.0f}")
 if exp1 > exp0:
-    print("  ^^ cache blocks expired before the reader pulled them. In an earlier rehearsal, clients saw NOTHING when this happened.")
+    print("  ^^ cache blocks expired before the reader pulled them. Inspect client streams and server events to establish their effect.")
 bad = [s for s in statuses if s != 200]
 if bad:
     print(f"non-200 statuses:   {bad}")

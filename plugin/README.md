@@ -1,19 +1,23 @@
-# plugin — a bounded congestion check for llm-d routing
+# Request-sensitive topology routing
 
-**Status: not started.** This is the planned component; no implementation or measured improvement is claimed. The design and tests precede code. Upstream filing is optional; any later proposal will be linked with its true status.
+**Status: design stage; implementation and evaluation not started.** This directory describes a planned extension to llm-d’s existing topology-affinity filter. Source, tests and measured results are not yet present. Submission, review and merge will be linked with their actual status.
+
+## Existing behavior and prior work
+
+llm-d can choose prefill first, then prefer nearby decode endpoints with a topology filter or scorer. The hard filter preserves locality but can retain busy local workers while less-loaded remote workers remain available. A tuned soft scorer and a capacity/load filter before topology can already mitigate this; both are required comparisons.
+
+Abdullah Gharaibeh requested a congestion escape from local decode selection in [llm-d-router #2315](https://github.com/llm-d/llm-d-router/issues/2315#issuecomment-5409527857). The topology implementation and motivating benchmark belong to their existing authors. This work follows that request and evaluates whether a small request-sensitive rule improves the choice. The relevant source baseline is router main at `38cb83316ea49840e10d3d180e67b08beca1d1ca`; recheck it when implementation begins.
 
 ## Decision
 
-Extend the shipped prefix policy with a small Go congestion veto. If all eligible prefill endpoints are congested and the selected decode endpoint has headroom, serve the request on decode; otherwise retain the stock decision. The selected decode endpoint is known at this point, but the eventual prefill endpoint has not been selected.
+Preserve the existing prefill-first cache/load decision. For eligible decode endpoints, let **L** be the lowest in-flight request count in the selected prefill worker’s locality domain and **R** the lowest outside it. Let **K** be a calibrated allowance for the incoming prompt-size range.
 
-Use the existing producer interface to copy candidate metrics into request-local data before the decider runs. Queue validity and freshness must be checked specifically: an overall metrics timestamp can advance while an old queue value survives. Missing or stale data preserves stock behavior. Pin the in-package patch and custom router image; no scheduler-interface redesign is planned. This is not an EDPP implementation or a novelty claim.
+Keep local candidates when `L − R ≤ K`. Otherwise return the eligible input set and let the existing active-request scorer choose. Two prompt-size ranges are planned; larger prompts do not automatically deserve larger allowances. Request count is a load proxy, not predicted waiting time or transferred KV bytes.
 
-## Measurement
+Hard model, role, readiness and capacity filters precede this gate. Never restore an excluded worker. Read existing load observations once, consider every eligible local worker, define missing-input/no-match behavior, and preserve stock behavior when disabled. Verify that later scorers do not undo the intended remote escape. No second load tracker, learned predictor or engine-scheduler change is planned.
 
-Compare stock and modified routing on two workloads, chosen from calibration before evaluation: one expected to benefit and one expected to expose a weakness. Three repeats for each policy/workload pair produce 12 runs on the same hardware. Report the measured result even if the extension does not improve performance. No performance claim is made without this comparison.
+## Validation
 
-## Contents to add
+Test threshold boundaries, multiple local endpoints, missing observations, no local/remote choices, configuration errors, endpoint replacement, concurrent requests and disabled-mode compatibility. The performance claim targets one endpoint picker, one text model and a fixed connector/engine configuration; it does not promise exact global counts across independent pickers.
 
-- Design note: decision, eligibility, signals, freshness and fallback behavior.
-- Go source and focused correctness tests.
-- Reproducible policy comparison and links to raw results.
+Use the [six-policy evaluation](../docs/methodology.md). Establish correct P/D execution and a real transfer-cost difference before the full comparison. A simulator can establish decision behavior, not GPU serving gains. If tuned existing configuration solves the case, or prompt-size allowances do not outperform the simpler global allowance, report that result and narrow the implementation accordingly.

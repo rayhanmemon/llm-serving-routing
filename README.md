@@ -1,35 +1,39 @@
 # disagg-boundary
 
-Prefill/decode disaggregation for LLM serving, measured on 8×H200 nodes over InfiniBand at iso-GPU-count: where the saturation boundary sits, what the KV-transfer path costs a live request, what breaks under failure and what the client sees, and what it all costs per million tokens.
+Request-sensitive topology routing for llm-d: keep decode near the selected prefill worker while the KV-transfer saving justifies extra local load, and widen the choice when a farther decoder is preferable.
 
-The study compares one tuned chunked-prefill colocated configuration with one split configuration at the same total GPU count, using one model and precision on two nodes. It measures a bounded workload grid, the transfer cost of a live request, targeted failures, and a small Go routing extension. Results apply to the measured setting; a crossover or routing improvement is not assumed.
+**Status: design stage; implementation and evaluation not started.** The planned change extends existing prefill-first topology routing with a calibrated relative-load allowance for two prompt-size ranges. No performance improvement, upstream submission or merge is claimed. See [plugin/](plugin/README.md) for the decision and prior work.
 
-**Status: work in progress.** The reduced scope was adopted September 10, 2026. Main acquisition targets September 24, paid reruns end September 26, and the report targets September 30. No capstone measurement result is claimed yet.
+## Evaluation
 
-The planned architecture comparison is 54 runs: three prompt lengths × three shared offered rates × two configurations × three repeats, at a fixed output length. A separate 12-run comparison evaluates stock routing against a congestion veto on an expected-benefit workload and an expected-weakness workload. Model calibration and held-out validation are separate. If the priced schedule requires a cut, remove one prompt-length slice before evaluation, retaining 36 architecture and all 12 policy runs.
+The evaluation must first establish a real local-versus-remote transfer difference and a useful operating regime beyond tuned existing routing. The functional minimum is three independent GPU workers across two hosts: one prefiller, one local decoder and one remote decoder. A fourth active worker adds another local decoder. Count all rented capacity, including unused GPUs required by an instance preset.
 
-## Stack
+Compare six policies on the same model, hardware, engine, transport and workload:
 
-vLLM + llm-d (prefill/decode disaggregation, NIXL KV transfer, Gateway API InferencePool routing) on managed Kubernetes (Nebius), two 8×H200 nodes on an InfiniBand fabric, Terraform from bare account to teardown. Load generation via an existing harness (inference-perf), never hand-rolled. Image digests and engine versions pinned in source.
+1. No topology preference.
+2. Existing hard topology filter.
+3. Existing soft topology scorer, tuned during calibration.
+4. A tuned load/capacity filter followed by topology affinity.
+5. The new gate with the best single global allowance.
+6. The new gate with two prompt-size allowances.
+
+Three held-out workload families and three paired repeats give **54 short policy runs**, plus calibration. Measure client first-token latency, useful completed throughput, streaming gaps, failures, rejections and unfinished requests. Verify the selected workers, transferred blocks and actual transport. Publish regressions and neutral results with uncertainty. If two allowances cannot improve on one, simplify the rule.
+
+Use the existing inference-perf harness, pinned versions and self-contained run records. The current one-prefill/one-decode templates are legacy starting files: they do not instantiate the local and remote choices required by this evaluation. Rework and validate them before use.
 
 ## Layout
 
 | Path | Contents |
 |---|---|
-| `scenarios/` | Benchmark scenario definitions, in llm-d-benchmark's format |
-| `workloads/` | Input/output length distributions, arrival model, dataset references |
-| `infra/` | Terraform + Kubernetes manifests — one command to stand up, one to destroy |
-| `model/` | The analytical performance model, committed before the runs it is validated against |
-| `plugin/` | A load-aware prefill/decode decider for llm-d-router (Go), developed and measured here, with implementation and any upstream status stated |
-| `results/` | One self-contained directory per run: environment, rendered configs, timestamped command log, raw per-request latencies and token counts, seed, analysis |
+| `plugin/` | Planned Go topology extension, design and tests; exact upstream status once available |
+| `scenarios/` | Serving descriptions in llm-d-benchmark’s format; current topology still needs revision |
+| `workloads/` | Input/output lengths, arrival profiles and dataset references |
+| `infra/` | Starting manifests, Terraform delta, transport checks and result capture; not yet a qualified deployment |
+| `results/` | One self-contained directory per run: environment, configuration, commands, raw data and analysis |
 | `docs/` | [Methodology](docs/methodology.md) · [Reproducing](docs/reproducing.md) |
 
-Every number in the eventual report links back to a run directory under `results/`.
-
-## Reproducing
-
-See [docs/reproducing.md](docs/reproducing.md) — populated as the infrastructure lands.
+Every reported number will link to its run record. A result applies to the measured topology, workload and implementation; it does not establish a general architecture-wide disaggregation boundary.
 
 ## Funding
 
-Self-funded. Total spend will be published with the results.
+Self-funded. Actual evaluation spend will be published with results.

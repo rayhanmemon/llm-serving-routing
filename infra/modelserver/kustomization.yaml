@@ -1,11 +1,9 @@
 # The engine overlay: one prefill server feeding one decode server on another
 # machine — 1P(TP1)+1D(TP1).
 #
-# TOY SETUP DISCLOSURE. These are the rehearsal shapes from a two-machine
-# session on single-GPU L40S nodes over plain TCP, no InfiniBand, with a small
-# model. On the 8xH200 cluster the model, the tensor-parallel sizes and replica
-# counts change, the engines request RDMA devices, and the cluster block returns
-# to the Terraform. Nothing measured in the rehearsal is imported here.
+# STARTING CONFIGURATION. Two single-GPU L40S machines over TCP, with a small
+# model. Validate the settings against the router evaluation's pinned software
+# and hardware. This file supplies no measured result or calibrated threshold.
 #
 # Applied with:  kubectl apply -k <this directory> -n <namespace>
 # The manifests carry no namespace of their own, so every apply must name one.

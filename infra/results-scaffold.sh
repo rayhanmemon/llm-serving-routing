@@ -12,7 +12,7 @@
 # with the identity files marked unavailable, which is the point: the layout is
 # rehearsed before anything bills.
 #
-#   HARDWARE   free text, e.g. "8xH200 SXM, InfiniBand"      (default: unset)
+#   HARDWARE   free text, e.g. "2xL40S, TCP"      (default: unset)
 #   MODEL      the served model                              (default: unset)
 #   TRANSPORT  what the wire is EXPECTED to be; the assertion output in the run
 #              directory is what says what it WAS                (default: unset)

@@ -1,12 +1,9 @@
 # The DECODE side of 1P(TP1)+1D(TP1) — one prefill server feeding one decode
 # server on another machine.
 #
-# TOY SETUP DISCLOSURE. Rehearsal shape from a two-machine session on
-# single-GPU L40S nodes over plain TCP, no InfiniBand, small model. On the
-# 8xH200 cluster the model, the tensor-parallel size and the replica count
-# change, an RDMA device request is added to the resources, and the InfiniBand
-# cluster block returns to the Terraform. Nothing measured in the rehearsal is
-# imported here.
+# STARTING CONFIGURATION. Two single-GPU L40S machines over TCP, with a small
+# model. Validate the settings against the router evaluation's pinned software
+# and hardware. This file supplies no measured result or calibrated threshold.
 #
 # A strategic-merge patch on llm-d's prefill/decode base (named in
 # kustomization.yaml beside this file), which creates the Deployment named
