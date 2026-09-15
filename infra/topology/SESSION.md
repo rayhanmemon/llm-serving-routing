@@ -1,12 +1,12 @@
 # H100 controlled transfer check
 
-**Prepared, not rented.** The closed L40S attempt and its approximately $0.60 estimated cost are recorded in `results/2026-09-15-topology-transfer/RESULT.md`. This procedure uses the published draft PR and requires a separately approved H100 session.
+**Prepared, not rented.** The closed L40S attempt and its approximately $0.60 estimated cost are recorded in `results/2026-09-15-topology-transfer/RESULT.md`. This procedure uses the published draft PR and requires a separately approved H100 session. Rayhan requested unattended execution with a review afterwards; the proposed $50 pre-tax limit is still pending. The capacity monitor is saved paused.
 
 ## What this check answers
 
 Does transferring KV to a decoder on the prefiller's H100 host cost less than transferring it to a decoder on another VM, and is the intended local CUDA IPC payload path actually used? This check does not compare routing policies or establish the allowance's performance value.
 
-Placement: one prefill GPU plus one local decode GPU on an eight-GPU H100 VM; one remote decode GPU on a one-GPU H100 VM; one CPU utility node. Three GPUs work and nine are billed. The GPU-cluster resource selects fabric-6 for the eight-GPU VM only. The remote VM is outside it and uses ordinary networking. Record actual placement and transport; separate VM identities do not establish separate physical chassis.
+Placement: one prefill GPU plus one local decode GPU on an eight-GPU H100 VM; one remote decode GPU on a one-GPU H100 VM; one CPU utility node. Three GPUs work and nine are billed. The GPU-cluster resource selects an available fabric (2, 3, 4 or 6) for the eight-GPU VM only; the fresh Terraform plan must name the selected fabric. The remote VM is outside it and uses ordinary networking. Record actual placement and transport; separate VM identities do not establish separate physical chassis.
 
 Use `router-none.values.yaml` for this diagnostic. The same prefill-first handler, role/capacity filters and session pin serve both forced routes. The topology/load policies are staged for later comparison, but do not select the diagnostic destination.
 
@@ -20,11 +20,17 @@ One placement attempt. Stop if the topology has not placed within 30 minutes, an
 
 - Source: `0217d29924ba93b90f952e7a0281dd8dda146703` from draft PR #2870; same tested source tree as implementation commit `8f3f2838`.
 - EPP image: `ghcr.io/llm-d/llm-d-router-endpoint-picker:topology-0217d299-amd64`; local image ID `sha256:d8dfea7c43d1683a3f47abb74483f5c2d2d3cd2ccb9322c0fd8df493ba52f8f8`.
-- Archive: `/tmp/topology-epp-0217d299-amd64.tar`; SHA-256 `7ab220d2eb3a56d62ffb5595f3981944256c4072be7e88913be4bb3e182dd0d5`.
-- Plan: `/tmp/topology-h100-prep-2026-09-15.tfplan`, five creates only; replan if inputs change.
+- Durable archive: `/Users/rayhanmemon/.codex/run-state/router-h100-pilot/prepared/topology-epp-0217d299-amd64.tar`; SHA-256 `7ab220d2eb3a56d62ffb5595f3981944256c4072be7e88913be4bb3e182dd0d5`.
+- Prepared fabric-2 plan: `/Users/rayhanmemon/.codex/run-state/router-h100-pilot/prepared/fabric2.tfplan`, five creates only. Refresh capacity and plan before a delayed launch; replan whenever inputs change.
 - Qwen3-8B BF16 revision, vLLM 0.26, sidecar 0.10, inference-perf 0.6.1 and Envoy image digests are pinned in the renderer/workload scripts.
 
 `render.py` defaults to host IPC/PID namespaces and mounts the host's `/dev/shm` rather than shadowing it with a private mount. GPU resource allocation remains one per engine, CPU limit 6 per engine, with no privileged mode. This is a deliberate transfer-qualification setting on dedicated experiment VMs. `--ipc-mode isolated` renders the original namespace arrangement for diagnosis. Do not silently change namespaces or device access between local/remote arms. If the staged host mode cannot reach the peer GPU, stop for a focused configuration review rather than broadening privileges on the meter. CUDA IPC flags alone do not prove reachability or payload selection.
+
+## Unattended launch procedure
+
+The saved monitor is paused until Rayhan approves the H100 budget. After that approval, write a private JSON authorization record with `approved: true`, the actual approval reference, `approved_max_usd_pretax`, and `purchase_type`. Do not copy approval from the old L40S attempt. Verify the five-create plan and purchase type against the approval before invoking `pilot-session.py` with `--execute`, `--approval-record`, `--approved-max-usd-pretax`, `--purchase-type`, and `--plan`.
+
+The helper claims one persistent attempt, records its start/deadlines and plan hash, starts a detached shutdown guard, then applies the reviewed plan. A failed or timed-out apply starts cleanup. After a successful measured block, invoke `python infra/topology/pilot-session.py cleanup RUN_DIR --execute` so normal completion and the deadline guard use the same lock and verified-cleanup marker. Never delete the attempt record to retry a rental. Cleanup continues deletion-only retries if verification fails; an overdue marker requires immediate attention. This local guard depends on the Mac remaining awake and connected; it is not a provider-side budget cap.
 
 ## Before any measured request
 
@@ -45,7 +51,7 @@ Completion API, streaming, prefix cache disabled, 128 output tokens with EOS ign
 | 3 | 8192 | remote | long-remote-b1 |
 | 4 | 8192 | local | long-local-b1 |
 
-The first block is 48 measured requests plus separate warmups/correctness probes. Review it together before further work. Any planned repeats use new run names and reverse route order; do not selectively rerun an unfavorable outcome. These are pilot/calibration observations, not a final tail-latency or goodput claim.
+The first block is 48 measured requests plus separate warmups/correctness probes. For the requested unattended pilot, collect evidence and tear down after this block, then review it together before further work. Any planned repeats use new run names and reverse route order; do not selectively rerun an unfavorable outcome. These are pilot/calibration observations, not a final tail-latency or goodput claim.
 
 For each arm: take a settled before snapshot; generate the workload with its unique run name and actual decoder pod; run it; wait for requests to drain and metrics to settle, then collect reports plus the after snapshot; validate before moving on. `x-benchmark-run` identifies the arm in Envoy logs, while `x-benchmark-decoder` carries the requested worker. The response log records the actual selected worker. The session filter can fail open on a stale pin, so verify every route.
 
@@ -75,10 +81,10 @@ A small or absent latency advantage is a valid outcome when the transfer path is
 
 ## Cleanup and next stage
 
-Save/checksum evidence, destroy the dedicated Terraform resources and run the independent checker. It must successfully list zero instances, Kubernetes clusters, disks, filesystems **and GPU clusters**. Record actual resource costs separately from human attention.
+Use a new durable private session directory under `/Users/rayhanmemon/.codex/run-state/router-h100-pilot/` before provisioning; retain capacity snapshots, reviewed plan metadata, guard/apply/teardown logs and successful or failed collections. Never put credentials in the public results. On any failure, collect available diagnostics without delaying the cleanup deadline. Save/checksum evidence, destroy the dedicated Terraform resources and run the independent checker. It must successfully list zero instances, Kubernetes clusters, disks, filesystems **and GPU clusters**. Record actual resource costs separately from human attention.
 
 Later work calibrates unrestricted routing, hard locality, tuned soft scoring, load-filter-plus-locality and our allowance; prompt-size configuration remains unfinished. Held-out comparisons must cover low-load locality benefit, congestion/bursts and mixed workloads, followed by a more representative multi-local-decoder placement. That deployment and budget require a separate decision. No result here is a direct numerical comparison against Nili's different deployment.
 
 ## Latest capacity read
 
-The preparation check at approximately 18:29 UTC on September 15 returned positive single-GPU H100 availability on fabric-6 but no positive eight-GPU H100 availability on fabrics 3 or 6 (samples effective 18:22). The kit is prepared, but launch capacity is not established. Recheck before approving/starting any rental; a balance top-up does not reserve hardware.
+At **20:13 UTC on September 15**, the advisor reports six preemptible eight-GPU H100 allocations on fabric-2 (sample effective 19:38:47 UTC), plus positive one-GPU H100 capacity (sample effective 19:50:12 UTC). Other H100 eight-GPU fabrics do not report positive capacity. Both samples are marked fresh. This is advice, not a reservation; recheck exact platform `gpu-h100-sxm` and both shapes immediately before launch. A matching preset name on H200 is not eligible for this session. The refreshed fabric-2 plan validates as five creates only; no resources were created.
