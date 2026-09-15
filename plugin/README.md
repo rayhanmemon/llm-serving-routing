@@ -1,12 +1,12 @@
 # Request-sensitive topology routing
 
-**Status: design stage; implementation and evaluation not started.** This directory describes a planned extension to llm-d’s existing topology-affinity filter. Source, tests and measured results are not yet present. Submission, review and merge will be linked with their actual status.
+**Status: [draft PR #2870](https://github.com/llm-d/llm-d-router/pull/2870) is open.** The single-allowance extension is implemented at `8f3f28382081cad500f00342c9133312eeb044d6`, based on upstream `32d4ed2ac5ff1cc09f1dc8326caa0bab56d234b4`. All 22 focused tests with race detection and local presubmit passed. Prompt-size configuration and real-model evaluation remain unfinished. GitHub signature recognition is pending registration of the existing signing key; no merge is claimed.
 
 ## Existing behavior and prior work
 
 llm-d can choose prefill first, then prefer nearby decode endpoints with a topology filter or scorer. The hard filter preserves locality but can retain busy local workers while less-loaded remote workers remain available. A tuned soft scorer and a capacity/load filter before topology can already mitigate this; both are required comparisons.
 
-Abdullah Gharaibeh requested a congestion escape from local decode selection in [llm-d-router #2315](https://github.com/llm-d/llm-d-router/issues/2315#issuecomment-5409527857). The topology implementation and motivating benchmark belong to their existing authors. This work follows that request and evaluates whether a small request-sensitive rule improves the choice. The relevant source baseline is router main at `38cb83316ea49840e10d3d180e67b08beca1d1ca`; recheck it when implementation begins.
+Abdullah Gharaibeh requested a congestion escape from local decode selection in [llm-d-router #2315](https://github.com/llm-d/llm-d-router/issues/2315#issuecomment-5409527857). The topology implementation and motivating benchmark belong to their existing authors. This work follows that request and evaluates whether a small request-sensitive rule improves the choice. The initial research used source baseline `38cb83316ea49840e10d3d180e67b08beca1d1ca`; the published draft uses the newer baseline stated above.
 
 ## Decision
 

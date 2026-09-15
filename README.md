@@ -2,7 +2,7 @@
 
 Request-sensitive topology routing for llm-d: keep decode near the selected prefill worker while the KV-transfer saving justifies extra local load, and widen the choice when a farther decoder is preferable.
 
-**Status: single-allowance prototype implemented and tested locally; source not published and GPU evaluation not started.** The planned change extends existing prefill-first topology routing with a calibrated relative-load allowance for two prompt-size ranges. No performance improvement, upstream submission or merge is claimed. See [plugin/](plugin/README.md) for the decision and prior work.
+**Status: [draft PR #2870](https://github.com/llm-d/llm-d-router/pull/2870) is open with the single-allowance implementation.** Prompt-size-dependent configuration and real-model evaluation remain unfinished. No performance improvement or merge is claimed. See [plugin/](plugin/README.md) for the decision and prior work.
 
 ## Evaluation
 
