@@ -21,6 +21,7 @@ for resource in resources:
                 for access in hcm.get('access_log', []):
                     access['typed_config']['log_format'] = {'json_format': {
                         'request_id': '%REQ(X-REQUEST-ID)%',
+                        'run_id': '%REQ(X-BENCHMARK-RUN)%',
                         'requested_decoder': '%REQ(X-BENCHMARK-DECODER)%',
                         'selected_decoder': '%RESP(X-BENCHMARK-DECODER)%',
                         'upstream_host': '%UPSTREAM_HOST%', 'status': '%RESPONSE_CODE%',

@@ -45,6 +45,9 @@ def main():
         engine = next((c for c in containers if c['name'] == 'modelserver'), None)
         epp = next((c for c in containers if 'llm-d-router-endpoint-picker' in c['image']), None)
         port = next((x['containerPort'] for x in engine['ports'] if x['name'] == 'modelserver'), None) if engine else (9090 if epp else None)
+        if engine:
+            gpu_code = Path(__file__).with_name('gpu-inspect.py').read_text()
+            capture(['-n', a.namespace, 'exec', name, '-c', 'modelserver', '--', 'python', '-c', gpu_code], name + '-gpu.json')
         if port:
             path = f'/api/v1/namespaces/{a.namespace}/pods/http:{name}:{port}/proxy/metrics'
             capture(['get', '--raw', path], name + '-metrics.txt')

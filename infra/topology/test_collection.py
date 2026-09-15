@@ -19,8 +19,10 @@ class CollectionTest(unittest.TestCase):
 import os,sys,json
 from pathlib import Path
 a=sys.argv
-if "exec" in a:
+if "exec" in a and "tar" in a:
     sys.stdout.buffer.write(Path(os.environ["REPORT_ARCHIVE"]).read_bytes())
+elif "exec" in a:
+    print(json.dumps({"gpu_uuids":["GPU-mock"]}))
 elif "--raw" in a:
     print("example_metric 1")
     sys.exit(int(os.environ.get("METRICS_FAIL","0")))

@@ -9,10 +9,11 @@ MODEL = 'Qwen/Qwen3-8B'
 REVISION = 'b968826d9c46dd6066d109eabc6255188de91218'
 ENGINE = 'docker.io/vllm/vllm-openai:v0.26.0@sha256:770fe65b2c73ee74a5c42165cf3433de4048cc2cd9c57a937ca4e35aba5aa87b'
 SIDECAR = 'ghcr.io/llm-d/llm-d-router-disagg-sidecar:v0.10.0@sha256:1344adff65f96f76fc00c6003a1c63c1e9bb70f3628307f61f748a89a265b260'
-EPP_TAG = 'topology-c1e44596-amd64'
+EPP_TAG = 'topology-0217d299-amd64'
+PROXY_IMAGE = 'docker.io/envoyproxy/envoy:distroless-v1.33.2@sha256:85500e28ed088ec39ff0adc1be3d358a8ad062926aaa62c36b28bde00919e4e8'
 
 
-def model_deployment(name, role, node, namespace):
+def model_deployment(name, role, node, namespace, ipc_mode="host"):
     labels = {'app.kubernetes.io/name': name, 'llm-d.ai/guide': 'topology-measurement',
               'llm-d.ai/role': role, 'kubernetes.io/hostname': node}
     port = 8000 if role == 'prefill' else 8200
@@ -32,7 +33,7 @@ def model_deployment(name, role, node, namespace):
                       {'name': 'VLLM_NIXL_SIDE_CHANNEL_PORT', 'value': '5600'},
                       {'name': 'VLLM_HTTP_TIMEOUT_KEEP_ALIVE', 'value': '120'}],
               'resources': {'requests': {'cpu': '6', 'memory': '32Gi', 'nvidia.com/gpu': '1'},
-                            'limits': {'memory': '48Gi', 'nvidia.com/gpu': '1'}},
+                            'limits': {'cpu': '6', 'memory': '48Gi', 'nvidia.com/gpu': '1'}},
               'startupProbe': {'httpGet': {'path': '/v1/models', 'port': 'modelserver'},
                                'periodSeconds': 10, 'timeoutSeconds': 5, 'failureThreshold': 90},
               'readinessProbe': {'httpGet': {'path': '/health', 'port': 'modelserver'}, 'timeoutSeconds': 5},
@@ -41,10 +42,13 @@ def model_deployment(name, role, node, namespace):
             'terminationGracePeriodSeconds': 30,
             'volumes': [{'name': 'shm', 'emptyDir': {'medium': 'Memory', 'sizeLimit': '8Gi'}},
                         {'name': 'cache', 'emptyDir': {}}]}
+    if ipc_mode == 'host':
+        spec.update({'hostIPC': True, 'hostPID': True})
+        spec['volumes'][0] = {'name': 'shm', 'hostPath': {'path': '/dev/shm', 'type': 'Directory'}}
     if role == 'decode':
         spec['initContainers'] = [{'name': 'routing-proxy', 'image': SIDECAR, 'restartPolicy': 'Always',
                                   'args': ['--port=8000', '--model-server-port=8200', '--kv-connector=nixlv2',
-                                           '--zap-log-level=2', '--secure-proxy=false'],
+                                           '--zap-log-level=4', '--secure-proxy=false'],
                                   'ports': [{'name': 'sidecar', 'containerPort': 8000}],
                                   'resources': {'requests': {'cpu': '250m', 'memory': '256Mi'},
                                                 'limits': {'memory': '1Gi'}}}]
@@ -83,7 +87,7 @@ def benchmark(tokens, namespace):
     dist = lambda n: {'min': n, 'max': n, 'mean': n, 'std_dev': 0}
     return {'api': {'type': 'completion', 'streaming': True},
             'data': {'type': 'random', 'input_distribution': dist(tokens), 'output_distribution': dist(128)},
-            'load': {'type': 'concurrent', 'num_workers': 1, 'base_seed': 15092026,
+            'load': {'type': 'concurrent', 'num_workers': 1, 'base_seed': 15092026, 'request_timeout': 60,
                      'stages': [{'num_requests': 12, 'concurrency_level': 1}]},
             'server': {'type': 'vllm', 'model_name': MODEL, 'ignore_eos': True,
                        'base_url': f'http://topology-epp.{namespace}.svc.cluster.local'},
@@ -98,6 +102,8 @@ def main():
     p.add_argument('--remote-node', required=True)
     p.add_argument('--cpu-node', required=True)
     p.add_argument('--namespace', default='topology-measurement')
+    p.add_argument('--ipc-mode', choices=('host', 'isolated'), default='host',
+                   help='Host mode shares IPC/PID namespaces and /dev/shm for transfer qualification; no privileged mode')
     p.add_argument('--allowance', type=int, default=2, help='Uncalibrated starting value')
     p.add_argument('--soft-weight', type=float, default=0.5, help='Uncalibrated starting value')
     p.add_argument('--out', type=Path, required=True)
@@ -108,7 +114,7 @@ def main():
     def write(name, value):
         (a.out / name).write_text(yaml.safe_dump(value, sort_keys=False))
     docs = [{'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': a.namespace}}]
-    docs += [model_deployment(n, r, node, a.namespace) for n, r, node in [
+    docs += [model_deployment(n, r, node, a.namespace, a.ipc_mode) for n, r, node in [
         ('prefill', 'prefill', a.local_node), ('decode-local', 'decode', a.local_node),
         ('decode-remote', 'decode', a.remote_node)]]
     (a.out / 'modelservers.yaml').write_text(yaml.safe_dump_all(docs, sort_keys=False))
@@ -119,7 +125,7 @@ def main():
             'extraServicePorts': [{'name': 'http', 'port': 80, 'protocol': 'TCP', 'targetPort': 8081}],
             'modelServers': {'matchLabels': {'llm-d.ai/guide': 'topology-measurement'}, 'targetPorts': [{'number': 8000}]},
             'monitoring': {'prometheus': {'auth': {'enabled': False}}},
-            'proxy': {'failOpen': False, 'resources': {'requests': {'cpu': '2', 'memory': '2Gi'}, 'limits': {'memory': '4Gi'}}},
+            'proxy': {'image': PROXY_IMAGE, 'failOpen': False, 'resources': {'requests': {'cpu': '2', 'memory': '2Gi'}, 'limits': {'memory': '4Gi'}}},
             'epp': {'replicas': 1, 'image': {'tag': EPP_TAG, 'pullPolicy': 'Never'},
                 'flags': {'allow-experimental-plugins': True, 'secure-serving': False, 'health-checking': True, 'v': 4},
                 'resources': {'requests': {'cpu': '2', 'memory': '2Gi'}, 'limits': {'memory': '4Gi'}},

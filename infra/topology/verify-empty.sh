@@ -8,7 +8,7 @@ PROJECT="${PROJECT_ID:-$(grep -E '^project_id' "$(dirname "$0")/terraform/terraf
 echo "== independent teardown verification (project: ${PROJECT:-UNSET}) =="
 [ -n "$PROJECT" ] || { echo "UNKNOWN — project ID is required." >&2; exit 1; }
 fail=0
-for kind in "compute instance list" "mk8s cluster list" "compute disk list" "compute filesystem list"; do
+for kind in "compute instance list" "mk8s cluster list" "compute disk list" "compute filesystem list" "compute gpu-cluster list"; do
   echo "--- nebius $kind"
   read -r -a args <<< "$kind"
   if ! out=$("$NEBIUS" "${args[@]}" --parent-id "$PROJECT" --format json --all --timeout 20s --no-check-update); then
@@ -43,7 +43,7 @@ except (ValueError,TypeError) as e:
   fi
 done
 if [ "$fail" = "0" ]; then
-  echo "PASS — instances, clusters, disks and filesystems are empty in this project."
+  echo "PASS — instances, Kubernetes clusters, disks, filesystems and GPU clusters are empty in this project."
   echo "Other resource types and other projects were not checked."
 else
   echo "*** NOT VERIFIED EMPTY — resources remain or a listing failed. Resolve and recheck. ***"

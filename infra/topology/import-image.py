@@ -8,7 +8,7 @@ import subprocess
 import tarfile
 import uuid
 
-IMAGE = 'ghcr.io/llm-d/llm-d-router-endpoint-picker:topology-c1e44596-amd64'
+IMAGE = 'ghcr.io/llm-d/llm-d-router-endpoint-picker:topology-0217d299-amd64'
 HELPER = 'docker.io/library/alpine:3.22@sha256:7c8cb692ae09657cbc4a3f3cbd0e8d5a2690ba38386aaaf252dbb060bf5eb2e6'
 
 

@@ -11,6 +11,12 @@ variable "nebius_profile" {
   default = "default"
 }
 
+variable "infiniband_fabric" {
+  type        = string
+  default     = "fabric-6"
+  description = "InfiniBand fabric for the local eight-GPU H100 node only. The single-GPU remote node cannot join a GPU cluster."
+}
+
 variable "gpu_preemptible" {
   type        = bool
   default     = true

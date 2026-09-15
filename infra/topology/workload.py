@@ -16,9 +16,10 @@ a = p.parse_args()
 cfg = yaml.safe_load(a.config.read_text())
 cfg['tokenizer']['pretrained_model_name_or_path'] = '/tokenizer'
 cfg['storage']['local_storage']['path'] = '/reports'
+cfg['api'].setdefault('headers', {})['x-benchmark-run'] = a.name
 if a.decoder_pod:
     token = base64.b64encode(f'{a.namespace}/{a.decoder_pod}'.encode()).decode()
-    cfg['api']['headers'] = {'x-benchmark-decoder': token}
+    cfg['api']['headers']['x-benchmark-decoder'] = token
 image = 'quay.io/inference-perf/inference-perf:v0.6.1@sha256:e29328cc223ebae58d9022d60ad651cc3c4cbd534885a78b28f54086aa4b9c9e'
 configmap = {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': a.name, 'namespace': a.namespace},
              'data': {'config.yaml': yaml.safe_dump(cfg, sort_keys=False)}}

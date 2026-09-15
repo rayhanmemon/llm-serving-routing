@@ -11,6 +11,12 @@ provider "nebius" {
   profile = { name = var.nebius_profile }
 }
 
+resource "nebius_compute_v1_gpu_cluster" "local" {
+  parent_id         = var.project_id
+  name              = "router-local-h100"
+  infiniband_fabric = var.infiniband_fabric
+}
+
 resource "nebius_mk8s_v1_cluster" "topology" {
   parent_id = var.project_id
   name      = "router-topology"
@@ -34,15 +40,17 @@ resource "nebius_mk8s_v1_node_group" "cpu" {
 
 resource "nebius_mk8s_v1_node_group" "gpu" {
   for_each = {
-    local  = "2gpu-64vcpu-384gb"
-    remote = "1gpu-16vcpu-96gb"
+    local  = "8gpu-128vcpu-1600gb"
+    remote = "1gpu-16vcpu-200gb"
   }
   parent_id        = nebius_mk8s_v1_cluster.topology.id
   name             = "router-${each.key}"
   fixed_node_count = 1
   version          = "1.35"
   template = {
-    resources          = { platform = "gpu-l40s-d", preset = each.value }
+    resources = { platform = "gpu-h100-sxm", preset = each.value }
+    # Only the eight-GPU preset supports a GPU cluster; remote uses the ordinary network.
+    gpu_cluster        = each.key == "local" ? { id = nebius_compute_v1_gpu_cluster.local.id } : null
     gpu_settings       = { drivers_preset = "cuda13.0" }
     boot_disk          = { type = "NETWORK_SSD", size_gibibytes = 256 }
     network_interfaces = [{ subnet_id = var.subnet_id }]
