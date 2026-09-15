@@ -1,6 +1,6 @@
 # Request-sensitive topology routing
 
-**Status: [draft PR #2870](https://github.com/llm-d/llm-d-router/pull/2870) is open.** The single-allowance extension is implemented at `8f3f28382081cad500f00342c9133312eeb044d6`, based on upstream `32d4ed2ac5ff1cc09f1dc8326caa0bab56d234b4`. All 22 focused tests with race detection and local presubmit passed. Prompt-size configuration and real-model evaluation remain unfinished. GitHub signature recognition is pending registration of the existing signing key; no merge is claimed.
+**Status: [draft PR #2870](https://github.com/llm-d/llm-d-router/pull/2870) is open.** The single-allowance extension is implemented at `8f3f28382081cad500f00342c9133312eeb044d6`, based on upstream `32d4ed2ac5ff1cc09f1dc8326caa0bab56d234b4`. All 22 focused tests with race detection and local presubmit passed. Prompt-size configuration and real-model evaluation remain unfinished. GitHub verifies both commit signatures after registration of the existing public signing key. Current head `0217d29924ba93b90f952e7a0281dd8dda146703` adds an empty CI-refresh commit with an identical source tree. Hosted workflows await maintainer approval; no merge is claimed.
 
 ## Existing behavior and prior work
 
