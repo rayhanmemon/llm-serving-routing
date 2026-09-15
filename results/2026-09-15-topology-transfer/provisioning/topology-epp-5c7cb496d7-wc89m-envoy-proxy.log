@@ -1,0 +1,1 @@
+2026-09-15T15:35:54.195458441Z [2026-09-15 15:35:54.195][1][warning][main] [source/server/server.cc:959] There is no configured limit to the number of allowed active downstream connections. Configure a limit in `envoy.resource_monitors.global_downstream_max_connections` resource monitor.

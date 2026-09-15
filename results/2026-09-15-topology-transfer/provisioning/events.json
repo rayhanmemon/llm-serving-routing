@@ -1,0 +1,793 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:33:44Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{import}",
+                "kind": "Pod",
+                "name": "epp-image-import-9d297b79d6",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2779",
+                "uid": "e9047195-7cc8-4db8-a1a3-08cd24ef6260"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:33:44Z",
+            "message": "Container image \"docker.io/library/alpine:3.22@sha256:7c8cb692ae09657cbc4a3f3cbd0e8d5a2690ba38386aaaf252dbb060bf5eb2e6\" already present on machine and can be accessed by the pod",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:33:44Z",
+                "name": "epp-image-import-9d297b79d6.18d5886c0f0f4acd",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2785",
+                "uid": "bfb1021a-5c0e-49d9-a9f2-bba77375cc23"
+            },
+            "reason": "Pulled",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:33:44Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{import}",
+                "kind": "Pod",
+                "name": "epp-image-import-9d297b79d6",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2779",
+                "uid": "e9047195-7cc8-4db8-a1a3-08cd24ef6260"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:33:44Z",
+            "message": "Container created",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:33:44Z",
+                "name": "epp-image-import-9d297b79d6.18d5886c1009750c",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2786",
+                "uid": "ba00f282-fd17-468b-83dd-d0bd3a6e3770"
+            },
+            "reason": "Created",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:33:44Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{import}",
+                "kind": "Pod",
+                "name": "epp-image-import-9d297b79d6",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2779",
+                "uid": "e9047195-7cc8-4db8-a1a3-08cd24ef6260"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:33:44Z",
+            "message": "Container started",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:33:44Z",
+                "name": "epp-image-import-9d297b79d6.18d5886c13d05cc7",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2788",
+                "uid": "e4673ef6-873d-44b5-a622-cc25fca58c21"
+            },
+            "reason": "Started",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:34:11Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{import}",
+                "kind": "Pod",
+                "name": "epp-image-import-9d297b79d6",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2779",
+                "uid": "e9047195-7cc8-4db8-a1a3-08cd24ef6260"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:34:11Z",
+            "message": "Stopping container import",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:34:11Z",
+                "name": "epp-image-import-9d297b79d6.18d588725407c6a4",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2919",
+                "uid": "00ae3d3f-bed1-44b1-aba4-3c7f3fa46a88"
+            },
+            "reason": "Killing",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:32:03Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{import}",
+                "kind": "Pod",
+                "name": "epp-image-import-efa3e79eab",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2308",
+                "uid": "be0783ee-cbdb-413d-8fec-24831feaa747"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:32:03Z",
+            "message": "Pulling image \"docker.io/library/alpine:3.22@sha256:7c8cb692ae09657cbc4a3f3cbd0e8d5a2690ba38386aaaf252dbb060bf5eb2e6\"",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:32:03Z",
+                "name": "epp-image-import-efa3e79eab.18d5885479bb18f5",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2316",
+                "uid": "c2ce559d-dfec-41cf-8eb4-29bacc6146d1"
+            },
+            "reason": "Pulling",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:32:05Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{import}",
+                "kind": "Pod",
+                "name": "epp-image-import-efa3e79eab",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2308",
+                "uid": "be0783ee-cbdb-413d-8fec-24831feaa747"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:32:05Z",
+            "message": "Successfully pulled image \"docker.io/library/alpine:3.22@sha256:7c8cb692ae09657cbc4a3f3cbd0e8d5a2690ba38386aaaf252dbb060bf5eb2e6\" in 2.015s (2.015s including waiting). Image size: 3789228 bytes.",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:32:05Z",
+                "name": "epp-image-import-efa3e79eab.18d58854f1d87d43",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2327",
+                "uid": "8aed85d4-499c-423a-9796-5053132d2e5c"
+            },
+            "reason": "Pulled",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:32:05Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{import}",
+                "kind": "Pod",
+                "name": "epp-image-import-efa3e79eab",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2308",
+                "uid": "be0783ee-cbdb-413d-8fec-24831feaa747"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:32:05Z",
+            "message": "Container created",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:32:05Z",
+                "name": "epp-image-import-efa3e79eab.18d58854f2f840eb",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2328",
+                "uid": "e51fb2e4-bedb-4bb5-9528-06607b6a650c"
+            },
+            "reason": "Created",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:32:05Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{import}",
+                "kind": "Pod",
+                "name": "epp-image-import-efa3e79eab",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2308",
+                "uid": "be0783ee-cbdb-413d-8fec-24831feaa747"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:32:05Z",
+            "message": "Container started",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:32:05Z",
+                "name": "epp-image-import-efa3e79eab.18d58854f730a529",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2329",
+                "uid": "16a8b9cf-ab65-4683-86d0-2bfb63fd13e7"
+            },
+            "reason": "Started",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:32:09Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{import}",
+                "kind": "Pod",
+                "name": "epp-image-import-efa3e79eab",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2308",
+                "uid": "be0783ee-cbdb-413d-8fec-24831feaa747"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:32:09Z",
+            "message": "Stopping container import",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:32:09Z",
+                "name": "epp-image-import-efa3e79eab.18d58855d5c5e2dc",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2349",
+                "uid": "260c32d0-0d86-4278-b215-b3f69dc5746b"
+            },
+            "reason": "Killing",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:34:20Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "kind": "Pod",
+                "name": "hardware-remote",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2961",
+                "uid": "271d4aed-5261-4050-8fa8-0956e03a2b3c"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:34:20Z",
+            "message": "Successfully assigned topology-measurement/hardware-remote to computeinstance-e00ra4gggva7rwcpkr",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:34:20Z",
+                "name": "hardware-remote.18d58874679c559d",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2963",
+                "uid": "428354af-d169-45cc-9b47-3d0669fb64af"
+            },
+            "reason": "Scheduled",
+            "reportingComponent": "default-scheduler",
+            "reportingInstance": "",
+            "source": {
+                "component": "default-scheduler"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:34:21Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{probe}",
+                "kind": "Pod",
+                "name": "hardware-remote",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2962",
+                "uid": "271d4aed-5261-4050-8fa8-0956e03a2b3c"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:34:21Z",
+            "message": "Pulling image \"quay.io/inference-perf/inference-perf:v0.6.1@sha256:e29328cc223ebae58d9022d60ad651cc3c4cbd534885a78b28f54086aa4b9c9e\"",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:34:21Z",
+                "name": "hardware-remote.18d588748a11ff94",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2968",
+                "uid": "30f5c0b2-82cd-47b3-a8f0-ba42fcf19705"
+            },
+            "reason": "Pulling",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00ra4gggva7rwcpkr",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00ra4gggva7rwcpkr"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:34:59Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{probe}",
+                "kind": "Pod",
+                "name": "hardware-remote",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2962",
+                "uid": "271d4aed-5261-4050-8fa8-0956e03a2b3c"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:34:59Z",
+            "message": "Successfully pulled image \"quay.io/inference-perf/inference-perf:v0.6.1@sha256:e29328cc223ebae58d9022d60ad651cc3c4cbd534885a78b28f54086aa4b9c9e\" in 38.922s (38.922s including waiting). Image size: 261935684 bytes.",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:34:59Z",
+                "name": "hardware-remote.18d5887d9a04e804",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3153",
+                "uid": "aef81196-c723-428e-bc74-68c521d506c8"
+            },
+            "reason": "Pulled",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00ra4gggva7rwcpkr",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00ra4gggva7rwcpkr"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:35:00Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{probe}",
+                "kind": "Pod",
+                "name": "hardware-remote",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2962",
+                "uid": "271d4aed-5261-4050-8fa8-0956e03a2b3c"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:35:00Z",
+            "message": "Container created",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:35:00Z",
+                "name": "hardware-remote.18d5887d9af57abf",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3154",
+                "uid": "38df1ee1-e2be-4457-95a2-35a3c4f208bc"
+            },
+            "reason": "Created",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00ra4gggva7rwcpkr",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00ra4gggva7rwcpkr"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:35:00Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{probe}",
+                "kind": "Pod",
+                "name": "hardware-remote",
+                "namespace": "topology-measurement",
+                "resourceVersion": "2962",
+                "uid": "271d4aed-5261-4050-8fa8-0956e03a2b3c"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:35:00Z",
+            "message": "Container started",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:35:00Z",
+                "name": "hardware-remote.18d5887da8f17392",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3156",
+                "uid": "41bbcd50-d591-4768-8825-a3f88a8c18ac"
+            },
+            "reason": "Started",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00ra4gggva7rwcpkr",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00ra4gggva7rwcpkr"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:35:50Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "kind": "Pod",
+                "name": "topology-epp-5c7cb496d7-wc89m",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3395",
+                "uid": "777372a0-aa95-4068-af7b-56d5722e5753"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:35:50Z",
+            "message": "Successfully assigned topology-measurement/topology-epp-5c7cb496d7-wc89m to computeinstance-e00cxy6fyx7pw967hd",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:35:50Z",
+                "name": "topology-epp-5c7cb496d7-wc89m.18d588894fa3f213",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3399",
+                "uid": "2bb3f30d-0272-4566-b252-df3d09d40248"
+            },
+            "reason": "Scheduled",
+            "reportingComponent": "default-scheduler",
+            "reportingInstance": "",
+            "source": {
+                "component": "default-scheduler"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:35:50Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{envoy-proxy}",
+                "kind": "Pod",
+                "name": "topology-epp-5c7cb496d7-wc89m",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3396",
+                "uid": "777372a0-aa95-4068-af7b-56d5722e5753"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:35:50Z",
+            "message": "Pulling image \"docker.io/envoyproxy/envoy:distroless-v1.33.2\"",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:35:50Z",
+                "name": "topology-epp-5c7cb496d7-wc89m.18d58889718d99ce",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3408",
+                "uid": "dc9bb0bd-3890-4eca-9041-b4d691e1f9d7"
+            },
+            "reason": "Pulling",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:35:54Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{envoy-proxy}",
+                "kind": "Pod",
+                "name": "topology-epp-5c7cb496d7-wc89m",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3396",
+                "uid": "777372a0-aa95-4068-af7b-56d5722e5753"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:35:54Z",
+            "message": "Successfully pulled image \"docker.io/envoyproxy/envoy:distroless-v1.33.2\" in 3.192s (3.192s including waiting). Image size: 33507096 bytes.",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:35:54Z",
+                "name": "topology-epp-5c7cb496d7-wc89m.18d5888a2fd88e09",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3424",
+                "uid": "7f8fcdb5-a670-4099-81e9-03ff935552de"
+            },
+            "reason": "Pulled",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:35:54Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{envoy-proxy}",
+                "kind": "Pod",
+                "name": "topology-epp-5c7cb496d7-wc89m",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3396",
+                "uid": "777372a0-aa95-4068-af7b-56d5722e5753"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:35:54Z",
+            "message": "Container created",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:35:54Z",
+                "name": "topology-epp-5c7cb496d7-wc89m.18d5888a30baacfe",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3425",
+                "uid": "cf25693a-0507-429a-b683-69ca36ee1352"
+            },
+            "reason": "Created",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:35:54Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{envoy-proxy}",
+                "kind": "Pod",
+                "name": "topology-epp-5c7cb496d7-wc89m",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3396",
+                "uid": "777372a0-aa95-4068-af7b-56d5722e5753"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:35:54Z",
+            "message": "Container started",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:35:54Z",
+                "name": "topology-epp-5c7cb496d7-wc89m.18d5888a345958a7",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3426",
+                "uid": "1c69d880-a73a-49c1-bb02-a5cfa0c8213b"
+            },
+            "reason": "Started",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:35:54Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{epp}",
+                "kind": "Pod",
+                "name": "topology-epp-5c7cb496d7-wc89m",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3396",
+                "uid": "777372a0-aa95-4068-af7b-56d5722e5753"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:35:54Z",
+            "message": "Container image \"ghcr.io/llm-d/llm-d-router-endpoint-picker:topology-c1e44596-amd64\" already present on machine and can be accessed by the pod",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:35:54Z",
+                "name": "topology-epp-5c7cb496d7-wc89m.18d5888a3461b3d8",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3427",
+                "uid": "fb004ce9-d190-4ab6-a379-28f7f4ba8359"
+            },
+            "reason": "Pulled",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:35:54Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{epp}",
+                "kind": "Pod",
+                "name": "topology-epp-5c7cb496d7-wc89m",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3396",
+                "uid": "777372a0-aa95-4068-af7b-56d5722e5753"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:35:54Z",
+            "message": "Container created",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:35:54Z",
+                "name": "topology-epp-5c7cb496d7-wc89m.18d5888a3552002e",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3428",
+                "uid": "093e456b-0e06-49ca-8825-08ce9664dc43"
+            },
+            "reason": "Created",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:35:54Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{epp}",
+                "kind": "Pod",
+                "name": "topology-epp-5c7cb496d7-wc89m",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3396",
+                "uid": "777372a0-aa95-4068-af7b-56d5722e5753"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:35:54Z",
+            "message": "Container started",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:35:54Z",
+                "name": "topology-epp-5c7cb496d7-wc89m.18d5888a3889b7d0",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3429",
+                "uid": "4f9473c4-8269-4834-a788-e52243b5df2a"
+            },
+            "reason": "Started",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "computeinstance-e00cxy6fyx7pw967hd",
+            "source": {
+                "component": "kubelet",
+                "host": "computeinstance-e00cxy6fyx7pw967hd"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:35:50Z",
+            "involvedObject": {
+                "apiVersion": "apps/v1",
+                "kind": "ReplicaSet",
+                "name": "topology-epp-5c7cb496d7",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3391",
+                "uid": "96312ad9-ee67-4641-b6aa-fe2f151df678"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:35:50Z",
+            "message": "Created pod: topology-epp-5c7cb496d7-wc89m",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:35:50Z",
+                "name": "topology-epp-5c7cb496d7.18d588894eff27ab",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3397",
+                "uid": "aaea06fe-85e0-4f59-895e-a040463b1e8a"
+            },
+            "reason": "SuccessfulCreate",
+            "reportingComponent": "replicaset-controller",
+            "reportingInstance": "",
+            "source": {
+                "component": "replicaset-controller"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-09-15T15:35:50Z",
+            "involvedObject": {
+                "apiVersion": "apps/v1",
+                "kind": "Deployment",
+                "name": "topology-epp",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3390",
+                "uid": "30b1d0f5-57d0-41c2-b4de-95143dbbf290"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-09-15T15:35:50Z",
+            "message": "Scaled up replica set topology-epp-5c7cb496d7 from 0 to 1",
+            "metadata": {
+                "creationTimestamp": "2026-09-15T15:35:50Z",
+                "name": "topology-epp.18d588894e030eb8",
+                "namespace": "topology-measurement",
+                "resourceVersion": "3394",
+                "uid": "2a1bf8d7-9fae-402d-9d7f-c61f8182f128"
+            },
+            "reason": "ScalingReplicaSet",
+            "reportingComponent": "deployment-controller",
+            "reportingInstance": "",
+            "source": {
+                "component": "deployment-controller"
+            },
+            "type": "Normal"
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

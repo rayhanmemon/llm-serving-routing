@@ -1,0 +1,17 @@
+{
+  "started_unix": 1789486691.319815,
+  "finished_unix": 1789486698.222659,
+  "context": "router-topology",
+  "namespace": "topology-measurement",
+  "collection_complete": true,
+  "errors": [],
+  "sha256": {
+    "configmaps.json": "ddb5cad4e9a0ce8d21532994e8d705703e74de458e96f142368b9e6f170dba51",
+    "events.json": "098f42a244f04b6ef3afe76be66c6b734eeb566cc7155415d77181f84283527f",
+    "nodes.json": "738393f0de0b6d5f34aaf8e7db275edd7144ac601d17d83674736bfaaf33fb28",
+    "pods.json": "3ba6b1907a466059a81d1f87d8857c42f41505addb8976fc020ca741ca7d3809",
+    "topology-epp-5c7cb496d7-wc89m-envoy-proxy.log": "cf2d7cac3761cd6cde2fb344f4995ed16ff590b3310ee209a6123ac187d94d1a",
+    "topology-epp-5c7cb496d7-wc89m-epp.log": "926e915031f86b615ec83ddcf80cc2bf718d43a11c29b4efc32660d2a405959d",
+    "topology-epp-5c7cb496d7-wc89m-metrics.txt": "7897b513d8afab64c64e73ef40b1712339805bed76e202a1d1b3c8af0024c98d"
+  }
+}

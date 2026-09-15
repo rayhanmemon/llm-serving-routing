@@ -1,0 +1,16 @@
+[
+  {
+    "resource_id": "computeinstance-e00cxy6fyx7pw967hd",
+    "hourly_usd": 0.3968,
+    "conservative_seconds": 994.425468,
+    "estimated_usd": 0.10960778491733333,
+    "method": "Create operation start through delete operation finish; includes some non-billed startup/deletion time."
+  },
+  {
+    "resource_id": "computeinstance-e00ra4gggva7rwcpkr",
+    "hourly_usd": 1.8172,
+    "conservative_seconds": 918.858578,
+    "estimated_usd": 0.46381939109488884,
+    "method": "Create operation start through delete operation finish; includes some non-billed startup/deletion time."
+  }
+]

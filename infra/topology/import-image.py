@@ -50,8 +50,13 @@ def main():
     created = json.loads(subprocess.check_output(k + ['create', '-f', '-', '-o', 'json'], input=json.dumps(pod).encode()))
     try:
         subprocess.run(k + ['-n', a.namespace, 'wait', '--for=condition=Ready', 'pod/' + name, '--timeout=120s'], check=True)
-        ctr = ['chroot', '/host', '/usr/bin/ctr', '--address', '/run/containerd/containerd.sock', '--namespace', 'k8s.io']
         exec_cmd = k + ['-n', a.namespace, 'exec', '-i', name, '--']
+        ctr_path = subprocess.check_output(exec_cmd + ['chroot', '/host', '/bin/sh', '-c', 'command -v ctr'], text=True).strip()
+        if not ctr_path.startswith('/') or '\n' in ctr_path:
+            raise RuntimeError('No unambiguous installed containerd client found')
+        subprocess.run(exec_cmd + ['test', '-S', '/host/run/containerd/containerd.sock'], check=True)
+        print('Using installed containerd client: ' + ctr_path, flush=True)
+        ctr = ['chroot', '/host', ctr_path, '--address', '/run/containerd/containerd.sock', '--namespace', 'k8s.io']
         with a.archive.open('rb') as source:
             subprocess.run(exec_cmd + ctr + ['images', 'import', '--platform', 'linux/amd64', '-'], stdin=source, check=True, timeout=180)
         images = subprocess.check_output(exec_cmd + ctr + ['images', 'list', '--quiet'], text=True)

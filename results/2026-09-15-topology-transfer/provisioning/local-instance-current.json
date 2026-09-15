@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "id": "computeinstance-e00me1zq79ms0800xv",
+    "parent_id": "project-e00y7nnzpr00b95he2k13g",
+    "name": "mk8snodegroup-e00mpbvnacd5vapxmj-czckb-bdmjx",
+    "resource_version": "1",
+    "created_at": "2026-09-15T15:28:01.882613Z",
+    "labels": {
+      "mk8s-cluster-id": "mk8scluster-e00q9yqgwhacxfbxnn",
+      "mk8s-node-group-id": "mk8snodegroup-e00mpbvnacd5vapxmj"
+    }
+  },
+  "spec": {
+    "resources": {
+      "platform": "gpu-l40s-d",
+      "preset": "2gpu-64vcpu-384gb"
+    },
+    "gpu_cluster": {},
+    "network_interfaces": [
+      {
+        "subnet_id": "vpcsubnet-e00qj3n64waebbvgkn",
+        "name": "eth0",
+        "ip_address": {
+          "allocation_id": "vpcallocation-e00z83fgbazdgeketj"
+        },
+        "aliases": [
+          {
+            "allocation_id": "vpcallocation-e00byg6wjxf7ndz8n4"
+          }
+        ],
+        "security_groups": [
+          {
+            "id": "vpcsecuritygroup-e00qc4py745ewsfy9j"
+          },
+          {
+            "id": "vpcsecuritygroup-e00ekrjgmdzaywdy1j"
+          }
+        ]
+      }
+    ],
+    "boot_disk": {
+      "attach_mode": "READ_WRITE",
+      "managed_disk": {
+        "name": "mk8snodegroup-e00mpbvnacd5vapxmj-czckb-bdmjx",
+        "labels": {
+          "mk8s-cluster-id": "mk8scluster-e00q9yqgwhacxfbxnn",
+          "mk8s-node-group-id": "mk8snodegroup-e00mpbvnacd5vapxmj"
+        },
+        "spec": {
+          "size_gibibytes": "256",
+          "block_size_bytes": "4096",
+          "type": "NETWORK_SSD",
+          "source_image_id": "computeimage-e00xkdvmtnjkqycnbm",
+          "disk_encryption": {}
+        }
+      }
+    },
+    "reservation_policy": {
+      "policy": "FORBID"
+    }
+  },
+  "status": {
+    "state": "STOPPED",
+    "network_interfaces": [
+      {
+        "name": "eth0",
+        "ip_address": {
+          "address": "10.0.0.18/32",
+          "allocation_id": "vpcallocation-e00z83fgbazdgeketj"
+        },
+        "aliases": {
+          "cidrs": [
+            "10.0.34.0/24"
+          ]
+        },
+        "mac_address": "76:20:95:94:83:0C",
+        "fqdn": "computeinstance-e00me1zq79ms0800xv.vpcnetwork-e00x36fm1w269rczwp.compute.internal.",
+        "security_groups": [
+          {
+            "id": "vpcsecuritygroup-e00qc4py745ewsfy9j"
+          },
+          {
+            "id": "vpcsecuritygroup-e00ekrjgmdzaywdy1j"
+          }
+        ]
+      }
+    ]
+  }
+}

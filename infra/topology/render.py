@@ -26,7 +26,7 @@ def model_deployment(name, role, node, namespace):
               'ports': [{'name': 'modelserver', 'containerPort': port},
                         {'name': 'nixl', 'containerPort': 5600}],
               'env': [{'name': 'USER', 'value': 'llm-d'}, {'name': 'HF_HOME', 'value': '/cache'},
-                      {'name': 'UCX_PROTO_INFO', 'value': 'y'},
+                      {'name': 'UCX_PROTO_INFO', 'value': 'yes'},
                       {'name': 'UCX_CUDA_IPC_ENABLE_GET_ZCOPY', 'value': 'on'},
                       {'name': 'VLLM_NIXL_SIDE_CHANNEL_HOST', 'valueFrom': {'fieldRef': {'fieldPath': 'status.podIP'}}},
                       {'name': 'VLLM_NIXL_SIDE_CHANNEL_PORT', 'value': '5600'},

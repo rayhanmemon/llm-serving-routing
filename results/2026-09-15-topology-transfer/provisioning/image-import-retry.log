@@ -1,0 +1,7 @@
+pod/epp-image-import-9d297b79d6 condition met
+Using installed containerd client: /usr/local/bin/ctr
+ghcr.io/llm d/llm d router endpoint pick	saved	
+application/vnd.oci.image.manifest.v1+json sha256:c4894453f3e66a30263b3f698ce07be49959ef762d40ef2f8193c63061fa5248
+Importing	elapsed: 17.6s	total:   0.0 B	(0.0 B/s)	
+pod "epp-image-import-9d297b79d6" deleted from topology-measurement namespace
+PASS: reviewed AMD64 image imported on computeinstance-e00cxy6fyx7pw967hd

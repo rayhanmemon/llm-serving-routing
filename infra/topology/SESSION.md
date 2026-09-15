@@ -61,3 +61,11 @@ An on-demand alternative has been prepared and validated as a separate four-crea
 ## Active session
 
 On-demand was explicitly approved at 15:23 UTC with the maximum raised to $25 before tax. Provisioning began at **15:23:49 UTC**. Teardown deadline **16:53:49 UTC**; target deletion **17:23:49 UTC**. A local deadline guard is active. This supersedes the earlier purchase type and $15 limit; the time limits are unchanged. The pre-request expectation is committed in `results/2026-09-15-topology-transfer/EXPECTED.md`.
+
+## First placement result
+
+The two-GPU VM failed to place. Compute operation `computeoperation-e00pn8e3fftjmfdn6b`, finished 15:33:42 UTC, returned `NotEnoughResources` for `2gpu-64vcpu-384gb`: VM schedule timeout, most likely insufficient hardware. The VM was STOPPED and never joined Kubernetes. CPU/remote nodes did start, and the reviewed EPP plus Envoy ran healthy. Apply was interrupted after preserving evidence; the wrapper started scoped teardown. No inference requests or performance measurements occurred.
+
+Runtime preparation fixes: the installed containerd client is `/usr/local/bin/ctr`, so import discovers the installed path and checks the existing socket; image import then succeeded and its helper was deleted. UCX logging value `y` serialized without quotes and was interpreted as a boolean by Kubernetes; it is now `yes` (quoted by the YAML emitter), and all three engine deployments pass server-side dry-run. The CPU benchmark image lacks `nvidia-smi`; use the GPU engine image for hardware inspection in the next attempt.
+
+**Closed 15:47:46 UTC:** all four Terraform resources destroyed; independent lists show zero instances, clusters, disks and filesystems. Deadline guard exited. Approximately $0.60 before tax estimated, not invoiced; no inference requests. See the dated RESULT.md. No active rental remains.

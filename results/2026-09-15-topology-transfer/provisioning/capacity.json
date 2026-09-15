@@ -1,0 +1,104 @@
+[
+  {
+    "compute": {
+      "platform": "gpu-l40s-d",
+      "preset": {
+        "name": "1gpu-16vcpu-96gb",
+        "resources": {
+          "vcpu_count": 16,
+          "memory_gibibytes": 96,
+          "gpu_count": 1
+        }
+      },
+      "gpu_memory_gigabytes": 48
+    },
+    "status": {
+      "reserved": {
+        "data_state": "DATA_STATE_FRESH",
+        "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+        "effective_at": "2026-09-15T15:20:19.037311Z"
+      },
+      "on_demand": {
+        "data_state": "DATA_STATE_FRESH",
+        "available": 4,
+        "limit": 32,
+        "availability_level": "AVAILABILITY_LEVEL_LOW",
+        "effective_at": "2026-09-15T15:01:53.580Z"
+      },
+      "preemptible": {
+        "data_state": "DATA_STATE_FRESH",
+        "limit": 8,
+        "availability_level": "AVAILABILITY_LEVEL_LOW",
+        "effective_at": "2026-09-15T15:01:53.580Z"
+      }
+    }
+  },
+  {
+    "compute": {
+      "platform": "gpu-l40s-d",
+      "preset": {
+        "name": "1gpu-32vcpu-192gb",
+        "resources": {
+          "vcpu_count": 32,
+          "memory_gibibytes": 192,
+          "gpu_count": 1
+        }
+      },
+      "gpu_memory_gigabytes": 48
+    },
+    "status": {
+      "reserved": {
+        "data_state": "DATA_STATE_FRESH",
+        "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+        "effective_at": "2026-09-15T15:20:19.037311Z"
+      },
+      "on_demand": {
+        "data_state": "DATA_STATE_FRESH",
+        "available": 4,
+        "limit": 32,
+        "availability_level": "AVAILABILITY_LEVEL_LOW",
+        "effective_at": "2026-09-15T15:01:53.580Z"
+      },
+      "preemptible": {
+        "data_state": "DATA_STATE_FRESH",
+        "limit": 8,
+        "availability_level": "AVAILABILITY_LEVEL_LOW",
+        "effective_at": "2026-09-15T15:01:53.580Z"
+      }
+    }
+  },
+  {
+    "compute": {
+      "platform": "gpu-l40s-d",
+      "preset": {
+        "name": "1gpu-48vcpu-288gb",
+        "resources": {
+          "vcpu_count": 48,
+          "memory_gibibytes": 288,
+          "gpu_count": 1
+        }
+      },
+      "gpu_memory_gigabytes": 48
+    },
+    "status": {
+      "reserved": {
+        "data_state": "DATA_STATE_FRESH",
+        "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+        "effective_at": "2026-09-15T15:20:19.037311Z"
+      },
+      "on_demand": {
+        "data_state": "DATA_STATE_FRESH",
+        "available": 4,
+        "limit": 32,
+        "availability_level": "AVAILABILITY_LEVEL_LOW",
+        "effective_at": "2026-09-15T15:01:53.580Z"
+      },
+      "preemptible": {
+        "data_state": "DATA_STATE_FRESH",
+        "limit": 8,
+        "availability_level": "AVAILABILITY_LEVEL_LOW",
+        "effective_at": "2026-09-15T15:01:53.580Z"
+      }
+    }
+  }
+]

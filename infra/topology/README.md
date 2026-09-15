@@ -1,6 +1,6 @@
 # Three-worker topology measurement
 
-**Status: locally validated preparation, not a qualified GPU deployment.** See [the first-session procedure and quote](SESSION.md). One prefill GPU and one decoder share a node; another decoder occupies a second node. A CPU node runs the standalone Envoy/EPP and benchmark client. One EPP accounts for all traffic.
+**Status: first placement attempt blocked by two-GPU capacity; no inference measured.** See [the first-session procedure and quote](SESSION.md). One prefill GPU and one decoder share a node; another decoder occupies a second node. A CPU node runs the standalone Envoy/EPP and benchmark client. One EPP accounts for all traffic.
 
 The model is Qwen3-8B at revision `b968826d9c46dd6066d109eabc6255188de91218`, BF16, one GPU per worker. Engine v0.26.0, routing sidecar v0.10.0 and inference-perf v0.6.1 are pinned to AMD64 image digests. The EPP is built from reviewed source commit `c1e44596c67aaff3a949e78fda1be57df217ffb2`; its local AMD64 image has passed startup checks. These checks do not establish correct inference or fast transfer.
 
@@ -68,3 +68,5 @@ Before rental: agree the priced session limit in SESSION.md. Before requests: re
 The complete six-policy evaluation, baseline tuning, held-out traffic and repeated comparisons remain future work. Global allowance 2 and soft topology weight 0.5 are examples, not recommended settings or measured winners.
 
 Image delivery is private to the selected experiment node. `collect.py` saves observations and completed reports with checksums; `test_collection.py` exercises five collection outcomes without a cluster. Benchmark CLI/configuration checks also passed in the pinned image. Terraform plan contains four creates only; no apply has run.
+
+September 15 runtime check: EPP/Envoy ran on Nebius after successful private image import. The local two-GPU VM returned NotEnoughResources and no engine request was sent. The corrected engine manifests passed server-side dry-run; use the GPU engine image for GPU-tool inspection because the benchmark image lacks nvidia-smi. Full evidence and cleanup status are in the dated result directory.

@@ -1,0 +1,15 @@
+pod/epp-image-import-efa3e79eab condition met
+chroot: can't execute '/usr/bin/ctr': No such file or directory
+command terminated with exit code 127
+pod "epp-image-import-efa3e79eab" deleted from topology-measurement namespace
+Traceback (most recent call last):
+  File "/Users/rayhanmemon/disagg-boundary/infra/topology/import-image.py", line 69, in <module>
+    main()
+    ~~~~^^
+  File "/Users/rayhanmemon/disagg-boundary/infra/topology/import-image.py", line 56, in main
+    subprocess.run(exec_cmd + ctr + ['images', 'import', '--platform', 'linux/amd64', '-'], stdin=source, check=True, timeout=180)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['kubectl', '--context', 'router-topology', '--request-timeout=30s', '-n', 'topology-measurement', 'exec', '-i', 'epp-image-import-efa3e79eab', '--', 'chroot', '/host', '/usr/bin/ctr', '--address', '/run/containerd/containerd.sock', '--namespace', 'k8s.io', 'images', 'import', '--platform', 'linux/amd64', '-']' returned non-zero exit status 127.
