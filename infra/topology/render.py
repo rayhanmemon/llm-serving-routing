@@ -83,8 +83,8 @@ def benchmark(tokens, namespace):
     dist = lambda n: {'min': n, 'max': n, 'mean': n, 'std_dev': 0}
     return {'api': {'type': 'completion', 'streaming': True},
             'data': {'type': 'random', 'input_distribution': dist(tokens), 'output_distribution': dist(128)},
-            'load': {'type': 'constant', 'interval': 1, 'num_workers': 1, 'base_seed': 15092026,
-                     'stages': [{'rate': 0.5, 'duration': 60}]},
+            'load': {'type': 'concurrent', 'num_workers': 1, 'base_seed': 15092026,
+                     'stages': [{'num_requests': 12, 'concurrency_level': 1}]},
             'server': {'type': 'vllm', 'model_name': MODEL, 'ignore_eos': True,
                        'base_url': f'http://topology-epp.{namespace}.svc.cluster.local'},
             'tokenizer': {'pretrained_model_name_or_path': MODEL},

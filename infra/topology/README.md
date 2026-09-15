@@ -1,6 +1,6 @@
 # Three-worker topology measurement
 
-**Status: locally rendered configuration, not a qualified GPU deployment.** One prefill GPU and one decoder share a node; another decoder occupies a second node. A CPU node runs the standalone Envoy/EPP and benchmark client. One EPP accounts for all traffic.
+**Status: locally validated preparation, not a qualified GPU deployment.** See [the first-session procedure and quote](SESSION.md). One prefill GPU and one decoder share a node; another decoder occupies a second node. A CPU node runs the standalone Envoy/EPP and benchmark client. One EPP accounts for all traffic.
 
 The model is Qwen3-8B at revision `b968826d9c46dd6066d109eabc6255188de91218`, BF16, one GPU per worker. Engine v0.26.0, routing sidecar v0.10.0 and inference-perf v0.6.1 are pinned to AMD64 image digests. The EPP is built from reviewed source commit `c1e44596c67aaff3a949e78fda1be57df217ffb2`; its local AMD64 image has passed startup checks. These checks do not establish correct inference or fast transfer.
 
@@ -43,7 +43,7 @@ python infra/topology/workload.py infra/topology/rendered/benchmark-512.yaml \
 
 Omit `--decoder-pod` for policy-evaluated traffic. Tokenizer files are fetched from the exact model revision into a shared volume; the client reads that path because this inference-perf version has no tokenizer revision parameter. The Pod records the harness exit code and retains reports for ten minutes after completion; copy `/reports` and all logs before deleting it. Its 20-minute active deadline is a diagnostic bound, not a final benchmark duration. A deadline expiry or missing reports is a failed run.
 
-The initial examples use 512/8192 requested input tokens, 128 output tokens, one load-generator process, a fixed seed, 0.5 requests/second and 60 seconds. These are uncalibrated diagnostic settings. Verify actual token counts and actual arrival times. The worker count/seed combination helps reproducibility but does not guarantee identical achieved traffic.
+The initial examples use 512/8192 requested input tokens, 128 output tokens, one load-generator process, a fixed seed and 12 requests sent sequentially (concurrency one). This isolates low-load latency; use fixed arrival rates in later policy comparisons. These are uncalibrated diagnostic settings. Verify actual token counts and actual arrival times. The worker count/seed combination helps reproducibility but does not guarantee identical achieved traffic.
 
 Prefix caching is disabled for the transfer diagnostic, identically across all policies. With one prefiller there is no prefill-placement choice; its token-load scorer retains the appropriate scheduling input but does not demonstrate cache-aware placement. Restore and control cache reuse in later evaluation. The default EPP tokenizer estimates prompt size; exact prompt-token input must be configured before testing prompt-size allowances. The current filter uses request counts only.
 
@@ -53,9 +53,9 @@ The local-transfer candidate enables `UCX_CUDA_IPC_ENABLE_GET_ZCOPY=on` on every
 
 `terraform/` is standalone and uses a distinct `router-topology` cluster and state. Provider 0.6.46 is locked. It requests a two-GPU AMD L40S node, a one-GPU AMD L40S node and a 16-vCPU utility node in the supplied eu-north1 project/subnet. GPU nodes are preemptible. Kubernetes 1.35 / cuda13.0 comes from the earlier tested recipe; the two-GPU AMD combination remains unqualified. No apply has run.
 
-The EPP image is local-only. Generated values use `pullPolicy: Never` so deployment cannot accidentally fetch another image. The reviewed image must be transferred/imported onto the CPU node, or an explicitly authorized private registry delivery arranged, before the EPP can start. Image delivery is not implemented here yet.
+The EPP image is local-only. Generated values use `pullPolicy: Never` so deployment cannot accidentally fetch another image. `import-image.py` verifies the local archive and prepares a temporary privileged node helper; `--execute` imports the reviewed image directly into that CPU node's containerd and removes the helper. The manifest/archive checks passed locally; actual node-runtime compatibility remains to be checked during deployment.
 
-Before rental: complete the storage/network/control-plane quote, agree a metered-session limit, establish an explicit teardown procedure using successful API listings, and record the expected outcomes. Node startup, AMD driver/peer access, complete P/D serving, runtime image compatibility, exact benchmark image behavior and report collection still require validation. A successful Terraform validation or EPP health probe does not satisfy them.
+Before rental: agree the priced session limit in SESSION.md. Before requests: record the expected outcomes. The dedicated teardown script uses the repaired independent API checker. Node startup, AMD driver/peer access, complete P/D serving, runtime image compatibility, exact benchmark image behavior and report collection still require validation. A successful Terraform validation or EPP health probe does not satisfy them.
 
 ## Local verification, September 15
 
@@ -66,3 +66,5 @@ Before rental: complete the storage/network/control-plane quote, agree a metered
 - Image manifest inspection confirmed the pinned engine, sidecar and benchmark digests target AMD64.
 
 The complete six-policy evaluation, baseline tuning, held-out traffic and repeated comparisons remain future work. Global allowance 2 and soft topology weight 0.5 are examples, not recommended settings or measured winners.
+
+Image delivery is private to the selected experiment node. `collect.py` saves observations and completed reports with checksums; `test_collection.py` exercises five collection outcomes without a cluster. Benchmark CLI/configuration checks also passed in the pinned image. Terraform plan contains four creates only; no apply has run.

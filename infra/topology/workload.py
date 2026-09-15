@@ -32,7 +32,7 @@ pod = {'apiVersion': 'v1', 'kind': 'Pod', 'metadata': {'name': a.name, 'namespac
     'initContainers': [{'name': 'tokenizer', 'image': image, 'command': ['python', '-c', download],
                         'volumeMounts': [{'name': 'tokenizer', 'mountPath': '/tokenizer'}]}],
     'containers': [{'name': 'benchmark', 'image': image, 'workingDir': '/workspace',
-        'command': ['sh', '-c', 'python -m inference_perf.main --config_file /cfg/config.yaml; rc=$?; '
+        'command': ['sh', '-c', 'python inference_perf/main.py --config_file /cfg/config.yaml; rc=$?; '
                     'echo "$rc" > /reports/exit-code; echo "BENCHMARK_EXIT=$rc"; sleep 600; exit "$rc"'],
         'env': [{'name': 'TOKENIZERS_PARALLELISM', 'value': 'false'}],
         'resources': {'requests': {'cpu': '2', 'memory': '2Gi'}, 'limits': {'memory': '4Gi'}},
