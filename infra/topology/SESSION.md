@@ -57,3 +57,7 @@ Use a new collection directory each time. Missing observations remain recorded f
 The preemptible session was approved at 15:19 UTC. At 15:20 UTC the fresh advisor response no longer contained a positive preemptible `available` value for any AMD L40S preset; the single-GPU on-demand presets reported available 4 / limit 32, LOW. There is still no two-GPU advisor row. No apply or billing began.
 
 An on-demand alternative has been prepared and validated as a separate four-create plan, `/tmp/topology-ondemand-2026-09-15.tfplan`, using `gpu_preemptible=false` and reservation policy FORBID. It keeps the same hardware and session stop conditions. Compute plus disks is **$6.83882/hour before tax**, or **$13.68 for two hours**, within the same $15 operational allowance. Switching the purchase type still needs explicit authorization because the approved procedure excluded automatic on-demand substitution. This alternative is not applied or approved yet.
+
+## Active session
+
+On-demand was explicitly approved at 15:23 UTC with the maximum raised to $25 before tax. Provisioning began at **15:23:49 UTC**. Teardown deadline **16:53:49 UTC**; target deletion **17:23:49 UTC**. A local deadline guard is active. This supersedes the earlier purchase type and $15 limit; the time limits are unchanged. The pre-request expectation is committed in `results/2026-09-15-topology-transfer/EXPECTED.md`.
