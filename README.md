@@ -2,9 +2,11 @@
 
 Request-sensitive topology routing for llm-d: keep decode near the selected prefill worker while the KV-transfer saving justifies extra local load, and widen the choice when a farther decoder is preferable.
 
-**Status: design stage; implementation and evaluation not started.** The planned change extends existing prefill-first topology routing with a calibrated relative-load allowance for two prompt-size ranges. No performance improvement, upstream submission or merge is claimed. See [plugin/](plugin/README.md) for the decision and prior work.
+**Status: single-allowance prototype implemented and tested locally; source not published and GPU evaluation not started.** The planned change extends existing prefill-first topology routing with a calibrated relative-load allowance for two prompt-size ranges. No performance improvement, upstream submission or merge is claimed. See [plugin/](plugin/README.md) for the decision and prior work.
 
 ## Evaluation
+
+[Three-worker deployment draft](infra/topology/README.md): standalone infrastructure, routing policies and benchmark configuration, with local validation status and remaining checks.
 
 The evaluation must first establish a real local-versus-remote transfer difference and a useful operating regime beyond tuned existing routing. The functional minimum is three independent GPU workers across two hosts: one prefiller, one local decoder and one remote decoder. A fourth active worker adds another local decoder. Count all rented capacity, including unused GPUs required by an instance preset.
 
