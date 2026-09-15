@@ -4,6 +4,8 @@ Request-sensitive topology routing for llm-d: keep decode near the selected pref
 
 **Status: [draft PR #2870](https://github.com/llm-d/llm-d-router/pull/2870) is open with the single-allowance implementation.** Prompt-size-dependent configuration and real-model evaluation remain unfinished. No performance improvement or merge is claimed. See [plugin/](plugin/README.md) for the decision and prior work.
 
+The September 15 [L40S](results/2026-09-15-topology-transfer/RESULT.md) and [H100](results/2026-09-15-h100-topology-transfer/RESULT.md) attempts both failed on multi-GPU placement. Cleanup was verified for each; neither produced inference measurements.
+
 ## Evaluation
 
 [Three-worker deployment draft](infra/topology/README.md): standalone infrastructure, routing policies and benchmark configuration, with local validation status and remaining checks.

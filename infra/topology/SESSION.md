@@ -1,6 +1,6 @@
 # H100 controlled transfer check
 
-**H100 session approved September 15; active monitor awaiting matching capacity.** The closed L40S attempt and its approximately $0.60 estimated cost are recorded in `results/2026-09-15-topology-transfer/RESULT.md`. Rayhan approved the $50 pre-tax budget after requesting unattended execution with a review afterwards. Five-minute monitoring is ACTIVE; the post-approval preflight found no positive eight-H100 availability, so no paid attempt began.
+**Session closed September 15.** The one approved H100 attempt failed on eight-GPU capacity; no inference requests were sent. All rental resources were independently verified absent at **21:19:48 UTC** and the guard exited. Estimated cost **$0.50 before tax**. The monitor is paused; this procedure is preserved for review and does not authorize a second attempt. [Result](../../results/2026-09-15-h100-topology-transfer/RESULT.md).
 
 ## What this check answers
 

@@ -1,0 +1,53 @@
+{
+  "checked_at": "2026-09-15T20:59:17.393771+00:00",
+  "qualifying_large": [
+    {
+      "fabric": "fabric-3",
+      "shape": "8gpu-128vcpu-1600gb",
+      "data_state": "DATA_STATE_FRESH",
+      "available": 1,
+      "limit": 8,
+      "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+      "effective_at": "2026-09-15T20:38:23.881Z"
+    }
+  ],
+  "qualifying_small": [
+    {
+      "fabric": "fabric-2",
+      "shape": "1gpu-16vcpu-200gb",
+      "data_state": "DATA_STATE_FRESH",
+      "available": 8,
+      "limit": 8,
+      "availability_level": "AVAILABILITY_LEVEL_HIGH",
+      "effective_at": "2026-09-15T20:46:30.951Z"
+    },
+    {
+      "fabric": "fabric-3",
+      "shape": "1gpu-16vcpu-200gb",
+      "data_state": "DATA_STATE_FRESH",
+      "available": 8,
+      "limit": 8,
+      "availability_level": "AVAILABILITY_LEVEL_HIGH",
+      "effective_at": "2026-09-15T20:46:30.951Z"
+    },
+    {
+      "fabric": "fabric-4",
+      "shape": "1gpu-16vcpu-200gb",
+      "data_state": "DATA_STATE_FRESH",
+      "available": 6,
+      "limit": 8,
+      "availability_level": "AVAILABILITY_LEVEL_LOW",
+      "effective_at": "2026-09-15T20:46:30.951Z"
+    },
+    {
+      "fabric": "fabric-6",
+      "shape": "1gpu-16vcpu-200gb",
+      "data_state": "DATA_STATE_FRESH",
+      "available": 8,
+      "limit": 8,
+      "availability_level": "AVAILABILITY_LEVEL_HIGH",
+      "effective_at": "2026-09-15T20:46:30.951Z"
+    }
+  ],
+  "actionable": true
+}

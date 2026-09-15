@@ -1,0 +1,15 @@
+{
+  "time": "2026-09-15T21:15:51.073943+00:00",
+  "action": "Deleted six kube-system PodDisruptionBudgets in the experiment cluster during full-cluster teardown",
+  "context": "router-topology",
+  "cluster_id": "mk8scluster-e00j047rg0ceaxwr8h",
+  "reason": "Last remaining node retained addon pods; six observed PDBs allowed zero disruptions, preventing drain. Whole cluster already being destroyed.",
+  "names": [
+    "cilium-operator",
+    "coredns",
+    "coredns-autoscaler",
+    "hubble-relay",
+    "hubble-ui",
+    "metrics-server"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "recorded_at": "2026-09-15T21:11:22.500138+00:00",
+  "reason": "Nebius rejected local8-H100 creation with NotEnoughResources",
+  "operation_id": "computeoperation-e00r60932jn512337n",
+  "operation_finished_at": "2026-09-15T21:10:27.033060Z",
+  "inference_requests_sent": 0,
+  "terraform_apply_pid": 57021
+}

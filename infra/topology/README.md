@@ -1,6 +1,6 @@
 # Controlled topology-transfer check
 
-**Status:** H100 preparation is locally validated; no H100 rental or inference run has started. The first L40S placement failed because the two-GPU VM lacked capacity, and cleanup was verified. Its record is in `results/2026-09-15-topology-transfer/`.
+**Status:** the H100 attempt failed on eight-GPU capacity despite positive advice. Cleanup was verified at 21:19:48 UTC September 15; estimated cost $0.50 before tax, no inference. The monitor is paused after the one approved attempt. [H100 result](../../results/2026-09-15-h100-topology-transfer/RESULT.md); [earlier L40S result](../../results/2026-09-15-topology-transfer/RESULT.md).
 
 [SESSION.md](SESSION.md) is the launch/measurement procedure and quote. One eight-GPU H100 VM supplies a prefiller and local decoder; a separate one-GPU H100 VM supplies the remote decoder. A CPU node runs Envoy, EPP and inference-perf. Three GPUs work; nine are billed. The first test qualifies the transfer path rather than comparing routing policies.
 
@@ -8,7 +8,7 @@
 
 | File | Purpose |
 |---|---|
-| `terraform/` | Five proposed resources: Kubernetes cluster, CPU/local/remote node groups, and the local node's GPU-cluster fabric allocation. No apply has run. |
+| `terraform/` | Five resources: Kubernetes cluster, CPU/local/remote node groups, and the local node's GPU-cluster fabric allocation. One approved apply failed on capacity; all five resources were destroyed. |
 | `render.py` | Render three workers, four router policies and sequential short/long workloads. Uses the published PR image tag and pinned supporting images/model. |
 | `workload.py` | Render a benchmark Pod/ConfigMap with a pinned tokenizer, unique run header and optional decoder pin. It does not deploy or send requests. |
 | `record-routes.py` | Add run ID and requested/selected decoder fields to the rendered Envoy access log. |

@@ -1,0 +1,11 @@
+nebius_mk8s_v1_node_group.cpu: Destroying... [id=mk8snodegroup-e00fqc81fnr3027aqn]
+nebius_mk8s_v1_node_group.gpu["local"]: Destroying... [id=mk8snodegroup-e00e6q71n6a2m51mzs]
+nebius_mk8s_v1_node_group.gpu["remote"]: Destroying... [id=mk8snodegroup-e00qxycfthf1kevffm]
+nebius_mk8s_v1_node_group.gpu["local"]: Destruction complete after 51s
+nebius_mk8s_v1_node_group.cpu: Destruction complete after 1m32s
+nebius_mk8s_v1_node_group.gpu["remote"]: Destruction complete after 5m42s
+nebius_compute_v1_gpu_cluster.local: Destroying... [id=computegpucluster-e00qq2bq0kgs34s0k1]
+nebius_mk8s_v1_cluster.topology: Destroying... [id=mk8scluster-e00j047rg0ceaxwr8h]
+nebius_compute_v1_gpu_cluster.local: Destruction complete after 2s
+nebius_mk8s_v1_cluster.topology: Destruction complete after 2m39s
+Destroy complete! Resources: 5 destroyed.

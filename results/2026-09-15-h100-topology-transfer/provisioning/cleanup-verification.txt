@@ -1,0 +1,13 @@
+== independent teardown verification (project: project-e00y7nnzpr00b95he2k13g) ==
+--- nebius compute instance list
+    count: 0
+--- nebius mk8s cluster list
+    count: 0
+--- nebius compute disk list
+    count: 0
+--- nebius compute filesystem list
+    count: 0
+--- nebius compute gpu-cluster list
+    count: 0
+PASS — instances, Kubernetes clusters, disks, filesystems and GPU clusters are empty in this project.
+Other resource types and other projects were not checked.

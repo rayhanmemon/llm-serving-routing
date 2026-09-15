@@ -1,0 +1,9 @@
+{
+  "source_commit": "0217d29924ba93b90f952e7a0281dd8dda146703",
+  "source_tree": "dde90d86488efb449790a11224831fe070ca7665",
+  "evaluation_repo_commit": "82d5480",
+  "image_archive_sha256": "7ab220d2eb3a56d62ffb5595f3981944256c4072be7e88913be4bb3e182dd0d5",
+  "prediction_commit": "562b482",
+  "model": "Qwen/Qwen3-8B",
+  "model_revision": "b968826d9c46dd6066d109eabc6255188de91218"
+}
