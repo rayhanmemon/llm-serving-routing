@@ -10,3 +10,9 @@ variable "nebius_profile" {
   type    = string
   default = "default"
 }
+
+variable "gpu_preemptible" {
+  type        = bool
+  default     = true
+  description = "Use preemptible GPU nodes. Changing this requires the priced session decision."
+}

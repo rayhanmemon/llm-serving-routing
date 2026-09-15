@@ -46,7 +46,8 @@ resource "nebius_mk8s_v1_node_group" "gpu" {
     gpu_settings       = { drivers_preset = "cuda13.0" }
     boot_disk          = { type = "NETWORK_SSD", size_gibibytes = 256 }
     network_interfaces = [{ subnet_id = var.subnet_id }]
-    preemptible        = {}
+    preemptible        = var.gpu_preemptible ? {} : null
+    reservation_policy = var.gpu_preemptible ? null : { policy = "FORBID" }
   }
 }
 
