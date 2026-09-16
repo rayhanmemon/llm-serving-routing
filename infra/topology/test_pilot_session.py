@@ -58,7 +58,8 @@ class PilotSessionTest(unittest.TestCase):
             key: pilot.PROFILE_POLICIES[profile][source]
             for key, source in (("gpu_platform", "gpu_platform"),
                                 ("infiniband_fabric", "infiniband_fabric"),
-                                ("ipc_diagnostic_only", "diagnostic_only"))
+                                ("ipc_diagnostic_only", "diagnostic_only"),
+                                ("gpu_preemptible", "gpu_preemptible"))
         }
         self.addCleanup(plan_validator.stop)
 
@@ -82,7 +83,10 @@ class PilotSessionTest(unittest.TestCase):
                             "preset": "8gpu-128vcpu-1600gb",
                         },
                         "boot_disk": {"type": "NETWORK_SSD", "size_gibibytes": 256},
-                        "preemptible": {},
+                        "preemptible": {} if policy["gpu_preemptible"] else None,
+                        "reservation_policy": (
+                            None if policy["gpu_preemptible"] else {"policy": "FORBID"}
+                        ),
                     },
                 }
             elif address == "nebius_mk8s_v1_node_group.remote[0]":
@@ -94,7 +98,10 @@ class PilotSessionTest(unittest.TestCase):
                             "preset": "1gpu-16vcpu-200gb",
                         },
                         "boot_disk": {"type": "NETWORK_SSD", "size_gibibytes": 256},
-                        "preemptible": {},
+                        "preemptible": {} if policy["gpu_preemptible"] else None,
+                        "reservation_policy": (
+                            None if policy["gpu_preemptible"] else {"policy": "FORBID"}
+                        ),
                     },
                 }
             elif address == "nebius_mk8s_v1_node_group.cpu[0]":
@@ -111,7 +118,7 @@ class PilotSessionTest(unittest.TestCase):
             })
         return {
             "variables": {
-                "gpu_preemptible": {"value": True},
+                "gpu_preemptible": {"value": policy["gpu_preemptible"]},
                 "gpu_platform": {"value": policy["gpu_platform"]},
                 "infiniband_fabric": {"value": policy["infiniband_fabric"]},
                 "ipc_diagnostic_only": {"value": policy["diagnostic_only"]},
@@ -264,6 +271,39 @@ class PilotSessionTest(unittest.TestCase):
         self.assertEqual(full_envelope, Decimal("112.515"))
         self.assertEqual(Decimal("120") - full_envelope, Decimal("7.485"))
 
+    def test_h200_on_demand_uses_regular_capacity_cost_and_shorter_envelope(self):
+        approval = json.loads(self.approval.read_text())
+        approval["allowed_profiles"].append(pilot.H200_ON_DEMAND_PROFILE)
+        approval["max_total_usd_pretax"] = "200"
+        approval["purchase_type"] = "on-demand"
+        self.approval.write_text(json.dumps(approval))
+        self.args.approved_max_usd_pretax = "200"
+        self.args.purchase_type = "on-demand"
+        self.args.profile = pilot.H200_ON_DEMAND_PROFILE
+
+        _, session = pilot.prepare_session(self.args, self.root / "state", now=100)
+
+        self.assertEqual(session["placement_deadline_unix"], 100 + 30 * 60)
+        self.assertEqual(session["first_measurement_deadline_unix"], 100 + 90 * 60)
+        self.assertEqual(session["cleanup_start_deadline_unix"], 100 + 180 * 60)
+        self.assertEqual(session["deletion_target_unix"], 100 + 210 * 60)
+        self.assertEqual(session["hourly_rate_usd_pretax"], "40.953")
+        self.assertEqual(session["purchase_type"], "on-demand")
+        self.assertIs(session["gpu_preemptible"], False)
+        self.assertEqual(session["budget_snapshot"]["attempt_admission_usd_pretax"], "155")
+        working_envelope = Decimal("3.5") * Decimal("40.953")
+        self.assertEqual(working_envelope, Decimal("143.3355"))
+        self.assertEqual(Decimal("155") - working_envelope, Decimal("11.6645"))
+
+    def test_profile_rejects_wrong_purchase_type_even_when_approval_matches_cli(self):
+        approval = json.loads(self.approval.read_text())
+        approval["allowed_profiles"].append(pilot.H200_ON_DEMAND_PROFILE)
+        self.approval.write_text(json.dumps(approval))
+        self.args.profile = pilot.H200_ON_DEMAND_PROFILE
+
+        with self.assertRaisesRegex(pilot.SessionError, "requires purchase type on-demand"):
+            pilot.prepare_session(self.args, self.root / "state", now=100)
+
     def test_budget_extension_preserves_completed_attempt_history(self):
         first, _ = pilot.prepare_session(self.args, self.root / "state", now=100)
         one_dollar_seconds = float(Decimal("1") * 3600 / pilot.FULLY_RUNNING_HOURLY_USD)
@@ -362,6 +402,45 @@ class PilotSessionTest(unittest.TestCase):
             self.plan_json(profile=pilot.H200_EVALUATION_PROFILE),
             pilot.H200_EVALUATION_PROFILE,
         )
+
+    def test_plan_validation_accepts_exact_h200_on_demand_shape(self):
+        settings = pilot.validate_plan_structure(
+            self.plan_json(profile=pilot.H200_ON_DEMAND_PROFILE),
+            pilot.H200_ON_DEMAND_PROFILE,
+        )
+        self.assertIs(settings["gpu_preemptible"], False)
+
+    def test_h200_on_demand_plan_rejects_preemptible_variable(self):
+        plan = self.plan_json(profile=pilot.H200_ON_DEMAND_PROFILE)
+        plan["variables"]["gpu_preemptible"]["value"] = True
+
+        with self.assertRaisesRegex(pilot.SessionError, "must use on-demand"):
+            pilot.validate_plan_structure(plan, pilot.H200_ON_DEMAND_PROFILE)
+
+    def test_h200_on_demand_plan_requires_regular_shape_for_both_gpu_nodes(self):
+        for address in (
+            "nebius_mk8s_v1_node_group.local",
+            "nebius_mk8s_v1_node_group.remote[0]",
+        ):
+            with self.subTest(address=address):
+                plan = self.plan_json(profile=pilot.H200_ON_DEMAND_PROFILE)
+                change = next(
+                    item for item in plan["resource_changes"] if item["address"] == address
+                )
+                change["change"]["after"]["template"]["preemptible"] = {}
+                with self.assertRaisesRegex(pilot.SessionError, "purchase type"):
+                    pilot.validate_plan_structure(plan, pilot.H200_ON_DEMAND_PROFILE)
+
+    def test_h200_on_demand_plan_requires_forbid_reservation_policy(self):
+        plan = self.plan_json(profile=pilot.H200_ON_DEMAND_PROFILE)
+        remote = next(
+            item for item in plan["resource_changes"]
+            if item["address"] == "nebius_mk8s_v1_node_group.remote[0]"
+        )
+        remote["change"]["after"]["template"]["reservation_policy"] = None
+
+        with self.assertRaisesRegex(pilot.SessionError, "reservation policy"):
+            pilot.validate_plan_structure(plan, pilot.H200_ON_DEMAND_PROFILE)
 
     def test_h100_retains_supported_fabrics_and_records_actual_plan(self):
         for fabric in ("fabric-2", "fabric-3", "fabric-4", "fabric-6"):
@@ -474,6 +553,15 @@ class PilotSessionTest(unittest.TestCase):
         session = {
             "profile": pilot.H200_EVALUATION_PROFILE,
             "hourly_rate_usd_pretax": "19.80282",
+        }
+
+        with self.assertRaisesRegex(pilot.SessionError, "hourly rate does not match"):
+            pilot.session_hourly_rate(session)
+
+    def test_h200_on_demand_cost_record_cannot_use_preemptible_rate(self):
+        session = {
+            "profile": pilot.H200_ON_DEMAND_PROFILE,
+            "hourly_rate_usd_pretax": "22.503",
         }
 
         with self.assertRaisesRegex(pilot.SessionError, "hourly rate does not match"):
@@ -639,6 +727,45 @@ class PilotSessionTest(unittest.TestCase):
         self.assertEqual(environment["TF_VAR_gpu_platform"], "H200")
         self.assertEqual(environment["TF_VAR_infiniband_fabric"], "fabric-7")
         self.assertEqual(environment["TF_VAR_ipc_diagnostic_only"], "false")
+        self.assertEqual(environment["TF_VAR_gpu_preemptible"], "true")
+
+    def test_h200_on_demand_cleanup_pins_regular_capacity_from_saved_session(self):
+        run_dir = self.root / "on-demand-cleanup"
+        run_dir.mkdir()
+        pilot.write_json(run_dir / "session.json", {
+            "session_id": "on-demand",
+            "profile": pilot.H200_ON_DEMAND_PROFILE,
+            "gpu_platform": "H200",
+            "infiniband_fabric": "fabric-7",
+            "ipc_diagnostic_only": False,
+            "gpu_preemptible": False,
+            "deletion_target_unix": 100,
+        })
+        with mock.patch.object(pilot, "run_teardown_once", return_value=0) as teardown:
+            self.assertEqual(pilot.cleanup_until_target(run_dir, now_fn=lambda: 100), 0)
+
+        self.assertEqual(teardown.call_args.kwargs["profile"], pilot.H200_ON_DEMAND_PROFILE)
+        self.assertIs(teardown.call_args.kwargs["gpu_preemptible"], False)
+        self.assertEqual(teardown.call_args.kwargs["infiniband_fabric"], "fabric-7")
+
+    def test_h200_on_demand_teardown_exports_regular_capacity(self):
+        process = mock.Mock(pid=4321)
+        process.wait.return_value = 0
+        popen = mock.Mock(return_value=process)
+        with (self.root / "cleanup.log").open("w") as log:
+            result = pilot.run_teardown_once(
+                log,
+                10,
+                profile=pilot.H200_ON_DEMAND_PROFILE,
+                popen_factory=popen,
+            )
+
+        self.assertEqual(result, 0)
+        environment = popen.call_args.kwargs["env"]
+        self.assertEqual(environment["TF_VAR_gpu_platform"], "H200")
+        self.assertEqual(environment["TF_VAR_infiniband_fabric"], "fabric-7")
+        self.assertEqual(environment["TF_VAR_ipc_diagnostic_only"], "false")
+        self.assertEqual(environment["TF_VAR_gpu_preemptible"], "false")
 
     def test_cleanup_uses_profile_from_session_record(self):
         run_dir = self.root / "diagnostic-cleanup"
@@ -668,6 +795,7 @@ class PilotSessionTest(unittest.TestCase):
         self.assertEqual(result, 0)
         self.assertEqual(popen.call_args.kwargs["env"]["TF_VAR_ipc_diagnostic_only"], "false")
         self.assertEqual(popen.call_args.kwargs["env"]["TF_VAR_gpu_platform"], "H100")
+        self.assertEqual(popen.call_args.kwargs["env"]["TF_VAR_gpu_preemptible"], "true")
 
     def test_budget_comparison_is_numeric_and_rejects_non_finite(self):
         self.args.approved_max_usd_pretax = "50.0"

@@ -139,11 +139,6 @@ class RunServingTest(unittest.TestCase):
     def test_default_main_is_dry_and_starts_no_subprocess(self):
         run_dir = self.root / "run"
         run_dir.mkdir()
-        (run_dir / "session.json").write_text(json.dumps({
-            "session_id": "session",
-            "profile": "h200-evaluation",
-            "first_measurement_deadline_unix": 9999999999,
-        }))
         chart = self.root / "chart"
         chart.mkdir()
         (chart / "Chart.yaml").write_text("apiVersion: v2\nname: test\nversion: 1.0.0\n")
@@ -152,11 +147,19 @@ class RunServingTest(unittest.TestCase):
             "--run-dir", str(run_dir), "--chart-path", str(chart),
             "--epp-archive", str(archive), "--epp-sha256", digest,
         ]
-        with patch.object(serving.subprocess, "run", side_effect=AssertionError("process attempted")), \
-             patch("builtins.print") as output:
-            serving.main(argv)
-        self.assertIn("no subprocesses or RPCs", output.call_args_list[-1].args[0])
-        self.assertFalse((run_dir / "serving").exists())
+        for profile in ("h200-evaluation", "h200-on-demand"):
+            with self.subTest(profile=profile):
+                (run_dir / "session.json").write_text(json.dumps({
+                    "session_id": "session",
+                    "profile": profile,
+                    "first_measurement_deadline_unix": 9999999999,
+                }))
+                with patch.object(
+                    serving.subprocess, "run", side_effect=AssertionError("process attempted")
+                ), patch("builtins.print") as output:
+                    serving.main(argv)
+                self.assertIn("no subprocesses or RPCs", output.call_args_list[-1].args[0])
+                self.assertFalse((run_dir / "serving").exists())
 
     def test_node_groups_map_to_exact_ready_shapes(self):
         groups = {"local": "group-local", "remote": "group-remote", "cpu": "group-cpu"}

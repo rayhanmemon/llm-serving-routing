@@ -764,8 +764,8 @@ def main(argv=None):
     for key in ("session_id", "profile", "first_measurement_deadline_unix"):
         if key not in session:
             raise ServingError("session.json lacks " + key)
-    if session["profile"] != "h200-evaluation":
-        raise ServingError("run-serving requires an h200-evaluation session")
+    if session["profile"] not in ("h200-evaluation", "h200-on-demand"):
+        raise ServingError("run-serving requires an H200 serving session")
     if not args.chart_path.is_dir() or not (args.chart_path / "Chart.yaml").is_file():
         raise ServingError("--chart-path must be a staged Helm chart directory")
     verify_archive(args.epp_archive, args.epp_sha256)

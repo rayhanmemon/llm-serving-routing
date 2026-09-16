@@ -32,6 +32,7 @@ ATTEMPT_ADMISSION_USD = FULLY_RUNNING_HOURLY_USD * Decimal("2") + CLEANUP_RESERV
 FULL_TOPOLOGY_PROFILE = "full-topology"
 IPC_DIAGNOSTIC_PROFILE = "ipc-diagnostic"
 H200_EVALUATION_PROFILE = "h200-evaluation"
+H200_ON_DEMAND_PROFILE = "h200-on-demand"
 FULL_TOPOLOGY_CREATES = {
     "nebius_compute_v1_gpu_cluster.local",
     "nebius_mk8s_v1_cluster.topology",
@@ -52,6 +53,8 @@ PROFILE_POLICIES = {
         "infiniband_fabric": "fabric-6",
         "allowed_fabrics": ("fabric-2", "fabric-3", "fabric-4", "fabric-6"),
         "diagnostic_only": False,
+        "gpu_preemptible": True,
+        "purchase_type": "preemptible",
     },
     IPC_DIAGNOSTIC_PROFILE: {
         "placement_timeout_seconds": 15 * 60,
@@ -69,6 +72,8 @@ PROFILE_POLICIES = {
         "infiniband_fabric": "fabric-6",
         "allowed_fabrics": ("fabric-2", "fabric-3", "fabric-4", "fabric-6"),
         "diagnostic_only": True,
+        "gpu_preemptible": True,
+        "purchase_type": "preemptible",
     },
     H200_EVALUATION_PROFILE: {
         "placement_timeout_seconds": 30 * 60,
@@ -83,6 +88,24 @@ PROFILE_POLICIES = {
         "infiniband_fabric": "fabric-7",
         "allowed_fabrics": ("fabric-7",),
         "diagnostic_only": False,
+        "gpu_preemptible": True,
+        "purchase_type": "preemptible",
+    },
+    H200_ON_DEMAND_PROFILE: {
+        "placement_timeout_seconds": 30 * 60,
+        "first_measurement_timeout_seconds": 90 * 60,
+        "cleanup_start_seconds": 180 * 60,
+        "deletion_target_seconds": 210 * 60,
+        "hourly_rate_usd_pretax": Decimal("40.953"),
+        "attempt_admission_usd_pretax": Decimal("155"),
+        "expected_creates": FULL_TOPOLOGY_CREATES,
+        "gpu_platform": "H200",
+        "terraform_gpu_platform": "gpu-h200-sxm",
+        "infiniband_fabric": "fabric-7",
+        "allowed_fabrics": ("fabric-7",),
+        "diagnostic_only": False,
+        "gpu_preemptible": False,
+        "purchase_type": "on-demand",
     },
 }
 
@@ -169,15 +192,17 @@ def session_hourly_rate(session: dict) -> Decimal:
     return recorded
 
 
-def session_terraform_settings(session: dict) -> tuple[str, str, bool]:
+def session_terraform_settings(session: dict) -> tuple[str, str, bool, bool]:
     policy = profile_policy(session_profile(session))
     platform = session.get("gpu_platform", policy["gpu_platform"])
     fabric = session.get("infiniband_fabric", policy["infiniband_fabric"])
     diagnostic = session.get("ipc_diagnostic_only", policy["diagnostic_only"])
+    preemptible = session.get("gpu_preemptible", policy["gpu_preemptible"])
     if (platform != policy["gpu_platform"] or fabric not in policy["allowed_fabrics"]
-            or diagnostic is not policy["diagnostic_only"]):
+            or diagnostic is not policy["diagnostic_only"]
+            or preemptible is not policy["gpu_preemptible"]):
         raise SessionError("Session Terraform settings do not match its profile")
-    return platform, fabric, diagnostic
+    return platform, fabric, diagnostic, preemptible
 
 
 def singleton_object(value, label: str) -> dict:
@@ -229,8 +254,9 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
     preemptible = plan_boolean(
         variables.get("gpu_preemptible", {}).get("value"), "gpu_preemptible"
     )
-    if not preemptible:
-        raise SessionError("Terraform plan must use preemptible GPU capacity")
+    if preemptible is not policy["gpu_preemptible"]:
+        capacity = "preemptible" if policy["gpu_preemptible"] else "on-demand"
+        raise SessionError(f"Terraform plan must use {capacity} GPU capacity")
 
     gpu_platform = variables.get("gpu_platform", {}).get("value")
     if gpu_platform != policy["gpu_platform"]:
@@ -265,8 +291,19 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
             "Terraform plan local node must use "
             f"{policy['terraform_gpu_platform']} 8gpu-128vcpu-1600gb"
         )
-    if template.get("preemptible") != {}:
-        raise SessionError("Terraform plan local node must use preemptible GPU capacity")
+    expected_preemptible = {} if policy["gpu_preemptible"] else None
+    if template.get("preemptible") != expected_preemptible:
+        raise SessionError("Terraform plan local node GPU purchase type does not match its profile")
+    local_reservation = template.get("reservation_policy")
+    valid_local_reservation = local_reservation is None
+    if not policy["gpu_preemptible"]:
+        valid_local_reservation = (
+            isinstance(local_reservation, dict)
+            and local_reservation.get("policy") == "FORBID"
+            and local_reservation.get("reservation_ids") in (None, [])
+        )
+    if not valid_local_reservation:
+        raise SessionError("Terraform plan local node reservation policy does not match its profile")
     if boot_disk.get("type") != "NETWORK_SSD" or boot_disk.get("size_gibibytes") != 256:
         raise SessionError("Terraform plan local node boot disk must be a 256 GiB NETWORK_SSD")
 
@@ -290,8 +327,18 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
                 "Terraform plan remote node must use "
                 f"{policy['terraform_gpu_platform']} 1gpu-16vcpu-200gb"
             )
-        if remote_template.get("preemptible") != {}:
-            raise SessionError("Terraform plan remote node must use preemptible GPU capacity")
+        if remote_template.get("preemptible") != expected_preemptible:
+            raise SessionError("Terraform plan remote node GPU purchase type does not match its profile")
+        remote_reservation = remote_template.get("reservation_policy")
+        valid_remote_reservation = remote_reservation is None
+        if not policy["gpu_preemptible"]:
+            valid_remote_reservation = (
+                isinstance(remote_reservation, dict)
+                and remote_reservation.get("policy") == "FORBID"
+                and remote_reservation.get("reservation_ids") in (None, [])
+            )
+        if not valid_remote_reservation:
+            raise SessionError("Terraform plan remote node reservation policy does not match its profile")
         if remote_template.get("gpu_cluster") is not None:
             raise SessionError("Terraform plan remote node must remain outside the local GPU cluster")
         if remote_disk.get("type") != "NETWORK_SSD" or remote_disk.get("size_gibibytes") != 256:
@@ -316,7 +363,7 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
             raise SessionError("Terraform plan CPU node boot disk must be a 64 GiB NETWORK_SSD")
 
     return {"gpu_platform": gpu_platform, "infiniband_fabric": infiniband_fabric,
-            "ipc_diagnostic_only": diagnostic_value}
+            "ipc_diagnostic_only": diagnostic_value, "gpu_preemptible": preemptible}
 
 def validate_terraform_plan(plan_path: Path, profile: str, *, run=subprocess.run) -> dict:
     completed = run(
@@ -497,6 +544,8 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
         raise SessionError("CLI budget does not match the approval record")
     if approval.get("purchase_type") != args.purchase_type:
         raise SessionError("CLI purchase type does not match the approval record")
+    if args.purchase_type != policy["purchase_type"]:
+        raise SessionError(f"Profile {profile} requires purchase type {policy['purchase_type']}")
     allowed_profiles = approval.get("allowed_profiles", [FULL_TOPOLOGY_PROFILE])
     if not isinstance(allowed_profiles, list) or profile not in allowed_profiles:
         raise SessionError(f"Approval record does not allow profile {profile}")
@@ -534,6 +583,7 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
             "gpu_platform": plan_settings["gpu_platform"],
             "infiniband_fabric": plan_settings["infiniband_fabric"],
             "ipc_diagnostic_only": plan_settings["ipc_diagnostic_only"],
+            "gpu_preemptible": plan_settings["gpu_preemptible"],
             "placement_timeout_seconds": policy["placement_timeout_seconds"],
             "cleanup_start_seconds": policy["cleanup_start_seconds"],
             "deletion_target_seconds": policy["deletion_target_seconds"],
@@ -592,10 +642,16 @@ def cleanup_until_target(
     session = read_json(run_dir / "session.json")
     if run_teardown_fn is None:
         profile = session_profile(session)
-        _, fabric, _ = session_terraform_settings(session)
+        _, fabric, _, preemptible = session_terraform_settings(session)
 
         def run_teardown_fn(log, timeout):
-            return run_teardown_once(log, timeout, profile=profile, infiniband_fabric=fabric)
+            return run_teardown_once(
+                log,
+                timeout,
+                profile=profile,
+                infiniband_fabric=fabric,
+                gpu_preemptible=preemptible,
+            )
 
     session_id = session["session_id"]
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -653,6 +709,7 @@ def run_teardown_once(
     *,
     profile: str = FULL_TOPOLOGY_PROFILE,
     infiniband_fabric: str | None = None,
+    gpu_preemptible: bool | None = None,
     popen_factory=subprocess.Popen,
     killpg_fn=os.killpg,
 ) -> int:
@@ -664,6 +721,10 @@ def run_teardown_once(
         raise SessionError("Cleanup fabric does not match its profile")
     environment["TF_VAR_infiniband_fabric"] = fabric
     environment["TF_VAR_ipc_diagnostic_only"] = "true" if policy["diagnostic_only"] else "false"
+    preemptible = policy["gpu_preemptible"] if gpu_preemptible is None else gpu_preemptible
+    if preemptible is not policy["gpu_preemptible"]:
+        raise SessionError("Cleanup GPU purchase type does not match its profile")
+    environment["TF_VAR_gpu_preemptible"] = "true" if preemptible else "false"
     process = popen_factory(
         ["bash", str(TEARDOWN), "--execute"],
         cwd=HERE,
@@ -812,7 +873,7 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--execute", action="store_true", help="permit one admitted paid Terraform apply")
     result.add_argument("--approval-record", type=Path, required=True)
     result.add_argument("--approved-max-usd-pretax", required=True)
-    result.add_argument("--purchase-type", choices=("preemptible",), required=True)
+    result.add_argument("--purchase-type", choices=("preemptible", "on-demand"), required=True)
     result.add_argument(
         "--profile",
         choices=tuple(PROFILE_POLICIES),
