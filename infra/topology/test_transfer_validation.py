@@ -53,7 +53,7 @@ class TransferValidationTest(unittest.TestCase):
                 v.validate_records(records, 512, 128, 1)
 
     def test_route_pin_and_missing_records(self):
-        expected = base64.b64encode(b'ns/decoder').decode()
+        expected = base64.b64encode(b'ns/decoder-rank-0').decode()
         good = {'run_id': 'arm-1', 'request_id': 'request-1', 'requested_decoder': expected,
                 'selected_decoder': expected, 'status': 200, 'response_flags': '-'}
         with tempfile.TemporaryDirectory() as tmp:
@@ -61,6 +61,7 @@ class TransferValidationTest(unittest.TestCase):
             file.write_text('2026-09-15T00:00:00Z ' + json.dumps(good) + '\n')
             v.validate_routes([file], 'arm-1', 'decoder', 'ns', 1)
             for bad in [dict(good, selected_decoder='wrong'), dict(good, requested_decoder='wrong'),
+                        dict(good, requested_decoder=base64.b64encode(b'ns/decoder').decode()),
                         dict(good, request_id='-'), dict(good, status=503), dict(good, response_flags='UT'),
                         dict(good, run_id='different')]:
                 file.write_text(json.dumps(bad) + '\n')

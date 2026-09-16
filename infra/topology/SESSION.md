@@ -24,6 +24,8 @@ Multiple placement attempts are allowed under the cumulative budget. Provision t
 - Prepared fabric-2 plan: `/Users/rayhanmemon/.codex/run-state/router-h100-pilot/prepared/fabric2.tfplan`, five creates only. Refresh capacity and plan before a delayed launch; replan whenever inputs change.
 - Qwen3-8B BF16 revision, vLLM 0.26, sidecar 0.10, inference-perf 0.6.1 and Envoy image digests are pinned in the renderer/workload scripts.
 
+**September16 startup correction:** default UCX selection attempted InfiniBand and exceeded the container's8MiB locked-memory limit, failing NIXL backend initialization. Before any inference, all three engines were configured with `UCX_TLS=tcp,cuda_copy,cuda_ipc,self`. This preserves the intended ordinary-network remote leg and CUDA-IPC local option without changing privileges. Actual executed transport must still be qualified. [UCX transport selection](https://openucx.readthedocs.io/en/master/faq.html).
+
 `render.py` defaults to host IPC/PID namespaces and mounts the host's `/dev/shm` rather than shadowing it with a private mount. GPU resource allocation remains one per engine, CPU limit 6 per engine, with no privileged mode. This is a deliberate transfer-qualification setting on dedicated experiment VMs. `--ipc-mode isolated` renders the original namespace arrangement for diagnosis. Do not silently change namespaces or device access between local/remote arms. If the staged host mode cannot reach the peer GPU, stop for a focused configuration review rather than broadening privileges on the meter. CUDA IPC flags alone do not prove reachability or payload selection.
 
 ## Unattended launch procedure

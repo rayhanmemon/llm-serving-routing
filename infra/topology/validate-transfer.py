@@ -85,7 +85,7 @@ def validate_records(records, input_tokens, output_tokens, count):
 
 
 def validate_routes(paths, run_id, decoder, namespace, count):
-    expected = base64.b64encode(f'{namespace}/{decoder}'.encode()).decode()
+    expected = base64.b64encode(f'{namespace}/{decoder}-rank-0'.encode()).decode()
     rows = []
     for path in paths:
         for line in path.read_text().splitlines():
