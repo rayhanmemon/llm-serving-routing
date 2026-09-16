@@ -588,6 +588,8 @@ def reconcile_recorded_costs(budget: dict) -> None:
 
 
 def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = None) -> tuple[Path, dict]:
+    if (state_root / "manual-stop.json").exists():
+        raise SessionError("User emergency stop is active; explicit user resume is required before clearing it")
     if not args.execute:
         raise SessionError("Refusing to spend: --execute is required")
     if not args.plan.is_file():
@@ -863,6 +865,8 @@ def guard_run(run_dir: Path, *, now_fn=time.time, sleep_fn=time.sleep, cleanup_f
         "ready_unix": now_fn(),
     })
     while not cleanup_verified(run_dir, session["session_id"]):
+        if (run_dir / "manual-stop-requested.json").exists():
+            return cleanup_fn(run_dir)
         current = now_fn()
         measurement_deadline = session.get("first_measurement_deadline_unix")
         if (
@@ -909,6 +913,8 @@ def apply_plan(
     popen_factory=subprocess.Popen,
     cleanup_fn=cleanup_until_target,
 ) -> int:
+    if (run_dir / "manual-stop-requested.json").exists():
+        raise SessionError("User requested this session stop before Terraform apply")
     plan = Path(session["terraform_plan_path"])
     if not plan.is_file() or file_sha256(plan) != session["terraform_plan_sha256"]:
         raise SessionError("Terraform plan is missing or changed since the session was reserved")
