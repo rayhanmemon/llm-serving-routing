@@ -86,6 +86,7 @@ class Runner:
         self.deadline = float(session["cleanup_start_deadline_unix"])
         self.result = {"session_id": session["session_id"], "profile": "ipc-diagnostic",
                        "context": args.context, "node": args.node, "namespace": NAMESPACE,
+                       "split_first": bool(getattr(args, "split_first", False)),
                        "started_unix": time.time(), "cases": [], "events": [], "ok": False}
         self.result_path = args.run_dir / RESULT_NAME
 
@@ -154,11 +155,26 @@ class Runner:
         self.remaining()
         for name in names:
             self.capture_pod(name, f"{label}-{name}")
-        completed = self.kubectl(["-n", NAMESPACE, "delete", "pod", *names, "--wait=true", "--timeout=30s"], timeout=35)
-        self.event("pods_deleted", pods=names, returncode=completed.returncode,
-                   error=completed.stderr.strip() or None)
-        if completed.returncode:
-            raise DiagnosticError(f"pod deletion failed: {completed.stderr.strip()}")
+        submitted = self.kubectl(["-n", NAMESPACE, "delete", "pod", *names,
+                                  "--wait=false", "--ignore-not-found=true"], timeout=15)
+        last_detail = submitted.stderr.strip() or None
+        while True:
+            available = self.deadline - time.time()
+            if available <= 110:
+                raise DiagnosticError(
+                    f"pods still deleting at next-case guard: {', '.join(names)}; {last_detail or 'no detail'}"
+                )
+            observed = self.kubectl(["-n", NAMESPACE, "get", "pod", *names,
+                                     "--ignore-not-found=true", "-o", "name"],
+                                    timeout=max(1, min(5, available - 110)))
+            if observed.returncode == 0 and not observed.stdout.strip():
+                self.event("pods_deleted", pods=names, submit_returncode=submitted.returncode,
+                           submit_error=submitted.stderr.strip() or None)
+                return
+            last_detail = (observed.stderr or observed.stdout).strip() or last_detail
+            self.event("pods_deleting", pods=names, remaining_seconds=round(available, 1),
+                       detail=last_detail[-500:] if last_detail else None)
+            time.sleep(min(2, max(0, available - 110)))
 
     def remote_json(self, pod_name, path, timeout=8):
         completed = self.kubectl(["-n", NAMESPACE, "exec", pod_name, "--", "cat", path], timeout=timeout)
@@ -327,11 +343,54 @@ sys.exit(1 if remaining else 0)
         self.result["cases"].append(record)
         self.event("case_finished", case=name, status="LIMITATION", explanation=explanation)
 
+    def execute_split_first(self):
+        for key in ("producer", "consumer"):
+            self.apply(self.pods[key])
+        split_names = [self.pods[key]["metadata"]["name"] for key in ("producer", "consumer")]
+        for name in split_names:
+            self.ready(name)
+        p_inspect = self.inspect(split_names[0], "split-producer")
+        c_inspect = self.inspect(split_names[1], "split-consumer")
+        split = self.run_case("c-split-pods", split_names[0], split_names[1], 0, 0)
+        producer_uuid = p_inspect.get("selected_gpu_uuid")
+        consumer_uuid = c_inspect.get("selected_gpu_uuid")
+        self.delete(split_names, "before-control")
+        if (not p_inspect.get("ok") or not c_inspect.get("ok") or not producer_uuid or
+                not consumer_uuid or producer_uuid == consumer_uuid):
+            self.limitation("b-matched-pair", "split pods did not expose a distinct physical GPU pair for control retest")
+            return
+
+        control = self.pods["control1"]
+        control_name = control["metadata"]["name"]
+        self.apply(control)
+        self.ready(control_name)
+        control_inspect = self.inspect(control_name, "control-1")
+        if not control_inspect.get("ok") or len(control_inspect.get("visible_gpus", [])) != 8:
+            raise DiagnosticError("control pod did not expose exactly eight GPUs")
+        ordinal_by_uuid = {item.get("uuid"): item.get("ordinal") for item in control_inspect["visible_gpus"]}
+        if producer_uuid not in ordinal_by_uuid or consumer_uuid not in ordinal_by_uuid:
+            self.limitation("b-matched-pair", "split-pod physical GPU pair could not be mapped in the control pod")
+            return
+        producer_ordinal, consumer_ordinal = ordinal_by_uuid[producer_uuid], ordinal_by_uuid[consumer_uuid]
+        same = self.run_case("a-same-gpu", control_name, control_name, producer_ordinal, producer_ordinal)
+        if same["status"] != "PASS":
+            return
+        matched = self.run_case("b-matched-pair", control_name, control_name,
+                                producer_ordinal, consumer_ordinal)
+        if matched["status"] != "PASS":
+            return
+        if split["status"] != "PASS":
+            self.run_case("b2-matched-cvd", control_name, control_name, 0, 0,
+                          producer_uuid, consumer_uuid)
+
     def execute(self):
         try:
             self.remaining(120)
             for item in self.common:
                 self.apply(item)
+            if getattr(self.args, "split_first", False):
+                self.execute_split_first()
+                return
             control1 = self.pods["control1"]
             self.apply(control1)
             self.ready(control1["metadata"]["name"])
@@ -391,6 +450,8 @@ def parse_args(argv=None):
     parser.add_argument("--context", required=True, help="existing kubectl context; KUBECONFIG is inherited")
     parser.add_argument("--node", required=True, help="existing eight-GPU Kubernetes node name")
     parser.add_argument("--run-dir", required=True, type=Path, help="pilot run directory containing session.json")
+    parser.add_argument("--split-first", action="store_true",
+                        help="run split-pod case C before same-container controls on its exact GPU pair")
     parser.add_argument("--execute", action="store_true", help="apply objects and run probes; omission is render-only")
     return parser.parse_args(argv)
 

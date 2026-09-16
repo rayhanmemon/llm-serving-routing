@@ -31,6 +31,11 @@ class FakeProcess:
 
 
 class OfflineTests(unittest.TestCase):
+    def make_runner(self, directory):
+        args = types.SimpleNamespace(context="ctx", node="node", run_dir=Path(directory), split_first=False)
+        session = {"session_id": "session", "cleanup_start_deadline_unix": time.time() + 1200}
+        return runner.Runner(args, session, runner.manifests("node", "deadbeef"))
+
     def test_manifest_resource_and_namespace_contract(self):
         common, pods = runner.manifests("h100-node", "deadbeef")
         self.assertEqual([item["kind"] for item in common], ["Namespace", "ConfigMap"])
@@ -68,10 +73,7 @@ class OfflineTests(unittest.TestCase):
 
     def test_missing_ack_stops_consumer_before_producer_wait(self):
         with tempfile.TemporaryDirectory() as temporary:
-            args = types.SimpleNamespace(context="ctx", node="node", run_dir=Path(temporary))
-            session = {"session_id": "session", "cleanup_start_deadline_unix": time.time() + 1200}
-            common, pods = runner.manifests("node", "deadbeef")
-            subject = runner.Runner(args, session, (common, pods))
+            subject = self.make_runner(temporary)
             events = []
 
             def remote_json(pod, path, timeout=8):
@@ -97,6 +99,58 @@ class OfflineTests(unittest.TestCase):
                 result = subject.run_case("failure", "producer", "consumer", 0, 0)
             self.assertEqual(result["status"], "FAIL")
             self.assertLess(events.index("stop-consumer"), events.index("producer-communicate"))
+
+    def test_delete_reconciles_after_submit_timeout(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            subject = self.make_runner(temporary)
+            calls, events = [], []
+            subject.capture_pod = lambda *args: None
+            subject.event = lambda event, **fields: events.append((event, fields))
+
+            def kubectl(arguments, **kwargs):
+                calls.append(arguments)
+                if "delete" in arguments:
+                    return subprocess.CompletedProcess(arguments, 124, "", "request timed out")
+                present = sum("get" in call for call in calls) == 1
+                return subprocess.CompletedProcess(arguments, 0, "pod/topology-ipc\n" if present else "", "")
+
+            subject.kubectl = kubectl
+            with patch.object(runner.time, "sleep", return_value=None):
+                subject.delete(["one", "two"], "phase")
+            self.assertEqual(sum("get" in call for call in calls), 2)
+            self.assertEqual(events[-1][0], "pods_deleted")
+            self.assertEqual(events[-1][1]["submit_returncode"], 124)
+
+    def test_split_first_retests_the_exact_physical_pair(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            subject = self.make_runner(temporary)
+            operations, cases = [], []
+            subject.apply = lambda value: operations.append(("apply", value["metadata"]["name"]))
+            subject.ready = lambda name: operations.append(("ready", name))
+            subject.delete = lambda names, label: operations.append(("delete", tuple(names)))
+
+            def inspect(pod, label):
+                if label == "split-producer":
+                    return {"ok": True, "selected_gpu_uuid": "GPU-p"}
+                if label == "split-consumer":
+                    return {"ok": True, "selected_gpu_uuid": "GPU-c"}
+                return {"ok": True, "visible_gpus": [
+                    {"uuid": "GPU-c", "ordinal": 2}, {"uuid": "GPU-p", "ordinal": 5},
+                    *[{"uuid": f"GPU-{i}", "ordinal": i} for i in (0, 1, 3, 4, 6, 7)]]}
+
+            def run_case(*args):
+                cases.append(args)
+                return {"status": "FAIL" if args[0] == "c-split-pods" else "PASS"}
+
+            subject.inspect, subject.run_case = inspect, run_case
+            subject.execute_split_first()
+            self.assertEqual([case[0] for case in cases],
+                             ["c-split-pods", "a-same-gpu", "b-matched-pair", "b2-matched-cvd"])
+            self.assertEqual(cases[1][3:5], (5, 5))
+            self.assertEqual(cases[2][3:5], (5, 2))
+            self.assertEqual(cases[3][3:7], (0, 0, "GPU-p", "GPU-c"))
+            self.assertLess(operations.index(("delete", ("ipc-producer-deadbeef", "ipc-consumer-deadbeef"))),
+                            operations.index(("apply", "ipc-control-deadbeef-1")))
 
 
 if __name__ == "__main__":

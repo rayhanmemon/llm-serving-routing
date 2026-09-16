@@ -47,8 +47,8 @@ PROFILE_POLICIES = {
     },
     IPC_DIAGNOSTIC_PROFILE: {
         "placement_timeout_seconds": 15 * 60,
-        "cleanup_start_seconds": 20 * 60,
-        "deletion_target_seconds": 30 * 60,
+        "cleanup_start_seconds": 30 * 60,
+        "deletion_target_seconds": 40 * 60,
         "hourly_rate_usd_pretax": Decimal("17.225"),
         "attempt_admission_usd_pretax": Decimal("13"),
         "expected_creates": {

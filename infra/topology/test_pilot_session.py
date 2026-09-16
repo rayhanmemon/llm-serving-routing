@@ -201,10 +201,13 @@ class PilotSessionTest(unittest.TestCase):
         _, session = pilot.prepare_session(self.args, self.root / "state", now=100)
 
         self.assertEqual(session["placement_deadline_unix"], 100 + 15 * 60)
-        self.assertEqual(session["cleanup_start_deadline_unix"], 100 + 20 * 60)
-        self.assertEqual(session["deletion_target_unix"], 100 + 30 * 60)
+        self.assertEqual(session["cleanup_start_deadline_unix"], 100 + 30 * 60)
+        self.assertEqual(session["deletion_target_unix"], 100 + 40 * 60)
         self.assertEqual(session["hourly_rate_usd_pretax"], "17.225")
         self.assertEqual(session["budget_snapshot"]["attempt_admission_usd_pretax"], "13")
+        forty_minute_cost = Decimal("40") * Decimal("17.225") / Decimal("60")
+        self.assertEqual(forty_minute_cost, Decimal("11.48333333333333333333333333"))
+        self.assertGreater(Decimal("13") - forty_minute_cost, Decimal("1.51"))
 
     def test_ipc_diagnostic_is_admitted_with_thirty_dollars_remaining_and_repairs_cache(self):
         first, _ = pilot.prepare_session(self.args, self.root / "state", now=100)
