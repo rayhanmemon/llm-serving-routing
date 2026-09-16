@@ -1,0 +1,52 @@
+{
+  "name": "b-cross-gpu",
+  "status": "PASS",
+  "execution_shape": "separate producer and consumer processes in one eight-GPU container",
+  "producer_device_ordinal": 0,
+  "consumer_device_ordinal": 1,
+  "allocation": {
+    "api": "cuMemAlloc_v2",
+    "bytes": 2097152,
+    "fill_byte": 73
+  },
+  "producer": {
+    "returncode": 0,
+    "ok": true,
+    "calls": [
+      "cuInit", "cuDriverGetVersion", "cuDeviceGetCount", "cuDeviceGet", "cuDeviceGetUuid_v2",
+      "cuDevicePrimaryCtxRetain", "cuCtxSetCurrent", "cuMemAlloc_v2", "cuMemsetD8_v2",
+      "cuCtxSynchronize", "cuIpcGetMemHandle", "cuMemFree_v2", "cuDevicePrimaryCtxRelease_v2"
+    ],
+    "errors": [],
+    "cleanup": [
+      {"api": "cuMemFree_v2", "ok": true},
+      {"api": "cuDevicePrimaryCtxRelease_v2", "ok": true}
+    ],
+    "elapsed_seconds": 6.020123086000012
+  },
+  "consumer": {
+    "returncode": 0,
+    "ok": true,
+    "calls": [
+      "cuInit", "cuDriverGetVersion", "cuDeviceGetCount", "cuDeviceGet", "cuDeviceGetUuid_v2",
+      "cuDevicePrimaryCtxRetain", "cuCtxSetCurrent", "cuMemAlloc_v2", "cuIpcOpenMemHandle",
+      "cuMemcpyDtoD_v2", "cuCtxSynchronize", "cuMemcpyDtoH_v2", "cuIpcCloseMemHandle",
+      "cuMemFree_v2", "cuDevicePrimaryCtxRelease_v2"
+    ],
+    "errors": [],
+    "verification": {
+      "all_bytes_equal_73": true,
+      "checksum_sum": 153092096,
+      "expected_sum": 153092096,
+      "sha256": "917a183dbbbce30ffd53cb9b09eb16e854c4450fda03d636641cfa1b321b2ac4"
+    },
+    "import_closed": true,
+    "cleanup": [
+      {"api": "cuIpcCloseMemHandle", "ok": true},
+      {"api": "cuMemFree_v2", "ok": true},
+      {"api": "cuDevicePrimaryCtxRelease_v2", "ok": true}
+    ],
+    "elapsed_seconds": 0.4957397139999671
+  },
+  "case_errors": []
+}

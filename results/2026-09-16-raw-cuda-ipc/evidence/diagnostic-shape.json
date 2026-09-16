@@ -1,0 +1,17 @@
+{
+  "namespace": "topology-ipc",
+  "image": "docker.io/vllm/vllm-openai:v0.26.0@sha256:770fe65b2c73ee74a5c42165cf3433de4048cc2cd9c57a937ca4e35aba5aa87b",
+  "common_pod_settings": {
+    "hostIPC": true,
+    "hostPID": true,
+    "terminationGracePeriodSeconds": 1,
+    "shared_host_path": "/dev/shm",
+    "securityContext": null
+  },
+  "planned_pods": [
+    {"role": "control-1", "gpu_request": 8, "created": true, "ran_cases": ["a-same-gpu", "b-cross-gpu"]},
+    {"role": "producer", "gpu_request": 1, "created": false, "ran_cases": []},
+    {"role": "consumer", "gpu_request": 1, "created": false, "ran_cases": []},
+    {"role": "control-2", "gpu_request": 8, "created": false, "ran_cases": []}
+  ]
+}

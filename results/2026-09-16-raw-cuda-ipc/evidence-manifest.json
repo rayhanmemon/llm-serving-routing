@@ -1,0 +1,62 @@
+{
+  "archive": {
+    "path": "evidence.tar.gz",
+    "bytes": 3736,
+    "sha256": "1a5312d5c4b99759f1a8697e82b7370e8cd2aa46329ba084358269c083ad0c90"
+  },
+  "members": {
+    "evidence/cases/a-same-gpu.json": {
+      "bytes": 1738,
+      "sha256": "b0493e5435f53011285482670348e11e76c9746612c8a00b1f263de0706b4271"
+    },
+    "evidence/cases/b-cross-gpu.json": {
+      "bytes": 1739,
+      "sha256": "594d9d12eccb57d36b4be8fdac5d74c0c4f77bf5218fef49a0438e8ced7a3f3e"
+    },
+    "evidence/cleanup-verification.json": {
+      "bytes": 349,
+      "sha256": "7d60c84e0f73d8eb3868a74e32ecf6c8994cfcc6742c415bb16eeee550020c3a"
+    },
+    "evidence/cost-estimate.json": {
+      "bytes": 840,
+      "sha256": "11cc0b6a0a5f93d6a36073edff308668f2613819841f9dc70ce87846b33a4470"
+    },
+    "evidence/diagnostic-shape.json": {
+      "bytes": 701,
+      "sha256": "5fbd8de5bab35992e0372e634ddf9e8273414568b87ed82039e7054e9cc70906"
+    },
+    "evidence/orchestrator-stop.json": {
+      "bytes": 1112,
+      "sha256": "df91cf48bbadcf2dbaacd6dbca67d4956932ad9f9e7902fc261782b4b345d8af"
+    },
+    "evidence/pod-snapshot.json": {
+      "bytes": 1100,
+      "sha256": "a6677e1386d1a0afeac337480cc56873e23583220e3f06239bc7e334ea37429f"
+    },
+    "evidence/provider-operation-times.json": {
+      "bytes": 410,
+      "sha256": "ada195f5948c05717495685c05bc4fa4df672dc94572f4dc9ad273dcd35cb8b7"
+    },
+    "evidence/runtime-environment.json": {
+      "bytes": 964,
+      "sha256": "650d4087cca491544fc3565c0e0114137153e5fb3c191b571109d3d4972ba825"
+    },
+    "evidence/source-record.json": {
+      "bytes": 505,
+      "sha256": "d3a29eb272ee9a63cd87ea3887ff521b31c06c127c664c1ac5b69867bc858a13"
+    }
+  },
+  "sanitization": {
+    "excluded": [
+      "credentials",
+      "kubeconfig",
+      "approval and private session-control records",
+      "provider resource identifiers",
+      "GPU UUIDs",
+      "process IDs",
+      "memory addresses",
+      "raw CUDA IPC handles"
+    ],
+    "source_run_directory_not_included": true
+  }
+}

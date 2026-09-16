@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "name": "ipc-control-REDACTED-1",
+    "namespace": "topology-ipc",
+    "creationTimestamp": "2026-09-16T14:12:00Z"
+  },
+  "spec": {
+    "hostIPC": true,
+    "hostPID": true,
+    "terminationGracePeriodSeconds": 1,
+    "containers": [
+      {
+        "name": "probe",
+        "image": "docker.io/vllm/vllm-openai:v0.26.0@sha256:770fe65b2c73ee74a5c42165cf3433de4048cc2cd9c57a937ca4e35aba5aa87b",
+        "imagePullPolicy": "IfNotPresent",
+        "command": ["sleep", "infinity"],
+        "resources": {
+          "requests": {"cpu": "1", "memory": "2Gi", "nvidia.com/gpu": "8"},
+          "limits": {"cpu": "4", "memory": "4Gi", "nvidia.com/gpu": "8"}
+        },
+        "securityContext": null
+      }
+    ],
+    "shared_memory": {"hostPath": "/dev/shm", "mountPath": "/dev/shm"}
+  },
+  "status": {
+    "phase": "Running",
+    "ready": true,
+    "startTime": "2026-09-16T14:17:28Z",
+    "containerStartedAt": "2026-09-16T14:20:52Z",
+    "restartCount": 0,
+    "imageID": "docker.io/vllm/vllm-openai@sha256:770fe65b2c73ee74a5c42165cf3433de4048cc2cd9c57a937ca4e35aba5aa87b"
+  }
+}

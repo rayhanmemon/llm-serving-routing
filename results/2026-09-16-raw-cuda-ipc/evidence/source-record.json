@@ -1,0 +1,11 @@
+{
+  "evaluation_repo_commit": "6b619cc9f70daef29482e8853275a3f874407061",
+  "evaluation_repo_commit_time": "2026-09-16T10:04:55-04:00",
+  "evaluation_repo_commit_subject": "Add bounded one-node raw CUDA IPC diagnosis",
+  "probe_source": "infra/topology/raw-ipc.py",
+  "orchestrator_source": "infra/topology/run-ipc-diagnostic.py",
+  "purpose": "Raw CUDA IPC isolation; no model, router, NIXL or remote GPU",
+  "requested_bytes": 2097152,
+  "control_device_access": 8,
+  "split_device_access_per_pod": 1
+}

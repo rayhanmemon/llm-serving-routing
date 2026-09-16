@@ -1,0 +1,36 @@
+{
+  "diagnostic_started_at": "2026-09-16T14:11:52Z",
+  "diagnostic_stopped_at": "2026-09-16T14:21:58Z",
+  "top_level_ok": false,
+  "completed_cases": [
+    {"name": "a-same-gpu", "status": "PASS"},
+    {"name": "b-cross-gpu", "status": "PASS"}
+  ],
+  "next_planned_case": "split producer and consumer pods with one GPU each",
+  "next_planned_case_started": false,
+  "stop_event": {
+    "operation": "delete completed eight-GPU control pod",
+    "wait_timeout_seconds": 30,
+    "returncode": 1,
+    "error_type": "DiagnosticError",
+    "error": "pod deletion failed: timed out waiting for the condition"
+  },
+  "later_operator_observation": {
+    "pod_absent": true,
+    "evidence_in_bundle": false
+  },
+  "provider_cleanup": {
+    "started_at": "2026-09-16T14:25:46Z",
+    "verified_at": "2026-09-16T14:34:56.717943Z",
+    "status": "complete",
+    "teardown_exit_code": 0
+  },
+  "cost": {
+    "status": "estimated, not invoice-verified",
+    "amount_usd_pretax": "6.130594516279598173515981735"
+  },
+  "followup": {
+    "split_pod_first_retry_prepared": true,
+    "launched_at_record_finalization": false
+  }
+}

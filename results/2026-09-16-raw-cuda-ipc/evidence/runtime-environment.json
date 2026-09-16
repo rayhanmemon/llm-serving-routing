@@ -1,0 +1,32 @@
+{
+  "provider_resource_shape": {
+    "platform": "gpu-h100-sxm",
+    "preset": "8gpu-128vcpu-1600gb",
+    "preemptible": true,
+    "configured_driver_preset": "cuda13.0"
+  },
+  "probe_observations": {
+    "visible_cuda_device_count": 8,
+    "cuDriverGetVersion": 13000,
+    "libcuda_requested": "libcuda.so.1",
+    "loaded_libcuda": "/usr/lib/x86_64-linux-gnu/libcuda.so.580.173.02",
+    "kernel_module": "NVIDIA UNIX Open Kernel Module for x86_64 580.173.02",
+    "kernel_module_build_date": "2026-06-23T08:17:01Z",
+    "kernel_module_build_compiler": "gcc 13.3.0 (Ubuntu 13.3.0-6ubuntu2~24.04.1)",
+    "cuda_visible_devices": null,
+    "gpu_device_nodes_present": [
+      "/dev/nvidia0",
+      "/dev/nvidia1",
+      "/dev/nvidia2",
+      "/dev/nvidia3",
+      "/dev/nvidia4",
+      "/dev/nvidia5",
+      "/dev/nvidia6",
+      "/dev/nvidia7",
+      "/dev/nvidiactl",
+      "/dev/nvidia-modeset",
+      "/dev/nvidia-uvm",
+      "/dev/nvidia-uvm-tools"
+    ]
+  }
+}
