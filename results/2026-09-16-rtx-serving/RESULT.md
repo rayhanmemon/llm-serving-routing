@@ -1,4 +1,4 @@
-# RTX serving session: numerical diagnostic, timing pending
+# RTX serving session: functional comparison, timing pending
 
 ## Status
 
@@ -26,4 +26,12 @@ The first divergence was generated token 6: direct-local selected ` Italy` over 
 
 vLLM [does not guarantee reproducibility by default](https://docs.vllm.ai/en/latest/usage/reproducibility/), and a maintainer explains that [kernel differences can flip greedy near-ties](https://github.com/vllm-project/vllm/issues/11526). Current releases offer opt-in, beta [batch invariance for online serving](https://docs.vllm.ai/en/stable/features/batch_invariance/). This session did not change its engine to force equality.
 
-The frozen eight-case known-answer suite is pending. Until it passes, correctness remains unqualified and timing collection remains unvalidated. Exact sanitized response data are in [numerical-diagnostic.json](numerical-diagnostic.json).
+## Frozen known-answer suite
+
+Eight copy/retrieval cases were committed before execution (`a9e911b`): two cases per task at each of 512 and 8192 input tokens, with eight-word expected outputs. All 32 case/route combinations ran under unchanged engine settings. The declared all-gold rule **failed: 24/32, or 6/8 on every route**. Both long retrieval cases produced the same explanatory prefix on all four routes, using part of the eight-token output limit. No case was replaced or dropped.
+
+**All eight cases produced identical text across direct-local, direct-remote, local P/D and remote P/D.** Each P/D request added exactly one transfer; both decoders added eight transfers total. Transfer-failure counters stayed unchanged, and the three GPU identities plus worker/EPP identities stayed stable.
+
+This demonstrates functional agreement on this small suite, including the two shared task failures. It does not turn either failed acceptance rule into a pass. A proposed amendment would compare P/D against direct inference while reporting gold accuracy separately. That decision is awaiting review; **no correctness marker or latency benchmark has been produced**.
+
+Evidence: [frozen plan](known-answer-suite/PLAN.md), [known-answer analysis](known-answer-analysis.json), [sanitized responses](known-answer-responses.json), [original numerical diagnostic](numerical-diagnostic.json).

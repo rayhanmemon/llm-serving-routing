@@ -1,0 +1,335 @@
+{
+  "limits": "Transfer deltas, failure counters and worker stability are separate required evidence.",
+  "normalization": "outer whitespace only (response_text.strip())",
+  "passed": 24,
+  "per_route": {
+    "direct-local": 6,
+    "direct-remote": 6,
+    "pd-local": 6,
+    "pd-remote": 6
+  },
+  "required": 32,
+  "results": [
+    {
+      "actual_text": " green gold blue navy gray silver purple pink",
+      "case_id": "copy-512-1",
+      "gold_match": true,
+      "gold_text": "green gold blue navy gray silver purple pink",
+      "passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " green gold blue navy gray silver purple pink",
+      "case_id": "copy-512-1",
+      "gold_match": true,
+      "gold_text": "green gold blue navy gray silver purple pink",
+      "passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " green gold blue navy gray silver purple pink",
+      "case_id": "copy-512-1",
+      "gold_match": true,
+      "gold_text": "green gold blue navy gray silver purple pink",
+      "passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " green gold blue navy gray silver purple pink",
+      "case_id": "copy-512-1",
+      "gold_match": true,
+      "gold_text": "green gold blue navy gray silver purple pink",
+      "passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " black pink blue brown navy teal green white",
+      "case_id": "copy-512-2",
+      "gold_match": true,
+      "gold_text": "black pink blue brown navy teal green white",
+      "passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " black pink blue brown navy teal green white",
+      "case_id": "copy-512-2",
+      "gold_match": true,
+      "gold_text": "black pink blue brown navy teal green white",
+      "passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " black pink blue brown navy teal green white",
+      "case_id": "copy-512-2",
+      "gold_match": true,
+      "gold_text": "black pink blue brown navy teal green white",
+      "passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " black pink blue brown navy teal green white",
+      "case_id": "copy-512-2",
+      "gold_match": true,
+      "gold_text": "black pink blue brown navy teal green white",
+      "passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " red white green teal cyan black silver gray",
+      "case_id": "copy-8192-1",
+      "gold_match": true,
+      "gold_text": "red white green teal cyan black silver gray",
+      "passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " red white green teal cyan black silver gray",
+      "case_id": "copy-8192-1",
+      "gold_match": true,
+      "gold_text": "red white green teal cyan black silver gray",
+      "passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " red white green teal cyan black silver gray",
+      "case_id": "copy-8192-1",
+      "gold_match": true,
+      "gold_text": "red white green teal cyan black silver gray",
+      "passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " red white green teal cyan black silver gray",
+      "case_id": "copy-8192-1",
+      "gold_match": true,
+      "gold_text": "red white green teal cyan black silver gray",
+      "passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " gray teal gold black green blue red yellow",
+      "case_id": "copy-8192-2",
+      "gold_match": true,
+      "gold_text": "gray teal gold black green blue red yellow",
+      "passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " gray teal gold black green blue red yellow",
+      "case_id": "copy-8192-2",
+      "gold_match": true,
+      "gold_text": "gray teal gold black green blue red yellow",
+      "passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " gray teal gold black green blue red yellow",
+      "case_id": "copy-8192-2",
+      "gold_match": true,
+      "gold_text": "gray teal gold black green blue red yellow",
+      "passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " gray teal gold black green blue red yellow",
+      "case_id": "copy-8192-2",
+      "gold_match": true,
+      "gold_text": "gray teal gold black green blue red yellow",
+      "passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " yellow red green black white cyan brown purple",
+      "case_id": "retrieval-512-1",
+      "gold_match": true,
+      "gold_text": "yellow red green black white cyan brown purple",
+      "passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " yellow red green black white cyan brown purple",
+      "case_id": "retrieval-512-1",
+      "gold_match": true,
+      "gold_text": "yellow red green black white cyan brown purple",
+      "passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " yellow red green black white cyan brown purple",
+      "case_id": "retrieval-512-1",
+      "gold_match": true,
+      "gold_text": "yellow red green black white cyan brown purple",
+      "passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " yellow red green black white cyan brown purple",
+      "case_id": "retrieval-512-1",
+      "gold_match": true,
+      "gold_text": "yellow red green black white cyan brown purple",
+      "passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " yellow gold cyan white gray navy green orange",
+      "case_id": "retrieval-512-2",
+      "gold_match": true,
+      "gold_text": "yellow gold cyan white gray navy green orange",
+      "passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " yellow gold cyan white gray navy green orange",
+      "case_id": "retrieval-512-2",
+      "gold_match": true,
+      "gold_text": "yellow gold cyan white gray navy green orange",
+      "passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " yellow gold cyan white gray navy green orange",
+      "case_id": "retrieval-512-2",
+      "gold_match": true,
+      "gold_text": "yellow gold cyan white gray navy green orange",
+      "passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " yellow gold cyan white gray navy green orange",
+      "case_id": "retrieval-512-2",
+      "gold_match": true,
+      "gold_text": "yellow gold cyan white gray navy green orange",
+      "passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " The secret sequence is silver yellow green navy",
+      "case_id": "retrieval-8192-1",
+      "gold_match": false,
+      "gold_text": "silver yellow green navy red gold brown black",
+      "passed": false,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is silver yellow green navy",
+      "case_id": "retrieval-8192-1",
+      "gold_match": false,
+      "gold_text": "silver yellow green navy red gold brown black",
+      "passed": false,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is silver yellow green navy",
+      "case_id": "retrieval-8192-1",
+      "gold_match": false,
+      "gold_text": "silver yellow green navy red gold brown black",
+      "passed": false,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is silver yellow green navy",
+      "case_id": "retrieval-8192-1",
+      "gold_match": false,
+      "gold_text": "silver yellow green navy red gold brown black",
+      "passed": false,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is silver green orange brown",
+      "case_id": "retrieval-8192-2",
+      "gold_match": false,
+      "gold_text": "silver green orange brown navy pink yellow blue",
+      "passed": false,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is silver green orange brown",
+      "case_id": "retrieval-8192-2",
+      "gold_match": false,
+      "gold_text": "silver green orange brown navy pink yellow blue",
+      "passed": false,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is silver green orange brown",
+      "case_id": "retrieval-8192-2",
+      "gold_match": false,
+      "gold_text": "silver green orange brown navy pink yellow blue",
+      "passed": false,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is silver green orange brown",
+      "case_id": "retrieval-8192-2",
+      "gold_match": false,
+      "gold_text": "silver green orange brown navy pink yellow blue",
+      "passed": false,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": false
+    }
+  ],
+  "validated": false
+}

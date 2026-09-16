@@ -1,0 +1,75 @@
+{
+  "analysis_type": "independent offline verification",
+  "suite": {
+    "frozen_commit": "a9e911b",
+    "suite_sha256": "beca44490c217032589d98b435b76d6c7ca0ea76a6e1b611f5ee55e0c25c6ac1",
+    "responses_sha256": "eef1ad51c623ca2be367e3de67fd11f00e99e050f32e2fe30d99b3eafed71084",
+    "cases": 8,
+    "routes": 4,
+    "requests": 32,
+    "created_before_requests": true,
+    "engine_settings_changed": false
+  },
+  "request_integrity": {
+    "unique_case_route_cells": 32,
+    "http_200": 32,
+    "request_errors": 0,
+    "request_bodies_match_frozen_plan": 32,
+    "route_pin_and_per_request_transfer_checks_passed": 32
+  },
+  "frozen_gold_gate": {
+    "status": "FAIL",
+    "passed": 24,
+    "required": 32,
+    "per_route": {
+      "direct-local": "6/8",
+      "direct-remote": "6/8",
+      "pd-local": "6/8",
+      "pd-remote": "6/8"
+    },
+    "failed_cases": [
+      {
+        "case_id": "retrieval-8192-1",
+        "gold": "silver yellow green navy red gold brown black",
+        "shared_actual_all_routes": "The secret sequence is silver yellow green navy",
+        "interpretation": "The eight-token output budget was spent on a four-token explanatory prefix and the first four secret words."
+      },
+      {
+        "case_id": "retrieval-8192-2",
+        "gold": "silver green orange brown navy pink yellow blue",
+        "shared_actual_all_routes": "The secret sequence is silver green orange brown",
+        "interpretation": "The eight-token output budget was spent on a four-token explanatory prefix and the first four secret words."
+      }
+    ]
+  },
+  "functional_parity": {
+    "status": "PASS as an observed comparison, not an approved replacement gate",
+    "cases_with_one_identical_output_across_all_four_routes": 8,
+    "cases_total": 8,
+    "pd_local_equal_direct_local": "8/8",
+    "pd_remote_equal_direct_remote": "8/8",
+    "direct_local_equal_direct_remote": "8/8",
+    "all_four_routes_equal": "8/8",
+    "classification": "No P/D-specific output degradation was observed in the frozen suite. The two gold failures are shared direct-model instruction/format behavior."
+  },
+  "transfer_and_identity": {
+    "pd_local_expected_one_transfer_checks": "8/8",
+    "pd_remote_expected_one_transfer_checks": "8/8",
+    "local_decoder_transfer_count_delta": 8,
+    "remote_decoder_transfer_count_delta": 8,
+    "failed_transfer_notification_or_expiry_deltas": 0,
+    "prefill_decoder_and_epp_pod_uids_nodes_containers_and_restart_counts_stable": true,
+    "three_gpu_identities_stable": true,
+    "distinct_gpu_count": 3
+  },
+  "preserved_failures": [
+    "The original five-token exact-output equality check failed and remains failed.",
+    "The frozen 32-request known-answer gold gate scored 24/32 and remains failed."
+  ],
+  "review_decision": {
+    "proposed_method_amendment": "For this deployment, qualify P/D functional parity against the corresponding direct route over a frozen suite, while reporting known-answer gold accuracy separately.",
+    "posthoc_case_changes_allowed": false,
+    "current_evidence_under_proposed_method": "8/8 exact route parity, exact transfer counts, zero transfer errors, stable workers and GPUs.",
+    "timing_status": "Still gated until the user reviews and explicitly accepts or rejects the methodology amendment."
+  }
+}
