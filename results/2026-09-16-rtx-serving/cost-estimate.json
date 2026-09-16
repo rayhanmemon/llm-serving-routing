@@ -1,0 +1,40 @@
+{
+  "basis": "conservative operation timestamps; before tax; not invoice-verified",
+  "cleanup_verified": true,
+  "cleanup_verification_file": "cleanup-verified.json",
+  "cleanup_verified_unix": "1789587058.3451421",
+  "cleanup_verification_scope": "Terraform state empty and project-scoped instances, Kubernetes clusters, disks, filesystems, and GPU clusters all zero; other types/projects not checked",
+  "compute": {
+    "local": {
+      "create_operation_started_at": "2026-09-16T17:56:14.991507Z",
+      "delete_operation_finished_at": "2026-09-16T19:28:59.697616Z",
+      "hours": "1.54575169694444444444444444444",
+      "hourly_usd": "14.4",
+      "estimated_usd": "22.2588244359999999999999999999"
+    },
+    "remote": {
+      "create_operation_started_at": "2026-09-16T18:00:07.241366Z",
+      "delete_operation_finished_at": "2026-09-16T19:22:36.895817Z",
+      "hours": "1.37490401416666666666666666667",
+      "hourly_usd": "1.8",
+      "estimated_usd": "2.47482722550000000000000000001"
+    },
+    "cpu": {
+      "create_operation_started_at": "2026-09-16T18:00:06.765405Z",
+      "delete_operation_finished_at": "2026-09-16T19:22:58.854838Z",
+      "hours": "1.38113595361111111111111111111",
+      "hourly_usd": "0.3968",
+      "estimated_usd": "0.548034746392888888888888888888"
+    }
+  },
+  "disk": {
+    "gib": 576,
+    "usd_per_gib_month": "0.071",
+    "month_hours": 730,
+    "session_started_unix": "1789581083.816129",
+    "session_ended_unix": "1789587058.3451421",
+    "hours": "1.65959139252777777777777777778",
+    "estimated_usd": "0.0929734925874191780821917808221"
+  },
+  "estimated_total_usd_pretax": "25.3746599004803080669710806696"
+}

@@ -1,0 +1,195 @@
+{
+  "arms": {
+    "long-remote-b1": {
+      "completion_seconds": {
+        "descriptive_p95_nearest_rank": 6.124015569999756,
+        "mean": 5.985460810333507,
+        "median": 5.989195492500585
+      },
+      "evidence_sha256": {
+        "transfer-delta.json": "092c1dee1f4ca4d5727265a4d1c3aab5696f948fda8f8daf27c6cd5ba9beb9b5",
+        "validation.json": "e3c479e3a3aa2bee2a8d16ac5bc75e15a118133f66d9cc52f2bd7d8568286477"
+      },
+      "input_tokens": 8192,
+      "request_hashes": [
+        "dcf10441a3b9c5c8ab40d20021625de5a2dc40aecb462ab786d329867e977226",
+        "a8b19858a281291dd6068e3932d814e1b4c7daa883c4166cd29887065d70be25",
+        "3c25853c21af02d147aec69142fa270ab36b78587b031723800b6d48d6d57d68",
+        "cc1635d224c658a047986d4ec0b62f42b637e84909a0d7dde24b74ca4352586f",
+        "fff9a5b241930fce9d4cec682e88012cf26ec836b9ee911d8c46f877a33545c0",
+        "fe711508cc3af52175905b71779eeb45bbb0a3f7114e106465be9761c23603f5",
+        "86028d3b1cecf4939b84ddbe624c4a9dd54d0893cfac8a3eb7c37644035dbf10",
+        "8ad1d8a2709e86f27a7fcb011ded05dec75fc3b2845c669cc4fe574774717d9c",
+        "46c4a4d878b3b7bd0a2c32f3651cb5b396cb473232a0f463ea15a25daba97ecc",
+        "1ab0f2b75bb156a9965c8ef93952f776c2af32193d484f1e5702178301764a92",
+        "89cc29caf9c4002f642c360447bad596275f43185f85b5d4bb14238fa1a8e831",
+        "3ca3e0932458c60917a8e7042182a574f45fcc0ed6ec0c31cf5956d0d7511887"
+      ],
+      "route": "remote",
+      "samples": 12,
+      "transfer": {
+        "bytes": 14495514624.0,
+        "effective_bytes_per_second": 324844789.85159504,
+        "failure_counter_deltas_zero": true,
+        "mean_observed_transfer_seconds": 3.7185744999999994,
+        "observed_seconds": 44.622893999999995,
+        "operations": 12
+      },
+      "ttft_seconds": {
+        "descriptive_p95_nearest_rank": 4.472176591999414,
+        "mean": 4.337022147083341,
+        "median": 4.341553321500669
+      }
+    },
+    "short-local-b1": {
+      "completion_seconds": {
+        "descriptive_p95_nearest_rank": 1.917275754000002,
+        "mean": 1.8903996732497792,
+        "median": 1.889029818999461
+      },
+      "evidence_sha256": {
+        "transfer-delta.json": "5a617a6579c2cb32cdbb9dd06c480332ee18f3d38012379d2001b937fe45813b",
+        "validation.json": "a6fa7b7bc05b5902cae3b23f2b111e9223a6d51fac668e07f69e2863edeb16be"
+      },
+      "input_tokens": 512,
+      "request_hashes": [
+        "c59ef198ef2f1e2e40eb5e74f78ae0ecb88c34b8cfe40020b7ea313a776573d1",
+        "99ad49842e4498c4b98a3e927c097bbaf0d8c7d91d39d90e6301966f0f6eb3a6",
+        "d3c320447075da503eb1912d9bffc574d3c371bb6773e7006235ff2b010e4632",
+        "bd4a11470c8040a2f6c82367b4803196c29041f1e0b5cd201bdd5189e0be9cf9",
+        "84136095e320eab9bffc2e0739bd4067262081c158e284cc305f2265db1489f0",
+        "3dee913a93aa35e006149ac764a9d0ef34768f8f2c42e05126730d33b5c34671",
+        "a30106e28bb7253667fe6f368f1a437209637ecc72df72eef70f787e1b93d31c",
+        "9ee21275618cd4b167f73da1440a4a756855e625ac90836ee413981b50856dfd",
+        "53a6bea4e141e0bb1bb9eab393b8058e686029fdfa10e7241874833c0930346f",
+        "0b453577881ccd703f71a3083278830066ad92532b0fbdebba980db5313e0985",
+        "fc92d2f88abf3ea8ce36d1053df9aeddf0de4ee93e8ade378ab59f13b58912c7",
+        "405e43e1d078330c1c6ef816891e8f4fa1642447ac287f5bbe818fcc56275a26"
+      ],
+      "route": "local",
+      "samples": 12,
+      "transfer": {
+        "bytes": 905969664.0,
+        "effective_bytes_per_second": 222526766.49430546,
+        "failure_counter_deltas_zero": true,
+        "mean_observed_transfer_seconds": 0.339273666666666,
+        "observed_seconds": 4.0712839999999915,
+        "operations": 12
+      },
+      "ttft_seconds": {
+        "descriptive_p95_nearest_rank": 0.4445412009999927,
+        "mean": 0.42083191799990044,
+        "median": 0.42146248649987683
+      }
+    },
+    "short-remote-b1": {
+      "completion_seconds": {
+        "descriptive_p95_nearest_rank": 1.819406063000315,
+        "mean": 1.78445410816668,
+        "median": 1.7870562130001417
+      },
+      "evidence_sha256": {
+        "transfer-delta.json": "35bb492f994b66279887979f3fe582f3ecb623f2702d307dc5cfb180389f09ff",
+        "validation.json": "b2f75120a422624958c4d081cb18923c721186c5a62e4929d80aef24dc70ef88"
+      },
+      "input_tokens": 512,
+      "request_hashes": [
+        "c59ef198ef2f1e2e40eb5e74f78ae0ecb88c34b8cfe40020b7ea313a776573d1",
+        "99ad49842e4498c4b98a3e927c097bbaf0d8c7d91d39d90e6301966f0f6eb3a6",
+        "d3c320447075da503eb1912d9bffc574d3c371bb6773e7006235ff2b010e4632",
+        "bd4a11470c8040a2f6c82367b4803196c29041f1e0b5cd201bdd5189e0be9cf9",
+        "84136095e320eab9bffc2e0739bd4067262081c158e284cc305f2265db1489f0",
+        "3dee913a93aa35e006149ac764a9d0ef34768f8f2c42e05126730d33b5c34671",
+        "a30106e28bb7253667fe6f368f1a437209637ecc72df72eef70f787e1b93d31c",
+        "9ee21275618cd4b167f73da1440a4a756855e625ac90836ee413981b50856dfd",
+        "53a6bea4e141e0bb1bb9eab393b8058e686029fdfa10e7241874833c0930346f",
+        "0b453577881ccd703f71a3083278830066ad92532b0fbdebba980db5313e0985",
+        "fc92d2f88abf3ea8ce36d1053df9aeddf0de4ee93e8ade378ab59f13b58912c7",
+        "405e43e1d078330c1c6ef816891e8f4fa1642447ac287f5bbe818fcc56275a26"
+      ],
+      "route": "remote",
+      "samples": 12,
+      "transfer": {
+        "bytes": 905969664.0,
+        "effective_bytes_per_second": 312337310.76844716,
+        "failure_counter_deltas_zero": true,
+        "mean_observed_transfer_seconds": 0.2417177500000006,
+        "observed_seconds": 2.900613000000007,
+        "operations": 12
+      },
+      "ttft_seconds": {
+        "descriptive_p95_nearest_rank": 0.3505331110000043,
+        "mean": 0.31725380833321043,
+        "median": 0.3201216274997023
+      }
+    }
+  },
+  "complete": false,
+  "completed_arms": [
+    "short-local-b1",
+    "short-remote-b1",
+    "long-remote-b1"
+  ],
+  "interpretation": [
+    "The short forced-remote arm was faster than forced-local for all 12 matched requests in this deployment.",
+    "The deployment used the observed TCP-based transfer path; this is not evidence that remote placement is intrinsically faster.",
+    "The missing long-local arm prevents any 8192-token local-versus-remote comparison.",
+    "These forced-route observations do not measure or establish routing-policy or allowance gain.",
+    "Twelve samples per arm provide descriptive p95 values only; they do not estimate production p99.",
+    "No warmup or uncollected final-arm observation is included."
+  ],
+  "paired_short_remote_minus_local": {
+    "completion_seconds": {
+      "descriptive_p95_nearest_rank": -0.08268315500026802,
+      "mean": -0.10594556508309931,
+      "median": -0.1009222765001141,
+      "values": [
+        -0.09786969099968701,
+        -0.08268315500026802,
+        -0.08916459799911536,
+        -0.12699925800006895,
+        -0.10120753300088836,
+        -0.10063701999933983,
+        -0.09195238899974356,
+        -0.1217417599991677,
+        -0.12181816199972673,
+        -0.12282083900026919,
+        -0.12772623699947872,
+        -0.08672613899943826
+      ]
+    },
+    "payload_hashes_exactly_match": true,
+    "samples": 12,
+    "ttft_seconds": {
+      "descriptive_p95_nearest_rank": -0.07829834200038022,
+      "mean": -0.10357810966668997,
+      "median": -0.09878413600017666,
+      "values": [
+        -0.09400808999998844,
+        -0.07829834200038022,
+        -0.0846908399998938,
+        -0.12433882400000584,
+        -0.09948462300053507,
+        -0.09808364899981825,
+        -0.08585474399933446,
+        -0.12025616899973102,
+        -0.12234190699928149,
+        -0.11909054900024785,
+        -0.12597596400064504,
+        -0.09051361500041821
+      ]
+    }
+  },
+  "planned_measured_requests": 48,
+  "schema_version": 1,
+  "title": "Partial first block: 36/48 measured requests; final arm unavailable",
+  "unavailable_arm": {
+    "input_tokens": 8192,
+    "label": "long-local-b1",
+    "reason": "Client exited 0 after the cleanup deadline, but the benchmark Pod was deleted before reports and the after collection were retained.",
+    "route": "local",
+    "status": "unqualified"
+  },
+  "validated_measured_requests": 36,
+  "warmups_excluded": true
+}

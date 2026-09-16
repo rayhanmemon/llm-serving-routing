@@ -100,7 +100,9 @@ def make_suite(tokenizer, suite_seed=SUITE_SEED, criterion="gold"):
             "normalization": "outer whitespace only (response_text.strip())",
             "routes": list(ROUTES), "expected_requests": 32,
             "filler": {"text": filler_text, "token_id": filler_id}, "cases": cases,
-            "qualification": {"criterion": criterion, "required_gold_matches": 32,
+            "qualification": {"criterion": criterion,
+                              "required_gold_matches": 32 if criterion == "gold" else None,
+                              "gold_reference_count": 32,
                               "required_per_route": "8/8",
                               "direct_parity_rule": "For every case, normalized text must be identical across direct-local, direct-remote, pd-local and pd-remote.",
                               "filtered_or_replaced_cases_allowed": False,
@@ -157,7 +159,12 @@ def prepare(out, suite_seed=SUITE_SEED, criterion="gold"):
         plan.write_bytes(json.dumps(suite, indent=2, sort_keys=True, ensure_ascii=False).encode() + b"\n")
         (temporary / "suite.sha256").write_text(hashlib.sha256(plan.read_bytes()).hexdigest() + "  suite.json\n")
         (temporary / "client.py").write_text(CLIENT)
-        (temporary / "PLAN.md").write_text(PLAN_DOC)
+        plan_doc = PLAN_DOC
+        if criterion == "direct-parity":
+            plan_doc = plan_doc.replace(
+                "All 32 route/case combinations must match the gold text after outer-whitespace stripping only.",
+                "All 32 requests must pass integrity checks, and each case must produce identical text across all four routes after outer-whitespace stripping only. Gold-answer accuracy is reported separately and does not determine acceptance.")
+        (temporary / "PLAN.md").write_text(plan_doc)
         temporary.replace(out.resolve())
     except Exception:
         shutil.rmtree(temporary)

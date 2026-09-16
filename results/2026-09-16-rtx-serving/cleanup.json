@@ -1,0 +1,15 @@
+{
+  "verified": true,
+  "verified_unix": 1789587058.3451421,
+  "terraform_resources_destroyed": 4,
+  "terraform_state_empty": true,
+  "project_scoped_checks": {
+    "instances": 0,
+    "kubernetes_clusters": 0,
+    "disks": 0,
+    "filesystems": 0,
+    "gpu_clusters": 0
+  },
+  "scope_limit": "Other resource types and projects were not checked.",
+  "guard_and_caffeinate_exited": true
+}

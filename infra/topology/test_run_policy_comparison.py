@@ -44,7 +44,11 @@ def record(prompt_tokens=512, start=10.0, error=None, response_id=None):
             "start_time": start, "end_time": start + 2,
             "info": {"request_metrics": {"text": {"input_tokens": prompt_tokens}},
                      "input_tokens": prompt_tokens,
-                     "response_metrics": {"output_token_times": [start + 1]}}}
+                     "response_metrics": {
+                         "response_chunks": [json.dumps({"id": response_id, "choices": [
+                             {"index": 0, "text": "answer", "finish_reason": None}]})],
+                         "chunk_times": [start + 1],
+                         "output_token_times": [start + 1, start + 1.5]}}}
 
 
 class PolicyEvidenceTest(unittest.TestCase):
@@ -77,6 +81,13 @@ class PolicyEvidenceTest(unittest.TestCase):
             evidence.validate_records([record(512), record(8192, error={"message": "timeout"})], workload)
         rows = evidence.validate_records([record(512), record(8192, start=13)], workload)
         self.assertEqual([row["prompt_tokens"] for row in rows], [512, 8192])
+        expanded = record(512)
+        expanded["info"]["response_metrics"]["output_token_times"].append(11.75)
+        self.assertEqual(evidence.validate_records([expanded], {"count": 1, "input_tokens": [512]})[0]["ttft_seconds"], 1)
+        broken = record(512)
+        broken["info"]["response_metrics"]["response_chunks"] = ["{}"]
+        with self.assertRaisesRegex(evidence.EvidenceError, "differ from raw SSE"):
+            evidence.validate_records([broken], {"count": 1, "input_tokens": [512]})
 
     def test_unpinned_routes_use_actual_decoder_ips(self):
         ip_map = {"10.0.0.1:8000": ("local", "decode-local"),

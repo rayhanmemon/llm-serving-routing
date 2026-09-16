@@ -86,7 +86,7 @@ def validate_stream(raw):
     done = False
     finishes = []
     usage = None
-    content_events = 0
+    content_chunks = []
     response_ids = []
     every_chunk_has_id = True
     for block in raw.replace("\r\n", "\n").split("\n\n"):
@@ -108,23 +108,26 @@ def validate_stream(raw):
             every_chunk_has_id = False
         choices = value.get("choices")
         require(isinstance(choices, list), "missing choices")
+        has_content = False
         for choice in choices:
             require(choice.get("index", 0) == 0, "unexpected completion index")
             if choice.get("text"):
                 require(not finishes, "generated text after finish reason")
-                content_events += 1
+                has_content = True
             if choice.get("finish_reason"):
                 finishes.append(choice["finish_reason"])
         if value.get("usage") is not None:
             usage = value["usage"]
+        if has_content:
+            content_chunks.append(value)
     require(done and finishes == ["length"], "missing completion terminator or incorrect finish reason")
-    require(content_events > 0, "empty generated output")
+    require(content_chunks, "empty generated output")
     require(isinstance(usage, dict) and usage.get("completion_tokens") == 128,
             "missing usage or output token count mismatch")
     require(usage.get("prompt_tokens") in (512, 8192), "server prompt token count is unsupported")
     require(len(set(response_ids)) <= 1, "streamed response changed completion ID")
     join_id = response_ids[0] if every_chunk_has_id and response_ids else None
-    return usage["prompt_tokens"], content_events, join_id
+    return usage["prompt_tokens"], content_chunks, join_id
 
 
 def envoy_request_id(response_id):
@@ -149,18 +152,33 @@ def validate_records(records, workload):
         require(isinstance(request.get("prompt"), str), "completion prompt is missing")
         require(request.get("stream") is True and request.get("ignore_eos") is True and
                 request.get("max_tokens") == 128, "request settings mismatch")
-        prompt_tokens, content_count, response_id = validate_stream(row.get("response"))
+        prompt_tokens, content_chunks, response_id = validate_stream(row.get("response"))
         info = row.get("info", {})
-        times = info.get("response_metrics", {}).get("output_token_times")
-        require(isinstance(times, list) and len(times) == content_count and times,
-                "content timestamp count mismatch")
-        require(all(math.isfinite(value) for value in times) and
-                all(left <= right for left, right in zip(times, times[1:])),
+        response_metrics = info.get("response_metrics", {})
+        recorded_chunks = response_metrics.get("response_chunks")
+        chunk_times = response_metrics.get("chunk_times")
+        require(isinstance(recorded_chunks, list) and isinstance(chunk_times, list) and
+                len(recorded_chunks) == len(chunk_times) == len(content_chunks) and content_chunks,
+                "content chunk/timestamp count mismatch")
+        try:
+            parsed_chunks = [json.loads(chunk) for chunk in recorded_chunks]
+        except (TypeError, json.JSONDecodeError) as error:
+            raise EvidenceError("invalid recorded response chunk") from error
+        require(parsed_chunks == content_chunks, "recorded response chunks differ from raw SSE content")
+        require(all(isinstance(value, (int, float)) and math.isfinite(value) for value in chunk_times) and
+                all(left <= right for left, right in zip(chunk_times, chunk_times[1:])),
                 "invalid content timestamps")
         start, end = row.get("start_time"), row.get("end_time")
         require(isinstance(start, (int, float)) and isinstance(end, (int, float)) and
-                math.isfinite(start) and math.isfinite(end) and start <= times[0] <= times[-1] <= end,
+                math.isfinite(start) and math.isfinite(end) and
+                start <= chunk_times[0] <= chunk_times[-1] <= end,
                 "invalid request timing interval")
+        estimated = response_metrics.get("output_token_times")
+        require(isinstance(estimated, list) and estimated and
+                all(isinstance(value, (int, float)) and math.isfinite(value) for value in estimated) and
+                all(left <= right for left, right in zip(estimated, estimated[1:])) and
+                start <= estimated[0] <= estimated[-1] <= end,
+                "invalid estimated output-token timestamps")
         generated_input = info.get("request_metrics", {}).get("text", {}).get("input_tokens")
         require(generated_input == prompt_tokens and info.get("input_tokens") == prompt_tokens,
                 "client/server input token counts disagree")
@@ -171,7 +189,7 @@ def validate_records(records, workload):
                         "prompt_hash": prompt_hash,
                         "response_id": response_id,
                         "prompt_tokens": prompt_tokens, "start_time": start, "end_time": end,
-                        "ttft_seconds": times[0] - start, "completion_seconds": end - start})
+                        "ttft_seconds": chunk_times[0] - start, "completion_seconds": end - start})
     require(Counter(item["prompt_tokens"] for item in results) == Counter(workload["input_tokens"]),
             "actual prompt-token multiset differs from the workload")
     return results

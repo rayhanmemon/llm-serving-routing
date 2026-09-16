@@ -1,8 +1,8 @@
-# RTX serving session: correctness qualified, first timing block running
+# RTX serving session: correctness qualified, partial first timing block
 
 ## Status
 
-This regular-capacity UK session is active on eight-GPU and one-GPU RTX PRO 6000 Blackwell workers plus one CPU worker. Only one GPU serves each inference engine. No NVLink or RDMA path is claimed. The user approved the prospective direct-versus-P/D parity rule, and a fresh frozen suite passed it. The first 48-request forced-route timing block started at **18:50:51 UTC**. **No validated latency result exists yet.**
+This regular-capacity UK session used eight-GPU and one-GPU RTX PRO 6000 Blackwell workers plus one CPU worker. Only one GPU served each inference engine. No NVLink or RDMA path is claimed. The user approved the prospective direct-versus-P/D parity rule, and a fresh frozen suite passed it. The first forced-route timing block produced **36 of 48 validated measured requests** before the fixed cleanup deadline. Cleanup began at **19:21:23 UTC**.
 
 An initial image upload ended with an exec-stream EOF before inference. Setup correction `1d09dff` used a bounded SPDY upload, succeeded, and imported the unchanged reviewed image. The router and model configuration were unchanged.
 
@@ -36,6 +36,22 @@ This demonstrates functional agreement on this small suite, including the two sh
 
 The fresh seed-`17092027` suite was committed before execution (`ef898194df31d2601bba1e3e0fe992fb009180e2`; SHA-256 `cf6fd79fe756d6dd75d7589bb1d05cd740fb6e9d70a2307d04d970d87d4e515c`). All 32 request-integrity checks passed and all eight cases produced identical normalized text across direct-local, direct-remote, local P/D and remote P/D. Each P/D request added exactly one transfer on its selected decoder; transfer-failure counters and worker/GPU identities stayed stable. Gold accuracy remained **24/32, 6/8 per route**, and is reported separately rather than relabelled.
 
-That prospective confirmation qualified correctness under the approved parity rule. A truthful correctness marker admitted the frozen first timing block. The timing block is still running; partial observations are not latency results.
+That prospective confirmation qualified correctness under the approved parity rule. A truthful correctness marker admitted the frozen first timing block.
 
-Evidence: [original frozen plan](known-answer-suite/PLAN.md), [original known-answer analysis](known-answer-analysis.json), [original sanitized responses](known-answer-responses.json), [original numerical diagnostic](numerical-diagnostic.json), [approved amendment](method-amendment.json), [fresh confirmation plan](confirmation-suite/PLAN.md), and [fresh confirmation analysis](confirmation-analysis.json).
+## Partial first block: 36/48
+
+Three measured arms completed strict request, route, payload, worker/GPU identity and transfer validation. The final 8192-token local client exited 0 after the cleanup deadline, but its benchmark Pod was deleted before reports and the after snapshot were retained. It is unavailable and is not included. Warmups are also excluded.
+
+| Input tokens | Forced route | Samples | Mean TTFT | Median TTFT | Descriptive p95 TTFT | Mean completion | Median completion | Descriptive p95 completion |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 512 | local | 12 | 420.832 ms | 421.462 ms | 444.541 ms | 1.890 s | 1.889 s | 1.917 s |
+| 512 | remote | 12 | 317.254 ms | 320.122 ms | 350.533 ms | 1.784 s | 1.787 s | 1.819 s |
+| 8192 | remote | 12 | 4.337 s | 4.342 s | 4.472 s | 5.985 s | 5.989 s | 6.124 s |
+
+The 12 short local and remote requests have exact matched payload hashes. Remote-minus-local TTFT was negative for all 12 pairs: **−103.578 ms mean**, **−98.784 ms median**, and **−78.298 ms descriptive p95**. Completion latency differed by −105.946 ms mean and −100.922 ms median.
+
+Each short arm recorded 12 transfers and 905,969,664 bytes. Mean observed connector transfer time was 339.274 ms local and 241.718 ms remote. The long-remote arm recorded 12 transfers, 14,495,514,624 bytes and 3.719 s mean observed connector time. All exposed transfer, notification and expiry deltas were zero.
+
+This deployment used the observed TCP-based path. The short result does not establish that remote placement is intrinsically faster, and the missing long-local arm prevents a long-prompt comparison. These are forced-route pilot observations, not evidence of routing-policy or allowance gain. With 12 samples per arm, p95 is descriptive only and no p99 claim is made.
+
+Evidence: [original frozen plan](known-answer-suite/PLAN.md), [original known-answer analysis](known-answer-analysis.json), [original sanitized responses](known-answer-responses.json), [original numerical diagnostic](numerical-diagnostic.json), [approved amendment](method-amendment.json), [fresh confirmation plan](confirmation-suite/PLAN.md), [fresh confirmation analysis](confirmation-analysis.json), [partial timing JSON](partial-first-block.json), and [36 retained samples](partial-first-block.csv).
