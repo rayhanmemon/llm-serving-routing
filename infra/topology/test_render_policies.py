@@ -1,4 +1,5 @@
 import base64
+import json
 from datetime import datetime
 from pathlib import Path
 import subprocess
@@ -102,6 +103,43 @@ class RenderedFilesTest(unittest.TestCase):
         for deployment in deployments:
             args = deployment['spec']['template']['spec']['containers'][0]['args']
             self.assertFalse(any(arg.startswith('--attention-backend=') for arg in args))
+
+    def test_reference_transport_defaults_preserve_discovery_and_pod_isolation(self):
+        documents = list(yaml.safe_load_all((self.out / 'modelservers.yaml').read_text()))
+        for deployment in (d for d in documents if d['kind'] == 'Deployment'):
+            spec = deployment['spec']['template']['spec']
+            engine = spec['containers'][0]
+            env = {e['name']: e.get('value') for e in engine['env']}
+            self.assertNotIn('UCX_TLS', env)
+            self.assertNotIn('UCX_CUDA_IPC_ENABLE_GET_ZCOPY', env)
+            self.assertFalse(spec.get('hostIPC', False))
+            self.assertFalse(spec.get('hostPID', False))
+            self.assertEqual(spec['volumes'][0]['emptyDir']['medium'], 'Memory')
+            kv = json.loads(engine['args'][engine['args'].index('--kv-transfer-config') + 1])
+            self.assertEqual(kv['kv_buffer_device'], 'cuda')
+            self.assertEqual(kv['kv_connector_extra_config']['backends'], ['UCX'])
+            if 'initContainers' in spec:
+                self.assertEqual(spec['initContainers'][0]['securityContext'],
+                                 {'allowPrivilegeEscalation': False, 'runAsNonRoot': True})
+
+    def test_legacy_transport_and_host_namespaces_require_explicit_flags(self):
+        out = Path(self.temporary.name) / 'explicit-diagnostic'
+        subprocess.run([
+            sys.executable, str(Path(render.__file__)), '--local-node', 'local',
+            '--remote-node', 'remote', '--cpu-node', 'cpu', '--ipc-mode', 'host',
+            '--ucx-tls', 'tcp,cuda_copy,cuda_ipc,self', '--cuda-ipc-get-zcopy', 'on',
+            '--out', str(out),
+        ], check=True, capture_output=True, text=True)
+        for d in yaml.safe_load_all((out / 'modelservers.yaml').read_text()):
+            if d['kind'] != 'Deployment':
+                continue
+            spec = d['spec']['template']['spec']
+            env = {e['name']: e.get('value') for e in spec['containers'][0]['env']}
+            self.assertEqual(env['UCX_TLS'], 'tcp,cuda_copy,cuda_ipc,self')
+            self.assertEqual(env['UCX_CUDA_IPC_ENABLE_GET_ZCOPY'], 'on')
+            self.assertTrue(spec['hostIPC'])
+            self.assertTrue(spec['hostPID'])
+            self.assertEqual(spec['volumes'][0]['hostPath']['path'], '/dev/shm')
 
     def test_attention_backend_override_applies_to_all_workers(self):
         override = Path(self.temporary.name) / 'override'

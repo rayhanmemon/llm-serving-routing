@@ -17,16 +17,20 @@ EVALUATED_POLICIES = ('none', 'hard', 'soft', 'absolute-cap', 'allowance')
 POLICIES = ('diagnostic',) + EVALUATED_POLICIES
 
 
-def model_deployment(name, role, node, namespace, ipc_mode="host", attention_backend=None):
+def model_deployment(name, role, node, namespace, ipc_mode="isolated", attention_backend=None,
+                     ucx_tls=None, cuda_ipc_get_zcopy=None):
     labels = {'app.kubernetes.io/name': name, 'llm-d.ai/guide': 'topology-measurement',
               'llm-d.ai/role': role, 'kubernetes.io/hostname': node}
     port = 8000 if role == 'prefill' else 8200
     args = [MODEL, '--revision=' + REVISION, '--tokenizer-revision=' + REVISION,
+            '--disable-access-log-for-endpoints=/health,/metrics,/v1/models',
             '--tensor-parallel-size=1', '--dtype=bfloat16', '--block-size=64',
             '--max-model-len=16384', '--max-num-seqs=32', '--max-num-batched-tokens=8192',
             '--gpu-memory-utilization=0.85', '--no-enable-prefix-caching',
             '--kv-transfer-config', json.dumps({'kv_connector': 'NixlConnector',
-            'kv_role': 'kv_both', 'kv_load_failure_policy': 'fail'}), '--port=' + str(port)]
+            'kv_role': 'kv_both', 'kv_buffer_device': 'cuda',
+            'kv_connector_extra_config': {'backends': ['UCX']},
+            'kv_load_failure_policy': 'fail'}), '--port=' + str(port)]
     if attention_backend:
         args.append('--attention-backend=' + attention_backend)
     engine = {'name': 'modelserver', 'image': ENGINE, 'command': ['vllm', 'serve'], 'args': args,
@@ -34,8 +38,7 @@ def model_deployment(name, role, node, namespace, ipc_mode="host", attention_bac
                         {'name': 'nixl', 'containerPort': 5600}],
               'env': [{'name': 'USER', 'value': 'llm-d'}, {'name': 'HF_HOME', 'value': '/cache'},
                       {'name': 'UCX_PROTO_INFO', 'value': 'yes'},
-                      {'name': 'UCX_TLS', 'value': 'tcp,cuda_copy,cuda_ipc,self'},
-                      {'name': 'UCX_CUDA_IPC_ENABLE_GET_ZCOPY', 'value': 'on'},
+                      {'name': 'UCX_LOG_LEVEL', 'value': 'info'},
                       {'name': 'VLLM_NIXL_SIDE_CHANNEL_HOST', 'valueFrom': {'fieldRef': {'fieldPath': 'status.podIP'}}},
                       {'name': 'VLLM_NIXL_SIDE_CHANNEL_PORT', 'value': '5600'},
                       {'name': 'VLLM_HTTP_TIMEOUT_KEEP_ALIVE', 'value': '120'}],
@@ -45,6 +48,11 @@ def model_deployment(name, role, node, namespace, ipc_mode="host", attention_bac
                                'periodSeconds': 10, 'timeoutSeconds': 5, 'failureThreshold': 90},
               'readinessProbe': {'httpGet': {'path': '/health', 'port': 'modelserver'}, 'timeoutSeconds': 5},
               'volumeMounts': [{'name': 'shm', 'mountPath': '/dev/shm'}, {'name': 'cache', 'mountPath': '/cache'}]}
+    # Transport restrictions are experiment overrides, not generic deployment defaults.
+    for key, value in [('UCX_TLS', ucx_tls),
+                       ('UCX_CUDA_IPC_ENABLE_GET_ZCOPY', cuda_ipc_get_zcopy)]:
+        if value is not None:
+            engine['env'].append({'name': key, 'value': value})
     spec = {'nodeSelector': {'kubernetes.io/hostname': node}, 'containers': [engine],
             'terminationGracePeriodSeconds': 30,
             'volumes': [{'name': 'shm', 'emptyDir': {'medium': 'Memory', 'sizeLimit': '8Gi'}},
@@ -57,6 +65,8 @@ def model_deployment(name, role, node, namespace, ipc_mode="host", attention_bac
                                   'args': ['--port=8000', '--model-server-port=8200', '--kv-connector=nixlv2',
                                            '--zap-log-level=4', '--secure-proxy=false'],
                                   'ports': [{'name': 'sidecar', 'containerPort': 8000}],
+                                  'securityContext': {'allowPrivilegeEscalation': False,
+                                                      'runAsNonRoot': True},
                                   'resources': {'requests': {'cpu': '250m', 'memory': '256Mi'},
                                                 'limits': {'memory': '1Gi'}}}]
     return {'apiVersion': 'apps/v1', 'kind': 'Deployment', 'metadata': {'name': name, 'namespace': namespace},
@@ -190,8 +200,12 @@ def main():
     p.add_argument('--remote-node', required=True)
     p.add_argument('--cpu-node', required=True)
     p.add_argument('--namespace', default='topology-measurement')
-    p.add_argument('--ipc-mode', choices=('host', 'isolated'), default='host',
-                   help='Host mode shares IPC/PID namespaces and /dev/shm for transfer qualification; no privileged mode')
+    p.add_argument('--ipc-mode', choices=('host', 'isolated'), default='isolated',
+                   help='Default uses private namespaces; host mode is an explicit IPC/PID/shared-memory diagnostic')
+    p.add_argument('--ucx-tls',
+                   help='Optional diagnostic transport allowlist; omitted by default so UCX discovers available transports')
+    p.add_argument('--cuda-ipc-get-zcopy', choices=('on', 'off', 'auto'),
+                   help='Optional diagnostic UCX CUDA IPC READ override; omitted by default')
     p.add_argument('--attention-backend',
                    help='Optional vLLM attention backend applied identically to all three model workers')
     p.add_argument('--allowance', type=int, default=2, help='Uncalibrated starting value')
@@ -217,7 +231,10 @@ def main():
     if (a.attention_backend is not None and
             (not a.attention_backend.strip() or any(c.isspace() for c in a.attention_backend))):
         p.error('attention backend must be one non-empty CLI value without whitespace')
-    docs += [model_deployment(n, r, node, a.namespace, a.ipc_mode, a.attention_backend) for n, r, node in [
+    if a.ucx_tls is not None and (not a.ucx_tls or any(c.isspace() for c in a.ucx_tls)):
+        p.error('UCX transport override must be a non-empty value without whitespace')
+    docs += [model_deployment(n, r, node, a.namespace, a.ipc_mode, a.attention_backend,
+                             a.ucx_tls, a.cuda_ipc_get_zcopy) for n, r, node in [
         ('prefill', 'prefill', a.local_node), ('decode-local', 'decode', a.local_node),
         ('decode-remote', 'decode', a.remote_node)]]
     (a.out / 'modelservers.yaml').write_text(yaml.safe_dump_all(docs, sort_keys=False))

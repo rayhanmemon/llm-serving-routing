@@ -1,8 +1,9 @@
 # Controlled topology-transfer check
 
-**Status — September 16:** real P/D correctness and same-container raw CUDA controls passed; no client-latency block has run. Prior resources are deleted. H200 evaluation is approved under today's $200 ceiling, conservatively including $29.18 prior evaluation spend. Preparation and validation are local; a fresh capacity check and exact resource-plan validation precede launch.
+**Status — September 16:** the closed RTX run retained 36 of 48 forced-route timing samples under the explicitly restricted TCP configuration. The experiment resources are deleted. [Results](../../results/2026-09-16-rtx-serving/RESULT.md). Routing-policy performance remains unmeasured.
 
-[SESSION.md](SESSION.md) describes the measurement protocol. The approved H200 profile retains the three-worker placement: one prefiller and local decoder on an eight-GPU VM, a one-GPU remote decoder, and a CPU utility node. Nine GPUs are rented; three serve the model. [MEASUREMENT-CONFIGS.md](MEASUREMENT-CONFIGS.md) describes diagnostic versus evaluated policies. Raw IPC remains a bounded diagnostic option, not a prerequisite for collecting valid client timing.
+Read [the deployment reference audit](DEPLOYMENT-REFERENCE.md) before another run. It records the official llm-d/provider sources, corrected renderer defaults and intentional experimental differences. Standard separate-pod GPU allocations do not guarantee CUDA IPC; the next fast-transfer baseline needs provider-correct RDMA qualification. [SESSION.md](SESSION.md) preserves the earlier run protocol; its hardware/deadline blocks are historical, not launch instructions for a new session.
+
 
 ## Files
 
@@ -10,6 +11,7 @@
 |---|---|
 | `terraform/` | Five resources: Kubernetes cluster, CPU/local/remote node groups, and the local node's GPU-cluster fabric allocation. Previous resources were destroyed; future plans allocate the eight-GPU node before CPU and remote. |
 | `raw-ipc.py`, `run-ipc-diagnostic.py` | Bounded raw CUDA export/import controls and their one-node orchestration; no model or network-transfer fallback. |
+| `DEPLOYMENT-REFERENCE.md` | Pinned official guide comparison, justified deviations and provider/transport qualification before a new run. |
 | `render.py` | Render three workers, one diagnostic and five evaluated router policies, sequential timings, calibration workloads and candidate replay traces. Uses the published PR image tag and pinned supporting images/model. |
 | `workload.py` | Render a benchmark Pod/ConfigMap with a pinned tokenizer, unique run header and optional decoder pin. It does not deploy or send requests. |
 | `record-routes.py` | Add run ID and requested/selected decoder fields to the rendered Envoy access log. |
@@ -34,7 +36,7 @@ python infra/topology/render.py \
   --cpu-node ACTUAL_CPU_NODE --out infra/topology/rendered
 ```
 
-The default `--ipc-mode host` shares host IPC/PID namespaces and mounts host `/dev/shm` for cross-pod transport qualification. It requests one GPU per engine, limits each engine to six CPUs and does not enable privileged mode. `--ipc-mode isolated` prepares the separate-namespace alternative. Verify actual GPU assignment and payload transport before drawing conclusions; settings and hardware capabilities do not prove use.
+The default `--ipc-mode isolated` uses private Pod namespaces and memory-backed `/dev/shm`. UCX transport discovery is unrestricted by the renderer. `--ipc-mode host`, `--ucx-tls` and `--cuda-ipc-get-zcopy` are explicit diagnostic overrides. One GPU is requested per engine; this does not grant peer-GPU access. Verify provider device access and actual payload transport before drawing conclusions.
 
 Render the standalone chart from published router commit `0217d29924ba93b90f952e7a0281dd8dda146703`, then add route evidence:
 
