@@ -44,6 +44,7 @@ resource "nebius_mk8s_v1_node_group" "local" {
 }
 
 resource "nebius_mk8s_v1_node_group" "cpu" {
+  count            = var.ipc_diagnostic_only ? 0 : 1
   parent_id        = nebius_mk8s_v1_cluster.topology.id
   name             = "router-cpu"
   fixed_node_count = 1
@@ -57,6 +58,7 @@ resource "nebius_mk8s_v1_node_group" "cpu" {
 }
 
 resource "nebius_mk8s_v1_node_group" "remote" {
+  count            = var.ipc_diagnostic_only ? 0 : 1
   parent_id        = nebius_mk8s_v1_cluster.topology.id
   name             = "router-remote"
   fixed_node_count = 1
@@ -80,8 +82,8 @@ output "cluster_id" {
 
 output "node_group_ids" {
   value = {
-    cpu    = nebius_mk8s_v1_node_group.cpu.id
+    cpu    = try(nebius_mk8s_v1_node_group.cpu[0].id, null)
     local  = nebius_mk8s_v1_node_group.local.id
-    remote = nebius_mk8s_v1_node_group.remote.id
+    remote = try(nebius_mk8s_v1_node_group.remote[0].id, null)
   }
 }

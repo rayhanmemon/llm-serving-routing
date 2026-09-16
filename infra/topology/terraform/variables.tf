@@ -22,3 +22,9 @@ variable "gpu_preemptible" {
   default     = true
   description = "Use preemptible GPU nodes. Changing this requires the priced session decision."
 }
+
+variable "ipc_diagnostic_only" {
+  type        = bool
+  default     = false
+  description = "Create only the eight-GPU local node for the bounded CUDA IPC diagnostic."
+}

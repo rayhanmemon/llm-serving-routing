@@ -28,6 +28,36 @@ AUTHORIZATION_SCOPE = "h100-pilot-2026-09-16"
 FULLY_RUNNING_HOURLY_USD = Decimal("19.80282")
 CLEANUP_RESERVE_USD = Decimal("5")
 ATTEMPT_ADMISSION_USD = FULLY_RUNNING_HOURLY_USD * Decimal("2") + CLEANUP_RESERVE_USD
+FULL_TOPOLOGY_PROFILE = "full-topology"
+IPC_DIAGNOSTIC_PROFILE = "ipc-diagnostic"
+PROFILE_POLICIES = {
+    FULL_TOPOLOGY_PROFILE: {
+        "placement_timeout_seconds": PLACEMENT_TIMEOUT_SECONDS,
+        "cleanup_start_seconds": CLEANUP_START_SECONDS,
+        "deletion_target_seconds": DELETION_TARGET_SECONDS,
+        "hourly_rate_usd_pretax": FULLY_RUNNING_HOURLY_USD,
+        "attempt_admission_usd_pretax": ATTEMPT_ADMISSION_USD,
+        "expected_creates": {
+            "nebius_compute_v1_gpu_cluster.local",
+            "nebius_mk8s_v1_cluster.topology",
+            "nebius_mk8s_v1_node_group.local",
+            "nebius_mk8s_v1_node_group.cpu[0]",
+            "nebius_mk8s_v1_node_group.remote[0]",
+        },
+    },
+    IPC_DIAGNOSTIC_PROFILE: {
+        "placement_timeout_seconds": 15 * 60,
+        "cleanup_start_seconds": 20 * 60,
+        "deletion_target_seconds": 30 * 60,
+        "hourly_rate_usd_pretax": Decimal("17.225"),
+        "attempt_admission_usd_pretax": Decimal("13"),
+        "expected_creates": {
+            "nebius_compute_v1_gpu_cluster.local",
+            "nebius_mk8s_v1_cluster.topology",
+            "nebius_mk8s_v1_node_group.local",
+        },
+    },
+}
 
 
 class SessionError(RuntimeError):
@@ -73,6 +103,117 @@ def nonnegative_money(value, label: str) -> Decimal:
     if not money.is_finite() or money < 0:
         raise SessionError(f"{label} must be non-negative and finite")
     return money
+
+
+def profile_policy(profile: str) -> dict:
+    try:
+        return PROFILE_POLICIES[profile]
+    except KeyError as error:
+        raise SessionError(f"Unknown pilot profile: {profile}") from error
+
+
+def session_profile(session: dict) -> str:
+    """Old session records predate profiles and retain full-topology semantics."""
+    return session.get("profile", FULL_TOPOLOGY_PROFILE)
+
+
+def session_hourly_rate(session: dict) -> Decimal:
+    policy = profile_policy(session_profile(session))
+    expected = policy["hourly_rate_usd_pretax"]
+    if "hourly_rate_usd_pretax" not in session:
+        return expected
+    recorded = positive_money(session["hourly_rate_usd_pretax"])
+    if recorded != expected:
+        raise SessionError("Session hourly rate does not match its profile")
+    return recorded
+
+
+def singleton_object(value, label: str) -> dict:
+    if isinstance(value, list) and len(value) == 1:
+        value = value[0]
+    if not isinstance(value, dict):
+        raise SessionError(f"Terraform plan has invalid {label}")
+    return value
+
+
+def plan_boolean(value, label: str) -> bool:
+    if value is True or value == "true":
+        return True
+    if value is False or value == "false":
+        return False
+    raise SessionError(f"Terraform plan has invalid {label}")
+
+
+def validate_plan_structure(plan: dict, profile: str) -> None:
+    policy = profile_policy(profile)
+    changes = plan.get("resource_changes")
+    if not isinstance(changes, list):
+        raise SessionError("Terraform plan JSON has no resource_changes list")
+
+    material = changes
+    invalid = [
+        change.get("address", "<unknown>")
+        for change in material
+        if change.get("change", {}).get("actions") != ["create"]
+    ]
+    if invalid:
+        raise SessionError(f"Terraform plan contains non-create changes: {', '.join(invalid)}")
+
+    actual = {change.get("address") for change in material}
+    expected = policy["expected_creates"]
+    if actual != expected or len(material) != len(expected):
+        raise SessionError(
+            f"Terraform plan does not match profile {profile}: expected exactly "
+            f"{len(expected)} creates ({', '.join(sorted(expected))}); got "
+            f"{len(material)} ({', '.join(sorted(str(item) for item in actual))})"
+        )
+
+    variables = plan.get("variables", {})
+    diagnostic_value = plan_boolean(
+        variables.get("ipc_diagnostic_only", {}).get("value"), "ipc_diagnostic_only"
+    )
+    if diagnostic_value is not (profile == IPC_DIAGNOSTIC_PROFILE):
+        raise SessionError(f"Terraform plan ipc_diagnostic_only does not match profile {profile}")
+    preemptible = plan_boolean(
+        variables.get("gpu_preemptible", {}).get("value"), "gpu_preemptible"
+    )
+    if not preemptible:
+        raise SessionError("Terraform plan must use preemptible GPU capacity")
+
+    local_change = next(
+        change for change in material if change.get("address") == "nebius_mk8s_v1_node_group.local"
+    )
+    after = singleton_object(local_change.get("change", {}).get("after"), "local node group")
+    template = singleton_object(after.get("template"), "local node template")
+    resources = singleton_object(template.get("resources"), "local node resources")
+    boot_disk = singleton_object(template.get("boot_disk"), "local node boot disk")
+    if after.get("fixed_node_count") != 1:
+        raise SessionError("Terraform plan must create exactly one local node")
+    if resources.get("platform") != "gpu-h100-sxm" or resources.get("preset") != "8gpu-128vcpu-1600gb":
+        raise SessionError("Terraform plan local node must use gpu-h100-sxm 8gpu-128vcpu-1600gb")
+    if template.get("preemptible") != {}:
+        raise SessionError("Terraform plan local node must use preemptible GPU capacity")
+    if boot_disk.get("type") != "NETWORK_SSD" or boot_disk.get("size_gibibytes") != 256:
+        raise SessionError("Terraform plan local node boot disk must be a 256 GiB NETWORK_SSD")
+
+
+def validate_terraform_plan(plan_path: Path, profile: str, *, run=subprocess.run) -> None:
+    completed = run(
+        ["terraform", f"-chdir={TERRAFORM_DIR}", "show", "-json", str(plan_path.resolve())],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        detail = completed.stderr.strip() or "terraform show failed"
+        raise SessionError(f"Could not inspect Terraform plan: {detail}")
+    try:
+        plan = json.loads(completed.stdout)
+    except json.JSONDecodeError as error:
+        raise SessionError("Terraform show returned invalid JSON") from error
+    if not isinstance(plan, dict):
+        raise SessionError("Terraform show did not return a JSON object")
+    validate_plan_structure(plan, profile)
 
 
 def cleanup_verified(run_dir: Path, session_id: str) -> bool:
@@ -159,7 +300,7 @@ def validated_attempt_cost(run_dir: Path, session: dict, verified_unix: float) -
         raise SessionError("Attempt cost estimate does not match its session_id")
     estimated_cost = nonnegative_money(cost_record.get("estimate_usd_pretax"), "Attempt cost")
     elapsed = max(Decimal("0"), Decimal(str(verified_unix)) - Decimal(str(session["started_unix"])))
-    conservative_upper = elapsed * FULLY_RUNNING_HOURLY_USD / Decimal("3600") + Decimal("0.01")
+    conservative_upper = elapsed * session_hourly_rate(session) / Decimal("3600") + Decimal("0.01")
     if estimated_cost > conservative_upper:
         raise SessionError("Attempt cost estimate exceeds the full-rate session upper bound")
     return estimated_cost
@@ -210,6 +351,8 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
     if not args.approval_record.is_file():
         raise SessionError(f"Approval record does not exist: {args.approval_record}")
 
+    profile = getattr(args, "profile", FULL_TOPOLOGY_PROFILE)
+    policy = profile_policy(profile)
     approval = read_json(args.approval_record)
     if approval.get("approved") is not True:
         raise SessionError("Approval record must contain approved: true")
@@ -225,6 +368,10 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
         raise SessionError("CLI budget does not match the approval record")
     if approval.get("purchase_type") != args.purchase_type:
         raise SessionError("CLI purchase type does not match the approval record")
+    allowed_profiles = approval.get("allowed_profiles", [FULL_TOPOLOGY_PROFILE])
+    if not isinstance(allowed_profiles, list) or profile not in allowed_profiles:
+        raise SessionError(f"Approval record does not allow profile {profile}")
+    validate_terraform_plan(args.plan, profile)
 
     state_root.mkdir(parents=True, exist_ok=True)
     with (state_root / "budget.lock").open("a+") as lock:
@@ -236,9 +383,10 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
         budget["completed_spend_usd_pretax"] = str(spent)
         budget["remaining_usd_pretax"] = str(remaining)
         write_json(state_root / "budget.json", budget)
-        if remaining < ATTEMPT_ADMISSION_USD:
+        attempt_admission = policy["attempt_admission_usd_pretax"]
+        if remaining < attempt_admission:
             raise SessionError(
-                f"Remaining budget ${remaining} is below the ${ATTEMPT_ADMISSION_USD} attempt admission"
+                f"Remaining budget ${remaining} is below the ${attempt_admission} attempt admission"
             )
         started = time.time() if now is None else now
         session_id = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime(started)) + "-" + uuid.uuid4().hex[:8]
@@ -247,9 +395,14 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
         session = {
             "session_id": session_id,
             "started_unix": started,
-            "placement_deadline_unix": started + PLACEMENT_TIMEOUT_SECONDS,
-            "cleanup_start_deadline_unix": started + CLEANUP_START_SECONDS,
-            "deletion_target_unix": started + DELETION_TARGET_SECONDS,
+            "profile": profile,
+            "placement_timeout_seconds": policy["placement_timeout_seconds"],
+            "cleanup_start_seconds": policy["cleanup_start_seconds"],
+            "deletion_target_seconds": policy["deletion_target_seconds"],
+            "placement_deadline_unix": started + policy["placement_timeout_seconds"],
+            "cleanup_start_deadline_unix": started + policy["cleanup_start_seconds"],
+            "deletion_target_unix": started + policy["deletion_target_seconds"],
+            "hourly_rate_usd_pretax": str(policy["hourly_rate_usd_pretax"]),
             "approved_max_usd_pretax": float(cli_budget),
             "purchase_type": args.purchase_type,
             "approval_reference": approval["approval_reference"],
@@ -264,7 +417,7 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
                 "approved_max_total_usd_pretax": str(approved_budget),
                 "completed_spend_usd_pretax": str(spent),
                 "remaining_before_attempt_usd_pretax": str(remaining),
-                "attempt_admission_usd_pretax": str(ATTEMPT_ADMISSION_USD),
+                "attempt_admission_usd_pretax": str(attempt_admission),
                 "note": "Local admission estimate only; not a provider-side hard cap.",
             },
         }
@@ -288,8 +441,13 @@ def cleanup_until_target(
     sleep_fn=time.sleep,
     run_teardown_fn=None,
 ) -> int:
-    run_teardown_fn = run_teardown_once if run_teardown_fn is None else run_teardown_fn
     session = read_json(run_dir / "session.json")
+    if run_teardown_fn is None:
+        profile = session_profile(session)
+
+        def run_teardown_fn(log, timeout):
+            return run_teardown_once(log, timeout, profile=profile)
+
     session_id = session["session_id"]
     run_dir.mkdir(parents=True, exist_ok=True)
     with (run_dir / "cleanup.lock").open("a+") as lock:
@@ -340,8 +498,19 @@ def cleanup_until_target(
             sleep_fn(60 if remaining <= 0 else min(60, remaining))
 
 
-def run_teardown_once(log, timeout_seconds: float, *, popen_factory=subprocess.Popen, killpg_fn=os.killpg) -> int:
+def run_teardown_once(
+    log,
+    timeout_seconds: float,
+    *,
+    profile: str = FULL_TOPOLOGY_PROFILE,
+    popen_factory=subprocess.Popen,
+    killpg_fn=os.killpg,
+) -> int:
+    profile_policy(profile)
     environment = {key: value for key, value in os.environ.items() if key != "NEBIUS_IAM_TOKEN"}
+    environment["TF_VAR_ipc_diagnostic_only"] = (
+        "true" if profile == IPC_DIAGNOSTIC_PROFILE else "false"
+    )
     process = popen_factory(
         ["bash", str(TEARDOWN), "--execute"],
         cwd=HERE,
@@ -430,7 +599,9 @@ def apply_plan(
         )
         timed_out = False
         try:
-            exit_code = process.wait(timeout=PLACEMENT_TIMEOUT_SECONDS)
+            exit_code = process.wait(
+                timeout=session.get("placement_timeout_seconds", PLACEMENT_TIMEOUT_SECONDS)
+            )
         except subprocess.TimeoutExpired:
             timed_out = True
             process.send_signal(signal.SIGINT)
@@ -469,6 +640,12 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--approval-record", type=Path, required=True)
     result.add_argument("--approved-max-usd-pretax", required=True)
     result.add_argument("--purchase-type", choices=("preemptible",), required=True)
+    result.add_argument(
+        "--profile",
+        choices=tuple(PROFILE_POLICIES),
+        default=FULL_TOPOLOGY_PROFILE,
+        help="resource shape and lifecycle policy (default: full-topology)",
+    )
     result.add_argument("--plan", type=Path, required=True)
     return result
 

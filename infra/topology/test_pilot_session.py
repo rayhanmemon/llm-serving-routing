@@ -39,6 +39,7 @@ class PilotSessionTest(unittest.TestCase):
             "approved": True,
             "approval_reference": "test approval",
             "authorization_scope": pilot.AUTHORIZATION_SCOPE,
+            "allowed_profiles": [pilot.FULL_TOPOLOGY_PROFILE, pilot.IPC_DIAGNOSTIC_PROFILE],
             "allow_multiple_attempts": True,
             "max_total_usd_pretax": "50",
             "historical_spend_usd_pretax": "0",
@@ -51,6 +52,40 @@ class PilotSessionTest(unittest.TestCase):
             approved_max_usd_pretax="50",
             purchase_type="preemptible",
         )
+        plan_validator = mock.patch.object(pilot, "validate_terraform_plan")
+        self.validate_plan = plan_validator.start()
+        self.addCleanup(plan_validator.stop)
+
+    def plan_json(self, diagnostic):
+        addresses = set(pilot.PROFILE_POLICIES[
+            pilot.IPC_DIAGNOSTIC_PROFILE if diagnostic else pilot.FULL_TOPOLOGY_PROFILE
+        ]["expected_creates"])
+        changes = []
+        for address in sorted(addresses):
+            after = {}
+            if address == "nebius_mk8s_v1_node_group.local":
+                after = {
+                    "fixed_node_count": 1,
+                    "template": {
+                        "resources": {
+                            "platform": "gpu-h100-sxm",
+                            "preset": "8gpu-128vcpu-1600gb",
+                        },
+                        "boot_disk": {"type": "NETWORK_SSD", "size_gibibytes": 256},
+                        "preemptible": {},
+                    },
+                }
+            changes.append({
+                "address": address,
+                "change": {"actions": ["create"], "after": after},
+            })
+        return {
+            "variables": {
+                "gpu_preemptible": {"value": True},
+                "ipc_diagnostic_only": {"value": diagnostic},
+            },
+            "resource_changes": changes,
+        }
 
     def complete(self, run_dir, verified_unix, estimated_cost):
         session = json.loads((run_dir / "session.json").read_text())
@@ -149,6 +184,103 @@ class PilotSessionTest(unittest.TestCase):
         session = json.loads((run_dir / "session.json").read_text())
         self.assertEqual(session["budget_snapshot"]["completed_spend_usd_pretax"], exact)
 
+    def test_legacy_cli_defaults_to_full_topology_deadlines(self):
+        _, session = pilot.prepare_session(self.args, self.root / "state", now=100)
+
+        self.assertEqual(session["profile"], pilot.FULL_TOPOLOGY_PROFILE)
+        self.assertEqual(session["placement_deadline_unix"], 100 + 30 * 60)
+        self.assertEqual(session["cleanup_start_deadline_unix"], 100 + 90 * 60)
+        self.assertEqual(session["deletion_target_unix"], 100 + 120 * 60)
+        self.assertEqual(
+            session["budget_snapshot"]["attempt_admission_usd_pretax"],
+            str(pilot.ATTEMPT_ADMISSION_USD),
+        )
+
+    def test_ipc_diagnostic_uses_bounded_deadlines_rate_and_admission(self):
+        self.args.profile = pilot.IPC_DIAGNOSTIC_PROFILE
+        _, session = pilot.prepare_session(self.args, self.root / "state", now=100)
+
+        self.assertEqual(session["placement_deadline_unix"], 100 + 15 * 60)
+        self.assertEqual(session["cleanup_start_deadline_unix"], 100 + 20 * 60)
+        self.assertEqual(session["deletion_target_unix"], 100 + 30 * 60)
+        self.assertEqual(session["hourly_rate_usd_pretax"], "17.225")
+        self.assertEqual(session["budget_snapshot"]["attempt_admission_usd_pretax"], "13")
+
+    def test_ipc_diagnostic_is_admitted_with_thirty_dollars_remaining_and_repairs_cache(self):
+        first, _ = pilot.prepare_session(self.args, self.root / "state", now=100)
+        exact_spend = Decimal("19.935387814552864")
+        elapsed = float(exact_spend * 3600 / pilot.FULLY_RUNNING_HOURLY_USD)
+        self.complete(first, 100 + elapsed, str(exact_spend))
+        budget_path = self.root / "state/budget.json"
+        budget = json.loads(budget_path.read_text())
+        budget["completed_spend_usd_pretax"] = "0.5"
+        budget["remaining_usd_pretax"] = "49.5"
+        pilot.write_json(budget_path, budget)
+        self.args.profile = pilot.IPC_DIAGNOSTIC_PROFILE
+
+        _, session = pilot.prepare_session(self.args, self.root / "state", now=5000)
+
+        remaining = Decimal("50") - exact_spend
+        self.assertEqual(
+            session["budget_snapshot"]["completed_spend_usd_pretax"], str(exact_spend)
+        )
+        self.assertEqual(
+            session["budget_snapshot"]["remaining_before_attempt_usd_pretax"], str(remaining)
+        )
+        repaired = json.loads(budget_path.read_text())
+        self.assertEqual(repaired["completed_spend_usd_pretax"], str(exact_spend))
+        self.assertEqual(repaired["remaining_usd_pretax"], str(remaining))
+
+    def test_ipc_diagnostic_requires_explicit_profile_approval(self):
+        approval = json.loads(self.approval.read_text())
+        approval["allowed_profiles"] = [pilot.FULL_TOPOLOGY_PROFILE]
+        self.approval.write_text(json.dumps(approval))
+        self.args.profile = pilot.IPC_DIAGNOSTIC_PROFILE
+
+        with self.assertRaisesRegex(pilot.SessionError, "does not allow profile ipc-diagnostic"):
+            pilot.prepare_session(self.args, self.root / "state", now=100)
+
+    def test_plan_validation_accepts_exact_diagnostic_shape(self):
+        pilot.validate_plan_structure(self.plan_json(diagnostic=True), pilot.IPC_DIAGNOSTIC_PROFILE)
+
+    def test_plan_validation_rejects_profile_mismatch(self):
+        with self.assertRaisesRegex(pilot.SessionError, "does not match profile full-topology"):
+            pilot.validate_plan_structure(self.plan_json(diagnostic=True), pilot.FULL_TOPOLOGY_PROFILE)
+
+    def test_plan_validation_rejects_non_preemptible_local_node(self):
+        plan = self.plan_json(diagnostic=True)
+        plan["variables"]["gpu_preemptible"]["value"] = False
+
+        with self.assertRaisesRegex(pilot.SessionError, "must use preemptible"):
+            pilot.validate_plan_structure(plan, pilot.IPC_DIAGNOSTIC_PROFILE)
+
+    def test_plan_validation_rejects_extra_noop_state(self):
+        plan = self.plan_json(diagnostic=True)
+        plan["resource_changes"].append({
+            "address": "nebius_mk8s_v1_node_group.unrelated",
+            "change": {"actions": ["no-op"], "after": {}},
+        })
+
+        with self.assertRaisesRegex(pilot.SessionError, "contains non-create changes"):
+            pilot.validate_plan_structure(plan, pilot.IPC_DIAGNOSTIC_PROFILE)
+
+    def test_diagnostic_cost_upper_bound_uses_profile_rate(self):
+        run_dir = self.root / "run"
+        run_dir.mkdir()
+        session = {
+            "session_id": "diagnostic",
+            "profile": pilot.IPC_DIAGNOSTIC_PROFILE,
+            "hourly_rate_usd_pretax": "17.225",
+            "started_unix": 100,
+        }
+        pilot.write_json(run_dir / "cost-estimate.json", {
+            "session_id": "diagnostic",
+            "estimate_usd_pretax": "17.24",
+        })
+
+        with self.assertRaisesRegex(pilot.SessionError, "exceeds the full-rate"):
+            pilot.validated_attempt_cost(run_dir, session, 3700)
+
     def test_guard_waits_until_deadline_then_starts_cleanup(self):
         run_dir, session = pilot.prepare_session(self.args, self.root / "state", now=100)
         session["cleanup_start_deadline_unix"] = 110
@@ -203,6 +335,49 @@ class PilotSessionTest(unittest.TestCase):
             mock.call(4321, pilot.signal.SIGTERM),
             mock.call(4321, pilot.signal.SIGKILL),
         ])
+
+    def test_diagnostic_cleanup_passes_matching_terraform_profile(self):
+        process = mock.Mock(pid=4321)
+        process.wait.return_value = 0
+        popen = mock.Mock(return_value=process)
+        with (self.root / "cleanup.log").open("w") as log:
+            result = pilot.run_teardown_once(
+                log,
+                10,
+                profile=pilot.IPC_DIAGNOSTIC_PROFILE,
+                popen_factory=popen,
+            )
+
+        self.assertEqual(result, 0)
+        self.assertEqual(popen.call_args.kwargs["env"]["TF_VAR_ipc_diagnostic_only"], "true")
+
+    def test_cleanup_uses_profile_from_session_record(self):
+        run_dir = self.root / "diagnostic-cleanup"
+        run_dir.mkdir()
+        pilot.write_json(run_dir / "session.json", {
+            "session_id": "diagnostic",
+            "profile": pilot.IPC_DIAGNOSTIC_PROFILE,
+            "deletion_target_unix": 100,
+        })
+        teardown = mock.Mock(return_value=0)
+
+        with mock.patch.object(pilot, "run_teardown_once", teardown):
+            result = pilot.cleanup_until_target(run_dir, now_fn=lambda: 100)
+
+        self.assertEqual(result, 0)
+        self.assertEqual(
+            teardown.call_args.kwargs["profile"], pilot.IPC_DIAGNOSTIC_PROFILE
+        )
+
+    def test_legacy_cleanup_passes_full_topology_terraform_profile(self):
+        process = mock.Mock(pid=4321)
+        process.wait.return_value = 0
+        popen = mock.Mock(return_value=process)
+        with (self.root / "cleanup.log").open("w") as log:
+            result = pilot.run_teardown_once(log, 10, popen_factory=popen)
+
+        self.assertEqual(result, 0)
+        self.assertEqual(popen.call_args.kwargs["env"]["TF_VAR_ipc_diagnostic_only"], "false")
 
     def test_budget_comparison_is_numeric_and_rejects_non_finite(self):
         self.args.approved_max_usd_pretax = "50.0"
