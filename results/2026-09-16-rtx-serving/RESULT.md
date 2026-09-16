@@ -6,6 +6,27 @@ This regular-capacity UK session used eight-GPU and one-GPU RTX PRO 6000 Blackwe
 
 An initial image upload ended with an exec-stream EOF before inference. Setup correction `1d09dff` used a bounded SPDY upload, succeeded, and imported the unchanged reviewed image. The router and model configuration were unchanged.
 
+## Partial first block: 36/48
+
+Three measured arms completed strict request, route, payload, worker/GPU identity and transfer validation. A zero exit code for the final 8192-token local client was observed after the cleanup deadline; its actual completion time was not retained. Its benchmark Pod was deleted before reports and the after snapshot could be saved. It is unavailable and is not included. Warmups are also excluded.
+
+| Input tokens | Forced route | Samples | Mean TTFT | Median TTFT | Descriptive p95 TTFT | Mean completion | Median completion | Descriptive p95 completion |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 512 | local | 12 | 420.832 ms | 421.462 ms | 444.541 ms | 1.890 s | 1.889 s | 1.917 s |
+| 512 | remote | 12 | 317.254 ms | 320.122 ms | 350.533 ms | 1.784 s | 1.787 s | 1.819 s |
+| 8192 | remote | 12 | 4.337 s | 4.342 s | 4.472 s | 5.985 s | 5.989 s | 6.124 s |
+
+The 12 short local and remote requests have exact matched payload hashes. Remote-minus-local TTFT was negative for all 12 pairs: **−103.578 ms mean**, **−98.784 ms median**, and **−78.298 ms descriptive p95**. Completion latency differed by −105.946 ms mean and −100.922 ms median.
+
+Each short arm recorded 12 transfers and 905,969,664 bytes. Mean observed connector transfer time was 339.274 ms local and 241.718 ms remote. The long-remote arm recorded 12 transfers, 14,495,514,624 bytes and 3.719 s mean observed connector time. All exposed transfer, notification and expiry deltas were zero.
+
+This deployment used the observed TCP-based path. The short result does not establish that remote placement is intrinsically faster, and the missing long-local arm prevents a long-prompt comparison. These are forced-route pilot observations, not evidence of routing-policy or allowance gain. With 12 samples per arm, p95 is descriptive only and no p99 claim is made.
+
+
+## Cleanup and cost
+
+All four experiment Terraform resources were destroyed. Independent checks found no instances, Kubernetes clusters, disks, filesystems or GPU clusters in the experiment project at **19:30:58 UTC**. Other resource types and projects were not checked. This attempt cost an estimated **$25.37 before tax**, calculated conservatively from native operation lifetimes rather than an invoice. See [cleanup evidence](cleanup.json) and [cost calculation](cost-estimate.json).
+
 ## Original oracle: failed
 
 The exact-string oracle used the same five-token prompt, 16 greedy output tokens and seed 17. It remains failed:
@@ -38,20 +59,5 @@ The fresh seed-`17092027` suite was committed before execution (`ef898194df31d26
 
 That prospective confirmation qualified correctness under the approved parity rule. A truthful correctness marker admitted the frozen first timing block.
 
-## Partial first block: 36/48
 
-Three measured arms completed strict request, route, payload, worker/GPU identity and transfer validation. The final 8192-token local client exited 0 after the cleanup deadline, but its benchmark Pod was deleted before reports and the after snapshot were retained. It is unavailable and is not included. Warmups are also excluded.
-
-| Input tokens | Forced route | Samples | Mean TTFT | Median TTFT | Descriptive p95 TTFT | Mean completion | Median completion | Descriptive p95 completion |
-|---:|---|---:|---:|---:|---:|---:|---:|---:|
-| 512 | local | 12 | 420.832 ms | 421.462 ms | 444.541 ms | 1.890 s | 1.889 s | 1.917 s |
-| 512 | remote | 12 | 317.254 ms | 320.122 ms | 350.533 ms | 1.784 s | 1.787 s | 1.819 s |
-| 8192 | remote | 12 | 4.337 s | 4.342 s | 4.472 s | 5.985 s | 5.989 s | 6.124 s |
-
-The 12 short local and remote requests have exact matched payload hashes. Remote-minus-local TTFT was negative for all 12 pairs: **−103.578 ms mean**, **−98.784 ms median**, and **−78.298 ms descriptive p95**. Completion latency differed by −105.946 ms mean and −100.922 ms median.
-
-Each short arm recorded 12 transfers and 905,969,664 bytes. Mean observed connector transfer time was 339.274 ms local and 241.718 ms remote. The long-remote arm recorded 12 transfers, 14,495,514,624 bytes and 3.719 s mean observed connector time. All exposed transfer, notification and expiry deltas were zero.
-
-This deployment used the observed TCP-based path. The short result does not establish that remote placement is intrinsically faster, and the missing long-local arm prevents a long-prompt comparison. These are forced-route pilot observations, not evidence of routing-policy or allowance gain. With 12 samples per arm, p95 is descriptive only and no p99 claim is made.
-
-Evidence: [original frozen plan](known-answer-suite/PLAN.md), [original known-answer analysis](known-answer-analysis.json), [original sanitized responses](known-answer-responses.json), [original numerical diagnostic](numerical-diagnostic.json), [approved amendment](method-amendment.json), [fresh confirmation plan](confirmation-suite/PLAN.md), [fresh confirmation analysis](confirmation-analysis.json), [partial timing JSON](partial-first-block.json), and [36 retained samples](partial-first-block.csv).
+Evidence: [original frozen plan](known-answer-suite/PLAN.md), [original known-answer analysis](known-answer-analysis.json), [original sanitized responses](known-answer-responses.json), [original numerical diagnostic](numerical-diagnostic.json), [approved amendment](method-amendment.json), [fresh confirmation plan](confirmation-suite/PLAN.md), [fresh confirmation analysis](confirmation-analysis.json), [partial timing JSON](partial-first-block.json), [36 retained samples](partial-first-block.csv), and the [minimal raw timing evidence manifest](timing-evidence-manifest.json) for its [hash-bound archive](timing-evidence.tar.gz).

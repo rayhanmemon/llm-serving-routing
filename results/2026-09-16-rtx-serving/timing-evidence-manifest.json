@@ -1,0 +1,206 @@
+{
+  "archive": {
+    "bytes": 723583,
+    "path": "timing-evidence.tar.gz",
+    "sha256": "1fd09240464f3d1a89927f203c6816026583ad136d4ecb68ffcc5835d27651fe"
+  },
+  "members": {
+    "timing-evidence/identity-subset.json": {
+      "bytes": 22597,
+      "sha256": "e8426d8bb4c502ae7886f0f8f7e99bdda5fe6f1a6e071d3a0bf0ba8ce402325b"
+    },
+    "timing-evidence/long-remote-b1/envoy-routes.jsonl": {
+      "bytes": 5412,
+      "sha256": "7df7cf3181aef597b3ee46a5f5deddc8a0785034735c664c7ff9e33877e1a82a"
+    },
+    "timing-evidence/long-remote-b1/metrics/after-decode-local.txt": {
+      "bytes": 60933,
+      "sha256": "72d7075301c0967c55acae38532ef9c1f75164b428d54ccdd0195410af84f1d2"
+    },
+    "timing-evidence/long-remote-b1/metrics/after-decode-remote.txt": {
+      "bytes": 60938,
+      "sha256": "7c48eba684cdbe60b2f40efcb63a48322baea8710e9c64868e678915ef911494"
+    },
+    "timing-evidence/long-remote-b1/metrics/after-prefill.txt": {
+      "bytes": 60710,
+      "sha256": "af248fcff1d894587ae299e293cf964d4da22dd947b09e5d650fe81bcfd39eab"
+    },
+    "timing-evidence/long-remote-b1/metrics/before-decode-local.txt": {
+      "bytes": 60933,
+      "sha256": "63b860d2a351e92d32cc3210c862b259b40c9286b91c123987a8c8b7f1c56c15"
+    },
+    "timing-evidence/long-remote-b1/metrics/before-decode-remote.txt": {
+      "bytes": 60928,
+      "sha256": "085dec44665e833687a8a40842e302d4dd5a8c369821d624aaa334ebea93ceb0"
+    },
+    "timing-evidence/long-remote-b1/metrics/before-prefill.txt": {
+      "bytes": 60724,
+      "sha256": "6328a8e17d6e2acafef18043f33c3de75260299cd6d5c552d2fd5bce7b839b19"
+    },
+    "timing-evidence/long-remote-b1/reports/config.yaml": {
+      "bytes": 2121,
+      "sha256": "064bd504096e239fd9e7cac2dceb8a91d169defa95b1913e3dbd1c7c68ec17d7"
+    },
+    "timing-evidence/long-remote-b1/reports/exit-code": {
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "timing-evidence/long-remote-b1/reports/per_request_lifecycle_metrics.json": {
+      "bytes": 1977786,
+      "sha256": "969c9c606d7c6588e8af59c0e543c9e701b4d4af74ff6d025e7f49da252ffaca"
+    },
+    "timing-evidence/long-remote-b1/reports/stage_0_lifecycle_metrics.json": {
+      "bytes": 6879,
+      "sha256": "43e7d0ec2aeb45c6dbc69a9b54cd5cf32d7ad104c8a623e937e9b572428bae8a"
+    },
+    "timing-evidence/long-remote-b1/reports/summary_lifecycle_metrics.json": {
+      "bytes": 6747,
+      "sha256": "6c0682f9ad6e026e2da20aab89ca797ea38c5bfd1b661a6d67452b299a92e329"
+    },
+    "timing-evidence/long-remote-b1/transfer-delta.json": {
+      "bytes": 1333,
+      "sha256": "092c1dee1f4ca4d5727265a4d1c3aab5696f948fda8f8daf27c6cd5ba9beb9b5"
+    },
+    "timing-evidence/long-remote-b1/validation.json": {
+      "bytes": 1411,
+      "sha256": "e3c479e3a3aa2bee2a8d16ac5bc75e15a118133f66d9cc52f2bd7d8568286477"
+    },
+    "timing-evidence/short-local-b1/envoy-routes.jsonl": {
+      "bytes": 5304,
+      "sha256": "f6e4e1591926463ffc3fe828b3300b609f715d0d0d6126f67eee1ea52a3e6ec6"
+    },
+    "timing-evidence/short-local-b1/metrics/after-decode-local.txt": {
+      "bytes": 60945,
+      "sha256": "dab43b23ccc596619f55d6d84dae61a6b44aa4a7dde84370989f5a6cf7f221c3"
+    },
+    "timing-evidence/short-local-b1/metrics/after-decode-remote.txt": {
+      "bytes": 60888,
+      "sha256": "234bc40296a27b2009a1ee3d6ef66f2e222dd159ac17beb211a5df1bf9e98f0a"
+    },
+    "timing-evidence/short-local-b1/metrics/after-prefill.txt": {
+      "bytes": 60712,
+      "sha256": "9cb25bb810ea20900effb9d89de6a46413d87bd1a518ea229d1be3bea402a862"
+    },
+    "timing-evidence/short-local-b1/metrics/before-decode-local.txt": {
+      "bytes": 60898,
+      "sha256": "22675a4229a89a2ddb6a7c5ef17f9a827c281eedafdfd19b658066531641c759"
+    },
+    "timing-evidence/short-local-b1/metrics/before-decode-remote.txt": {
+      "bytes": 60888,
+      "sha256": "9d8363a5f482d4e37fcc40eabbcb1d5441ebe7add0dc95c9d6cbeb8e7a61736c"
+    },
+    "timing-evidence/short-local-b1/metrics/before-prefill.txt": {
+      "bytes": 60711,
+      "sha256": "8327ace48e902398bc6f8702d9c442dffb43bd936c643a2c48edfc16e0c69be2"
+    },
+    "timing-evidence/short-local-b1/reports/config.yaml": {
+      "bytes": 2114,
+      "sha256": "3525054deadb912dea218f9da4aba1e8d926d982b8b3cd3dae9241cf14dc4489"
+    },
+    "timing-evidence/short-local-b1/reports/exit-code": {
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "timing-evidence/short-local-b1/reports/per_request_lifecycle_metrics.json": {
+      "bytes": 1086835,
+      "sha256": "ad3fdac578333a41a552e37b87d47f63e1d70f4eeea7e1c8c84eb918a6becb7e"
+    },
+    "timing-evidence/short-local-b1/reports/stage_0_lifecycle_metrics.json": {
+      "bytes": 6862,
+      "sha256": "f429087b0478acc9d79b12804fc67b6c7124adf07bc26e55cf12649b64ba5243"
+    },
+    "timing-evidence/short-local-b1/reports/summary_lifecycle_metrics.json": {
+      "bytes": 6730,
+      "sha256": "4bc92e6c361630c7204714d6f15bb34fffba8d38e876356a85386627ba6e4b2e"
+    },
+    "timing-evidence/short-local-b1/transfer-delta.json": {
+      "bytes": 1330,
+      "sha256": "5a617a6579c2cb32cdbb9dd06c480332ee18f3d38012379d2001b937fe45813b"
+    },
+    "timing-evidence/short-local-b1/validation.json": {
+      "bytes": 1426,
+      "sha256": "a6fa7b7bc05b5902cae3b23f2b111e9223a6d51fac668e07f69e2863edeb16be"
+    },
+    "timing-evidence/short-remote-b1/envoy-routes.jsonl": {
+      "bytes": 5424,
+      "sha256": "632a2b9c8863520184afacc55ea7953d93778e129e1838ad4bc36180dc079b0b"
+    },
+    "timing-evidence/short-remote-b1/metrics/after-decode-local.txt": {
+      "bytes": 60933,
+      "sha256": "120805adfb11a352f7c8f446a8b5d22161d3b7fb220463b526ae0605f93756e3"
+    },
+    "timing-evidence/short-remote-b1/metrics/after-decode-remote.txt": {
+      "bytes": 60916,
+      "sha256": "2c5bd167a5d1f8d19da00d0be13a74e282529443f174cde370bf03ef50b00683"
+    },
+    "timing-evidence/short-remote-b1/metrics/after-prefill.txt": {
+      "bytes": 60712,
+      "sha256": "a12a6c21798d8c8b1474849d178c9f57f71a642d3f9952061b131a9df3df7b29"
+    },
+    "timing-evidence/short-remote-b1/metrics/before-decode-local.txt": {
+      "bytes": 60933,
+      "sha256": "df70d03b6888d958adf197618d3b87d4b27e5013d7795773314a490497f520b2"
+    },
+    "timing-evidence/short-remote-b1/metrics/before-decode-remote.txt": {
+      "bytes": 60888,
+      "sha256": "217bbea77859ad11e3abccbc2dd8a703115cb8e1afe4df018d82097238896069"
+    },
+    "timing-evidence/short-remote-b1/metrics/before-prefill.txt": {
+      "bytes": 60712,
+      "sha256": "95770557e7ebee29ee0b48f4446486b33dbb30f886eb000f4f8e12319a5b87e3"
+    },
+    "timing-evidence/short-remote-b1/reports/config.yaml": {
+      "bytes": 2119,
+      "sha256": "78f3493b5f324880293df0334d41dec7261c5dbcac0434a76f6aea53616caa04"
+    },
+    "timing-evidence/short-remote-b1/reports/exit-code": {
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "timing-evidence/short-remote-b1/reports/per_request_lifecycle_metrics.json": {
+      "bytes": 1078550,
+      "sha256": "e383129ed1419a2bad4ba7f91532de4c0004e751705d23433dcc7e56947a3f6d"
+    },
+    "timing-evidence/short-remote-b1/reports/stage_0_lifecycle_metrics.json": {
+      "bytes": 6870,
+      "sha256": "ad42e300066b9713d26cc85100d3938393ec9df0a70d15f7afae3859147570bf"
+    },
+    "timing-evidence/short-remote-b1/reports/summary_lifecycle_metrics.json": {
+      "bytes": 6738,
+      "sha256": "e694189dbfa1aafda0969c7019a79f3b93765e253a041c5092073d0bd29d56e1"
+    },
+    "timing-evidence/short-remote-b1/transfer-delta.json": {
+      "bytes": 1330,
+      "sha256": "35bb492f994b66279887979f3fe582f3ecb623f2702d307dc5cfb180389f09ff"
+    },
+    "timing-evidence/short-remote-b1/validation.json": {
+      "bytes": 1427,
+      "sha256": "b2f75120a422624958c4d081cb18923c721186c5a62e4929d80aef24dc70ef88"
+    }
+  },
+  "scope": {
+    "envoy_routes": "Only run-matching structured rows; request UUIDs and encoded pins preserved; private upstream IPs replaced by decoder role aliases.",
+    "excluded": [
+      "all warmups",
+      "long-local-b1 because no retained measured report or after collection",
+      "full logs and full pod/node/configmap/event inventories"
+    ],
+    "identity": "Sanitized subset; cloud node names replaced by stable host-local/host-remote/host-cpu aliases.",
+    "kind": "derived minimal subset of three original complete collections; not an original collection archive",
+    "planned_measured_requests": 48,
+    "raw_per_request_request_and_response_bytes_preserved": true,
+    "validated_arms": [
+      "short-local-b1",
+      "short-remote-b1",
+      "long-remote-b1"
+    ],
+    "validated_measured_requests": 36
+  },
+  "verification": {
+    "global_completion_marker_created": false,
+    "require_collection_before_after": true,
+    "short_request_hashes_exact_match": true,
+    "validate_records_12_each_current_validator": true,
+    "validate_routes_12_each_unsanitized_source": true
+  }
+}
