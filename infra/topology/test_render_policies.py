@@ -95,6 +95,29 @@ class RenderedFilesTest(unittest.TestCase):
             self.assertTrue((self.out / f'epp-{policy}.yaml').is_file())
             self.assertTrue((self.out / f'router-{policy}.values.yaml').is_file())
 
+    def test_default_engine_manifests_do_not_override_attention_backend(self):
+        documents = list(yaml.safe_load_all((self.out / 'modelservers.yaml').read_text()))
+        deployments = [document for document in documents if document['kind'] == 'Deployment']
+        self.assertEqual(len(deployments), 3)
+        for deployment in deployments:
+            args = deployment['spec']['template']['spec']['containers'][0]['args']
+            self.assertFalse(any(arg.startswith('--attention-backend=') for arg in args))
+
+    def test_attention_backend_override_applies_to_all_workers(self):
+        override = Path(self.temporary.name) / 'override'
+        subprocess.run([
+            sys.executable, str(Path(render.__file__)), '--local-node', 'local',
+            '--remote-node', 'remote', '--cpu-node', 'cpu', '--attention-backend',
+            'TRITON_ATTN', '--out', str(override),
+        ], check=True, capture_output=True, text=True)
+        documents = list(yaml.safe_load_all((override / 'modelservers.yaml').read_text()))
+        deployments = [document for document in documents if document['kind'] == 'Deployment']
+        self.assertEqual(len(deployments), 3)
+        for deployment in deployments:
+            args = deployment['spec']['template']['spec']['containers'][0]['args']
+            self.assertEqual([arg for arg in args if arg.startswith('--attention-backend=')],
+                             ['--attention-backend=TRITON_ATTN'])
+
     def test_calibration_reaches_both_busy_candidate_levels(self):
         for tokens in (512, 8192):
             load = self.read(f'calibration-{tokens}.yaml')['load']

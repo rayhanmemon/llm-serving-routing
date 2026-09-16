@@ -55,11 +55,13 @@ class PilotSessionTest(unittest.TestCase):
         plan_validator = mock.patch.object(pilot, "validate_terraform_plan")
         self.validate_plan = plan_validator.start()
         self.validate_plan.side_effect = lambda path, profile: {
-            key: pilot.PROFILE_POLICIES[profile][source]
-            for key, source in (("gpu_platform", "gpu_platform"),
-                                ("infiniband_fabric", "infiniband_fabric"),
-                                ("ipc_diagnostic_only", "diagnostic_only"),
-                                ("gpu_preemptible", "gpu_preemptible"))
+            "gpu_platform": pilot.PROFILE_POLICIES[profile]["gpu_platform"],
+            "infiniband_fabric": pilot.PROFILE_POLICIES[profile]["infiniband_fabric"],
+            "ipc_diagnostic_only": pilot.PROFILE_POLICIES[profile]["diagnostic_only"],
+            "gpu_preemptible": pilot.PROFILE_POLICIES[profile]["gpu_preemptible"],
+            "project_id": pilot.PROFILE_POLICIES[profile].get("project_id", "test-project"),
+            "subnet_id": pilot.PROFILE_POLICIES[profile].get("subnet_id", "test-subnet"),
+            "terraform_dir": str(pilot.profile_terraform_dir(profile)),
         }
         self.addCleanup(plan_validator.stop)
 
@@ -80,7 +82,7 @@ class PilotSessionTest(unittest.TestCase):
                     "template": {
                         "resources": {
                             "platform": policy["terraform_gpu_platform"],
-                            "preset": "8gpu-128vcpu-1600gb",
+                            "preset": policy.get("local_gpu_preset", "8gpu-128vcpu-1600gb"),
                         },
                         "boot_disk": {"type": "NETWORK_SSD", "size_gibibytes": 256},
                         "preemptible": {} if policy["gpu_preemptible"] else None,
@@ -95,7 +97,7 @@ class PilotSessionTest(unittest.TestCase):
                     "template": {
                         "resources": {
                             "platform": policy["terraform_gpu_platform"],
-                            "preset": "1gpu-16vcpu-200gb",
+                            "preset": policy.get("remote_gpu_preset", "1gpu-16vcpu-200gb"),
                         },
                         "boot_disk": {"type": "NETWORK_SSD", "size_gibibytes": 256},
                         "preemptible": {} if policy["gpu_preemptible"] else None,
@@ -118,6 +120,8 @@ class PilotSessionTest(unittest.TestCase):
             })
         return {
             "variables": {
+                "project_id": {"value": policy.get("project_id", "test-project")},
+                "subnet_id": {"value": policy.get("subnet_id", "test-subnet")},
                 "gpu_preemptible": {"value": policy["gpu_preemptible"]},
                 "gpu_platform": {"value": policy["gpu_platform"]},
                 "infiniband_fabric": {"value": policy["infiniband_fabric"]},
@@ -304,6 +308,31 @@ class PilotSessionTest(unittest.TestCase):
         with self.assertRaisesRegex(pilot.SessionError, "requires purchase type on-demand"):
             pilot.prepare_session(self.args, self.root / "state", now=100)
 
+    def test_rtx_on_demand_pins_region_root_cost_shape_and_attention_backend(self):
+        approval = json.loads(self.approval.read_text())
+        approval["allowed_profiles"].append(pilot.RTX_ON_DEMAND_PROFILE)
+        approval["max_total_usd_pretax"] = "200"
+        approval["purchase_type"] = "on-demand"
+        self.approval.write_text(json.dumps(approval))
+        self.args.approved_max_usd_pretax = "200"
+        self.args.purchase_type = "on-demand"
+        self.args.profile = pilot.RTX_ON_DEMAND_PROFILE
+
+        _, session = pilot.prepare_session(self.args, self.root / "state", now=100)
+
+        self.assertEqual(session["project_id"], pilot.RTX_PROJECT_ID)
+        self.assertEqual(session["subnet_id"], pilot.RTX_SUBNET_ID)
+        self.assertEqual(Path(session["terraform_dir"]), pilot.RTX_TERRAFORM_DIR.resolve())
+        self.assertEqual(session["gpu_platform"], "RTX6000-A")
+        self.assertEqual(session["infiniband_fabric"], "")
+        self.assertEqual(session["hourly_rate_usd_pretax"], "16.653")
+        self.assertEqual(session["budget_snapshot"]["attempt_admission_usd_pretax"], "100")
+        self.assertEqual(session["cleanup_start_deadline_unix"], 100 + 270 * 60)
+        self.assertEqual(session["deletion_target_unix"], 100 + 300 * 60)
+        self.assertEqual(session["attention_backend"], "TRITON_ATTN")
+        self.assertEqual(Decimal("5") * Decimal("16.653"), Decimal("83.265"))
+        self.assertEqual(Decimal("100") - Decimal("83.265"), Decimal("16.735"))
+
     def test_budget_extension_preserves_completed_attempt_history(self):
         first, _ = pilot.prepare_session(self.args, self.root / "state", now=100)
         one_dollar_seconds = float(Decimal("1") * 3600 / pilot.FULLY_RUNNING_HOURLY_USD)
@@ -409,6 +438,46 @@ class PilotSessionTest(unittest.TestCase):
             pilot.H200_ON_DEMAND_PROFILE,
         )
         self.assertIs(settings["gpu_preemptible"], False)
+
+    def test_plan_validation_accepts_exact_rtx_shape_without_gpu_cluster(self):
+        plan = self.plan_json(profile=pilot.RTX_ON_DEMAND_PROFILE)
+        settings = pilot.validate_plan_structure(plan, pilot.RTX_ON_DEMAND_PROFILE)
+
+        self.assertEqual(len(plan["resource_changes"]), 4)
+        self.assertNotIn(
+            "nebius_compute_v1_gpu_cluster.local",
+            {item["address"] for item in plan["resource_changes"]},
+        )
+        self.assertEqual(settings["project_id"], pilot.RTX_PROJECT_ID)
+        self.assertEqual(settings["subnet_id"], pilot.RTX_SUBNET_ID)
+        self.assertEqual(Path(settings["terraform_dir"]), pilot.RTX_TERRAFORM_DIR.resolve())
+
+    def test_rtx_plan_rejects_wrong_project_or_subnet(self):
+        for variable in ("project_id", "subnet_id"):
+            with self.subTest(variable=variable):
+                plan = self.plan_json(profile=pilot.RTX_ON_DEMAND_PROFILE)
+                plan["variables"][variable]["value"] = "wrong-region-value"
+                with self.assertRaisesRegex(pilot.SessionError, variable + " does not match"):
+                    pilot.validate_plan_structure(plan, pilot.RTX_ON_DEMAND_PROFILE)
+
+    def test_rtx_plan_rejects_gpu_cluster_or_wrong_gpu_shape(self):
+        plan = self.plan_json(profile=pilot.RTX_ON_DEMAND_PROFILE)
+        local = next(
+            item for item in plan["resource_changes"]
+            if item["address"] == "nebius_mk8s_v1_node_group.local"
+        )
+        local["change"]["after"]["template"]["gpu_cluster"] = {"id": "forbidden"}
+        with self.assertRaisesRegex(pilot.SessionError, "must not use a GPU cluster"):
+            pilot.validate_plan_structure(plan, pilot.RTX_ON_DEMAND_PROFILE)
+
+        plan = self.plan_json(profile=pilot.RTX_ON_DEMAND_PROFILE)
+        remote = next(
+            item for item in plan["resource_changes"]
+            if item["address"] == "nebius_mk8s_v1_node_group.remote\u005b0\u005d"
+        )
+        remote["change"]["after"]["template"]["resources"]["preset"] = "1gpu-16vcpu-200gb"
+        with self.assertRaisesRegex(pilot.SessionError, "remote node must use"):
+            pilot.validate_plan_structure(plan, pilot.RTX_ON_DEMAND_PROFILE)
 
     def test_h200_on_demand_plan_rejects_preemptible_variable(self):
         plan = self.plan_json(profile=pilot.H200_ON_DEMAND_PROFILE)
@@ -566,6 +635,29 @@ class PilotSessionTest(unittest.TestCase):
 
         with self.assertRaisesRegex(pilot.SessionError, "hourly rate does not match"):
             pilot.session_hourly_rate(session)
+
+    def test_rtx_cost_record_cannot_use_h200_or_unrounded_rate(self):
+        for wrong_rate in ("40.953", "16.65282"):
+            with self.subTest(wrong_rate=wrong_rate):
+                session = {
+                    "profile": pilot.RTX_ON_DEMAND_PROFILE,
+                    "hourly_rate_usd_pretax": wrong_rate,
+                }
+                with self.assertRaisesRegex(pilot.SessionError, "hourly rate does not match"):
+                    pilot.session_hourly_rate(session)
+
+    def test_rtx_session_rejects_wrong_terraform_root_or_project(self):
+        with self.assertRaisesRegex(pilot.SessionError, "lacks pinned RTX"):
+            pilot.session_infrastructure_settings({"profile": pilot.RTX_ON_DEMAND_PROFILE})
+        session = {"profile": pilot.RTX_ON_DEMAND_PROFILE,
+                   "terraform_dir": str(pilot.TERRAFORM_DIR),
+                   "project_id": pilot.RTX_PROJECT_ID, "subnet_id": pilot.RTX_SUBNET_ID}
+        with self.assertRaisesRegex(pilot.SessionError, "directory does not match"):
+            pilot.session_infrastructure_settings(session)
+        session["terraform_dir"] = str(pilot.RTX_TERRAFORM_DIR)
+        session["project_id"] = "wrong-project"
+        with self.assertRaisesRegex(pilot.SessionError, "project does not match"):
+            pilot.session_infrastructure_settings(session)
 
     def test_guard_waits_until_deadline_then_starts_cleanup(self):
         run_dir, session = pilot.prepare_session(self.args, self.root / "state", now=100)
@@ -765,6 +857,55 @@ class PilotSessionTest(unittest.TestCase):
         self.assertEqual(environment["TF_VAR_gpu_platform"], "H200")
         self.assertEqual(environment["TF_VAR_infiniband_fabric"], "fabric-7")
         self.assertEqual(environment["TF_VAR_ipc_diagnostic_only"], "false")
+        self.assertEqual(environment["TF_VAR_gpu_preemptible"], "false")
+
+    def test_rtx_cleanup_routes_to_saved_root_and_project(self):
+        run_dir = self.root / "rtx-cleanup"
+        run_dir.mkdir()
+        pilot.write_json(run_dir / "session.json", {
+            "session_id": "rtx",
+            "profile": pilot.RTX_ON_DEMAND_PROFILE,
+            "gpu_platform": "RTX6000-A",
+            "infiniband_fabric": "",
+            "ipc_diagnostic_only": False,
+            "gpu_preemptible": False,
+            "terraform_dir": str(pilot.RTX_TERRAFORM_DIR.resolve()),
+            "project_id": pilot.RTX_PROJECT_ID,
+            "subnet_id": pilot.RTX_SUBNET_ID,
+            "purchase_type": "on-demand",
+            "deletion_target_unix": 100,
+        })
+        with mock.patch.object(pilot, "run_teardown_once", return_value=0) as teardown:
+            self.assertEqual(pilot.cleanup_until_target(run_dir, now_fn=lambda: 100), 0)
+
+        kwargs = teardown.call_args.kwargs
+        self.assertEqual(Path(kwargs["terraform_dir"]), pilot.RTX_TERRAFORM_DIR.resolve())
+        self.assertEqual(kwargs["project_id"], pilot.RTX_PROJECT_ID)
+        self.assertEqual(kwargs["subnet_id"], pilot.RTX_SUBNET_ID)
+        self.assertEqual(kwargs["infiniband_fabric"], "")
+        self.assertIs(kwargs["gpu_preemptible"], False)
+
+    def test_rtx_teardown_exports_saved_root_project_and_subnet(self):
+        process = mock.Mock(pid=4321)
+        process.wait.return_value = 0
+        popen = mock.Mock(return_value=process)
+        with (self.root / "cleanup.log").open("w") as log:
+            result = pilot.run_teardown_once(
+                log,
+                10,
+                profile=pilot.RTX_ON_DEMAND_PROFILE,
+                terraform_dir=pilot.RTX_TERRAFORM_DIR,
+                project_id=pilot.RTX_PROJECT_ID,
+                subnet_id=pilot.RTX_SUBNET_ID,
+                popen_factory=popen,
+            )
+
+        self.assertEqual(result, 0)
+        environment = popen.call_args.kwargs["env"]
+        self.assertEqual(environment["ROUTER_TERRAFORM_DIR"], str(pilot.RTX_TERRAFORM_DIR.resolve()))
+        self.assertEqual(environment["PROJECT_ID"], pilot.RTX_PROJECT_ID)
+        self.assertEqual(environment["TF_VAR_project_id"], pilot.RTX_PROJECT_ID)
+        self.assertEqual(environment["TF_VAR_subnet_id"], pilot.RTX_SUBNET_ID)
         self.assertEqual(environment["TF_VAR_gpu_preemptible"], "false")
 
     def test_cleanup_uses_profile_from_session_record(self):

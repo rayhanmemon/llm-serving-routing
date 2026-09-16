@@ -125,6 +125,12 @@ class VerifyEmptyTest(unittest.TestCase):
         self.assertIn("project ID is required", result.stderr)
         self.assertFalse(self.calls.exists())
 
+    def test_unknown_terraform_root_fails_before_listing(self):
+        result = self.run_checker({}, ROUTER_TERRAFORM_DIR=str(self.root / "wrong-root"))
+        self.assert_result(result, False)
+        self.assertIn("invalid Terraform root", result.stderr)
+        self.assertFalse(self.calls.exists())
+
 
 if __name__ == "__main__":
     unittest.main()

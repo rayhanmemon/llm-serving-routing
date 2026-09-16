@@ -20,6 +20,7 @@ from prometheus_client.parser import text_string_to_metric_families
 
 HERE = Path(__file__).resolve().parent
 TERRAFORM_DIR = HERE / "terraform"
+RTX_TERRAFORM_DIR = HERE / "terraform-rtx"
 NAMESPACE = "topology-measurement"
 EXPECTED_EPP_IMAGE = "ghcr.io/llm-d/llm-d-router-endpoint-picker:topology-0217d299-amd64"
 TRANSFER_METRICS = {
@@ -327,6 +328,7 @@ class Runner:
         self.environment = {**os.environ, "KUBECONFIG": str(self.kubeconfig)}
         self.context_ready = False
         self.baseline_workers = None
+        self.terraform_dir = Path(session.get("terraform_dir", TERRAFORM_DIR)).resolve()
 
     def remaining(self, reserve=30):
         value = self.deadline - self.now() - reserve
@@ -384,7 +386,7 @@ class Runner:
 
     def terraform_outputs(self):
         result = self.command(
-            ["terraform", f"-chdir={TERRAFORM_DIR}", "output", "-json"],
+            ["terraform", f"-chdir={self.terraform_dir}", "output", "-json"],
             timeout=30,
             log=self.root / "terraform-output",
         )
@@ -421,12 +423,15 @@ class Runner:
 
     def render(self, nodes):
         rendered = self.args.run_dir / "rendered"
-        result = self.command([
+        command = [
             sys.executable, str(HERE / "render.py"),
             "--local-node", nodes["local"], "--remote-node", nodes["remote"],
             "--cpu-node", nodes["cpu"], "--namespace", self.args.namespace,
             "--out", str(rendered),
-        ], timeout=30, log=self.root / "render")
+        ]
+        if self.session.get("attention_backend"):
+            command += ["--attention-backend", self.session["attention_backend"]]
+        result = self.command(command, timeout=30, log=self.root / "render")
         if result.returncode:
             raise ServingError("render.py failed")
         return rendered
@@ -764,8 +769,18 @@ def main(argv=None):
     for key in ("session_id", "profile", "first_measurement_deadline_unix"):
         if key not in session:
             raise ServingError("session.json lacks " + key)
-    if session["profile"] not in ("h200-evaluation", "h200-on-demand"):
-        raise ServingError("run-serving requires an H200 serving session")
+    expected_roots = {
+        "h200-evaluation": TERRAFORM_DIR.resolve(),
+        "h200-on-demand": TERRAFORM_DIR.resolve(),
+        "rtx-on-demand": RTX_TERRAFORM_DIR.resolve(),
+    }
+    if session["profile"] not in expected_roots:
+        raise ServingError("run-serving requires an approved GPU serving session")
+    selected_root = Path(session.get("terraform_dir", TERRAFORM_DIR)).resolve()
+    if selected_root != expected_roots[session["profile"]]:
+        raise ServingError("session Terraform directory does not match its profile")
+    if session["profile"] == "rtx-on-demand" and session.get("attention_backend") != "TRITON_ATTN":
+        raise ServingError("RTX serving session must use TRITON_ATTN")
     if not args.chart_path.is_dir() or not (args.chart_path / "Chart.yaml").is_file():
         raise ServingError("--chart-path must be a staged Helm chart directory")
     verify_archive(args.epp_archive, args.epp_sha256)

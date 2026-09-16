@@ -24,6 +24,8 @@ python infra/topology/render.py \
   --out RENDERED
 ```
 
+`--attention-backend BACKEND` is optional and applies the same vLLM override to the prefiller and both decoders. Omitting it preserves the H100/H200 manifests. RTX PRO 6000 SM120 qualification uses `--attention-backend TRITON_ATTN`: the unmodified vLLM 0.26 image has a confirmed first-call failure in its SM120 CuTe FlashAttention path, while a separate v0.26 SM120 report demonstrates correct BF16 execution with `TRITON_ATTN`. This is a compatibility safeguard whose correctness still requires real-model startup and output checks, not a measured performance choice. Sources: https://github.com/vllm-project/vllm/issues/51776 and https://github.com/vllm-project/vllm/issues/53481.
+
 The first forced-route block uses `router-diagnostic.values.yaml` and these stable inputs:
 
 - `warmup-512.yaml`, `warmup-8192.yaml`

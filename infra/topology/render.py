@@ -17,7 +17,7 @@ EVALUATED_POLICIES = ('none', 'hard', 'soft', 'absolute-cap', 'allowance')
 POLICIES = ('diagnostic',) + EVALUATED_POLICIES
 
 
-def model_deployment(name, role, node, namespace, ipc_mode="host"):
+def model_deployment(name, role, node, namespace, ipc_mode="host", attention_backend=None):
     labels = {'app.kubernetes.io/name': name, 'llm-d.ai/guide': 'topology-measurement',
               'llm-d.ai/role': role, 'kubernetes.io/hostname': node}
     port = 8000 if role == 'prefill' else 8200
@@ -27,6 +27,8 @@ def model_deployment(name, role, node, namespace, ipc_mode="host"):
             '--gpu-memory-utilization=0.85', '--no-enable-prefix-caching',
             '--kv-transfer-config', json.dumps({'kv_connector': 'NixlConnector',
             'kv_role': 'kv_both', 'kv_load_failure_policy': 'fail'}), '--port=' + str(port)]
+    if attention_backend:
+        args.append('--attention-backend=' + attention_backend)
     engine = {'name': 'modelserver', 'image': ENGINE, 'command': ['vllm', 'serve'], 'args': args,
               'ports': [{'name': 'modelserver', 'containerPort': port},
                         {'name': 'nixl', 'containerPort': 5600}],
@@ -190,6 +192,8 @@ def main():
     p.add_argument('--namespace', default='topology-measurement')
     p.add_argument('--ipc-mode', choices=('host', 'isolated'), default='host',
                    help='Host mode shares IPC/PID namespaces and /dev/shm for transfer qualification; no privileged mode')
+    p.add_argument('--attention-backend',
+                   help='Optional vLLM attention backend applied identically to all three model workers')
     p.add_argument('--allowance', type=int, default=2, help='Uncalibrated starting value')
     p.add_argument('--soft-weight', type=float, default=0.5, help='Uncalibrated starting value')
     p.add_argument('--absolute-cap', type=int, default=2, help='Uncalibrated active-request cap')
@@ -210,7 +214,10 @@ def main():
     def write(name, value):
         (a.out / name).write_text(yaml.safe_dump(value, sort_keys=False))
     docs = [{'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': a.namespace}}]
-    docs += [model_deployment(n, r, node, a.namespace, a.ipc_mode) for n, r, node in [
+    if (a.attention_backend is not None and
+            (not a.attention_backend.strip() or any(c.isspace() for c in a.attention_backend))):
+        p.error('attention backend must be one non-empty CLI value without whitespace')
+    docs += [model_deployment(n, r, node, a.namespace, a.ipc_mode, a.attention_backend) for n, r, node in [
         ('prefill', 'prefill', a.local_node), ('decode-local', 'decode', a.local_node),
         ('decode-remote', 'decode', a.remote_node)]]
     (a.out / 'modelservers.yaml').write_text(yaml.safe_dump_all(docs, sort_keys=False))

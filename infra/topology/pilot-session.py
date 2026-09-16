@@ -20,6 +20,7 @@ import uuid
 
 HERE = Path(__file__).resolve().parent
 TERRAFORM_DIR = HERE / "terraform"
+RTX_TERRAFORM_DIR = HERE / "terraform-rtx"
 TEARDOWN = HERE / "teardown.sh"
 STATE_ROOT = Path.home() / ".codex/run-state/router-h100-pilot"
 PLACEMENT_TIMEOUT_SECONDS = 30 * 60
@@ -33,6 +34,7 @@ FULL_TOPOLOGY_PROFILE = "full-topology"
 IPC_DIAGNOSTIC_PROFILE = "ipc-diagnostic"
 H200_EVALUATION_PROFILE = "h200-evaluation"
 H200_ON_DEMAND_PROFILE = "h200-on-demand"
+RTX_ON_DEMAND_PROFILE = "rtx-on-demand"
 FULL_TOPOLOGY_CREATES = {
     "nebius_compute_v1_gpu_cluster.local",
     "nebius_mk8s_v1_cluster.topology",
@@ -40,6 +42,9 @@ FULL_TOPOLOGY_CREATES = {
     "nebius_mk8s_v1_node_group.cpu[0]",
     "nebius_mk8s_v1_node_group.remote[0]",
 }
+RTX_TOPOLOGY_CREATES = FULL_TOPOLOGY_CREATES - {"nebius_compute_v1_gpu_cluster.local"}
+RTX_PROJECT_ID = "project-e05tg6xqln007kjqm4t3rs"
+RTX_SUBNET_ID = "vpcsubnet-e05tskd8ywwvmzhed8"
 PROFILE_POLICIES = {
     FULL_TOPOLOGY_PROFILE: {
         "placement_timeout_seconds": PLACEMENT_TIMEOUT_SECONDS,
@@ -106,6 +111,29 @@ PROFILE_POLICIES = {
         "diagnostic_only": False,
         "gpu_preemptible": False,
         "purchase_type": "on-demand",
+    },
+    RTX_ON_DEMAND_PROFILE: {
+        "placement_timeout_seconds": 30 * 60,
+        "first_measurement_timeout_seconds": 90 * 60,
+        "cleanup_start_seconds": 270 * 60,
+        "deletion_target_seconds": 300 * 60,
+        "hourly_rate_usd_pretax": Decimal("16.653"),
+        "attempt_admission_usd_pretax": Decimal("100"),
+        "expected_creates": RTX_TOPOLOGY_CREATES,
+        "gpu_platform": "RTX6000-A",
+        "terraform_gpu_platform": "gpu-rtx6000-a",
+        "local_gpu_preset": "8gpu-192vcpu-1744gb",
+        "remote_gpu_preset": "1gpu-24vcpu-218gb",
+        "infiniband_fabric": "",
+        "allowed_fabrics": ("",),
+        "diagnostic_only": False,
+        "gpu_preemptible": False,
+        "purchase_type": "on-demand",
+        "terraform_dir": RTX_TERRAFORM_DIR,
+        "project_id": RTX_PROJECT_ID,
+        "subnet_id": RTX_SUBNET_ID,
+        "uses_gpu_cluster": False,
+        "attention_backend": "TRITON_ATTN",
     },
 }
 
@@ -176,6 +204,10 @@ def profile_policy(profile: str) -> dict:
         raise SessionError(f"Unknown pilot profile: {profile}") from error
 
 
+def profile_terraform_dir(profile: str) -> Path:
+    return Path(profile_policy(profile).get("terraform_dir", TERRAFORM_DIR)).resolve()
+
+
 def session_profile(session: dict) -> str:
     """Old session records predate profiles and retain full-topology semantics."""
     return session.get("profile", FULL_TOPOLOGY_PROFILE)
@@ -203,6 +235,27 @@ def session_terraform_settings(session: dict) -> tuple[str, str, bool, bool]:
             or preemptible is not policy["gpu_preemptible"]):
         raise SessionError("Session Terraform settings do not match its profile")
     return platform, fabric, diagnostic, preemptible
+
+
+def session_infrastructure_settings(session: dict) -> tuple[Path, str | None, str | None]:
+    policy = profile_policy(session_profile(session))
+    expected_dir = profile_terraform_dir(session_profile(session))
+    if policy.get("project_id") is not None:
+        missing = [key for key in ("terraform_dir", "project_id", "subnet_id") if key not in session]
+        if missing:
+            raise SessionError("Session lacks pinned RTX infrastructure settings: " + ", ".join(missing))
+    recorded_dir = Path(session.get("terraform_dir", expected_dir)).resolve()
+    if recorded_dir != expected_dir:
+        raise SessionError("Session Terraform directory does not match its profile")
+    expected_project = policy.get("project_id")
+    expected_subnet = policy.get("subnet_id")
+    project = session.get("project_id", expected_project)
+    subnet = session.get("subnet_id", expected_subnet)
+    if expected_project is not None and project != expected_project:
+        raise SessionError("Session project does not match its profile")
+    if expected_subnet is not None and subnet != expected_subnet:
+        raise SessionError("Session subnet does not match its profile")
+    return recorded_dir, project, subnet
 
 
 def singleton_object(value, label: str) -> dict:
@@ -246,6 +299,12 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
         )
 
     variables = plan.get("variables", {})
+    project_id = variables.get("project_id", {}).get("value")
+    subnet_id = variables.get("subnet_id", {}).get("value")
+    if policy.get("project_id") is not None and project_id != policy["project_id"]:
+        raise SessionError(f"Terraform plan project_id does not match profile {profile}")
+    if policy.get("subnet_id") is not None and subnet_id != policy["subnet_id"]:
+        raise SessionError(f"Terraform plan subnet_id does not match profile {profile}")
     diagnostic_value = plan_boolean(
         variables.get("ipc_diagnostic_only", {}).get("value"), "ipc_diagnostic_only"
     )
@@ -265,14 +324,16 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
     if infiniband_fabric not in policy["allowed_fabrics"]:
         raise SessionError(f"Terraform plan infiniband_fabric does not match profile {profile}")
 
-    gpu_cluster_change = next(
-        change for change in material if change.get("address") == "nebius_compute_v1_gpu_cluster.local"
-    )
-    gpu_cluster = singleton_object(
-        gpu_cluster_change.get("change", {}).get("after"), "local GPU cluster"
-    )
-    if gpu_cluster.get("infiniband_fabric") != infiniband_fabric:
-        raise SessionError("Terraform plan local GPU cluster uses the wrong InfiniBand fabric")
+    if policy.get("uses_gpu_cluster", True):
+        gpu_cluster_change = next(
+            change for change in material
+            if change.get("address") == "nebius_compute_v1_gpu_cluster.local"
+        )
+        gpu_cluster = singleton_object(
+            gpu_cluster_change.get("change", {}).get("after"), "local GPU cluster"
+        )
+        if gpu_cluster.get("infiniband_fabric") != infiniband_fabric:
+            raise SessionError("Terraform plan local GPU cluster uses the wrong InfiniBand fabric")
 
     local_change = next(
         change for change in material if change.get("address") == "nebius_mk8s_v1_node_group.local"
@@ -285,12 +346,15 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
         raise SessionError("Terraform plan must create exactly one local node")
     if (
         resources.get("platform") != policy["terraform_gpu_platform"]
-        or resources.get("preset") != "8gpu-128vcpu-1600gb"
+        or resources.get("preset") != policy.get("local_gpu_preset", "8gpu-128vcpu-1600gb")
     ):
         raise SessionError(
             "Terraform plan local node must use "
-            f"{policy['terraform_gpu_platform']} 8gpu-128vcpu-1600gb"
+            f"{policy['terraform_gpu_platform']} "
+            f"{policy.get('local_gpu_preset', '8gpu-128vcpu-1600gb')}"
         )
+    if not policy.get("uses_gpu_cluster", True) and template.get("gpu_cluster") is not None:
+        raise SessionError("Terraform plan local RTX node must not use a GPU cluster")
     expected_preemptible = {} if policy["gpu_preemptible"] else None
     if template.get("preemptible") != expected_preemptible:
         raise SessionError("Terraform plan local node GPU purchase type does not match its profile")
@@ -321,11 +385,12 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
             raise SessionError("Terraform plan must create exactly one remote node")
         if (
             remote_resources.get("platform") != policy["terraform_gpu_platform"]
-            or remote_resources.get("preset") != "1gpu-16vcpu-200gb"
+            or remote_resources.get("preset") != policy.get("remote_gpu_preset", "1gpu-16vcpu-200gb")
         ):
             raise SessionError(
                 "Terraform plan remote node must use "
-                f"{policy['terraform_gpu_platform']} 1gpu-16vcpu-200gb"
+                f"{policy['terraform_gpu_platform']} "
+                f"{policy.get('remote_gpu_preset', '1gpu-16vcpu-200gb')}"
             )
         if remote_template.get("preemptible") != expected_preemptible:
             raise SessionError("Terraform plan remote node GPU purchase type does not match its profile")
@@ -363,11 +428,14 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
             raise SessionError("Terraform plan CPU node boot disk must be a 64 GiB NETWORK_SSD")
 
     return {"gpu_platform": gpu_platform, "infiniband_fabric": infiniband_fabric,
-            "ipc_diagnostic_only": diagnostic_value, "gpu_preemptible": preemptible}
+            "ipc_diagnostic_only": diagnostic_value, "gpu_preemptible": preemptible,
+            "project_id": project_id, "subnet_id": subnet_id,
+            "terraform_dir": str(profile_terraform_dir(profile))}
 
 def validate_terraform_plan(plan_path: Path, profile: str, *, run=subprocess.run) -> dict:
     completed = run(
-        ["terraform", f"-chdir={TERRAFORM_DIR}", "show", "-json", str(plan_path.resolve())],
+        ["terraform", f"-chdir={profile_terraform_dir(profile)}", "show", "-json",
+         str(plan_path.resolve())],
         capture_output=True,
         text=True,
         check=False,
@@ -584,6 +652,9 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
             "infiniband_fabric": plan_settings["infiniband_fabric"],
             "ipc_diagnostic_only": plan_settings["ipc_diagnostic_only"],
             "gpu_preemptible": plan_settings["gpu_preemptible"],
+            "terraform_dir": plan_settings["terraform_dir"],
+            "project_id": plan_settings["project_id"],
+            "subnet_id": plan_settings["subnet_id"],
             "placement_timeout_seconds": policy["placement_timeout_seconds"],
             "cleanup_start_seconds": policy["cleanup_start_seconds"],
             "deletion_target_seconds": policy["deletion_target_seconds"],
@@ -593,6 +664,7 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
             "hourly_rate_usd_pretax": str(policy["hourly_rate_usd_pretax"]),
             "approved_max_usd_pretax": float(cli_budget),
             "purchase_type": args.purchase_type,
+            "attention_backend": policy.get("attention_backend"),
             "approval_reference": approval["approval_reference"],
             "approval_record_path": str(args.approval_record.resolve()),
             "approval_record_sha256": file_sha256(args.approval_record),
@@ -643,6 +715,7 @@ def cleanup_until_target(
     if run_teardown_fn is None:
         profile = session_profile(session)
         _, fabric, _, preemptible = session_terraform_settings(session)
+        terraform_dir, project_id, subnet_id = session_infrastructure_settings(session)
 
         def run_teardown_fn(log, timeout):
             return run_teardown_once(
@@ -651,6 +724,9 @@ def cleanup_until_target(
                 profile=profile,
                 infiniband_fabric=fabric,
                 gpu_preemptible=preemptible,
+                terraform_dir=terraform_dir,
+                project_id=project_id,
+                subnet_id=subnet_id,
             )
 
     session_id = session["session_id"]
@@ -710,6 +786,9 @@ def run_teardown_once(
     profile: str = FULL_TOPOLOGY_PROFILE,
     infiniband_fabric: str | None = None,
     gpu_preemptible: bool | None = None,
+    terraform_dir: Path | None = None,
+    project_id: str | None = None,
+    subnet_id: str | None = None,
     popen_factory=subprocess.Popen,
     killpg_fn=os.killpg,
 ) -> int:
@@ -725,6 +804,22 @@ def run_teardown_once(
     if preemptible is not policy["gpu_preemptible"]:
         raise SessionError("Cleanup GPU purchase type does not match its profile")
     environment["TF_VAR_gpu_preemptible"] = "true" if preemptible else "false"
+    expected_dir = profile_terraform_dir(profile)
+    selected_dir = Path(terraform_dir or expected_dir).resolve()
+    if selected_dir != expected_dir:
+        raise SessionError("Cleanup Terraform directory does not match its profile")
+    environment["ROUTER_TERRAFORM_DIR"] = str(selected_dir)
+    expected_project = policy.get("project_id")
+    if expected_project is not None and project_id != expected_project:
+        raise SessionError("Cleanup project does not match its profile")
+    if project_id:
+        environment["PROJECT_ID"] = project_id
+        environment["TF_VAR_project_id"] = project_id
+    expected_subnet = policy.get("subnet_id")
+    if expected_subnet is not None and subnet_id != expected_subnet:
+        raise SessionError("Cleanup subnet does not match its profile")
+    if subnet_id:
+        environment["TF_VAR_subnet_id"] = subnet_id
     process = popen_factory(
         ["bash", str(TEARDOWN), "--execute"],
         cwd=HERE,
@@ -818,11 +913,12 @@ def apply_plan(
     if not plan.is_file() or file_sha256(plan) != session["terraform_plan_sha256"]:
         raise SessionError("Terraform plan is missing or changed since the session was reserved")
     environment = {key: value for key, value in os.environ.items() if key != "NEBIUS_IAM_TOKEN"}
+    terraform_dir, _, _ = session_infrastructure_settings(session)
     with (run_dir / "apply.log").open("a") as log:
         process = popen_factory(
             [
                 "terraform",
-                f"-chdir={TERRAFORM_DIR}",
+                f"-chdir={terraform_dir}",
                 "apply",
                 "-input=false",
                 session["terraform_plan_path"],

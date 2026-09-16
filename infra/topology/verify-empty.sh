@@ -3,7 +3,13 @@
 # Terraform reporting success is NOT the same thing as the account being empty.
 set -uo pipefail
 NEBIUS="${NEBIUS:-$HOME/.nebius/bin/nebius}"
-PROJECT="${PROJECT_ID:-$(grep -E '^project_id' "$(dirname "$0")/terraform/terraform.tfvars" 2>/dev/null | cut -d'"' -f2)}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+TERRAFORM_ROOT="${ROUTER_TERRAFORM_DIR:-$SCRIPT_DIR/terraform}"
+case "$TERRAFORM_ROOT" in
+  "$SCRIPT_DIR/terraform"|"$SCRIPT_DIR/terraform-rtx") ;;
+  *) echo "UNKNOWN — invalid Terraform root." >&2; exit 1 ;;
+esac
+PROJECT="${PROJECT_ID:-$(grep -E '^project_id' "$TERRAFORM_ROOT/terraform.tfvars" 2>/dev/null | cut -d'"' -f2)}"
 
 echo "== independent teardown verification (project: ${PROJECT:-UNSET}) =="
 [ -n "$PROJECT" ] || { echo "UNKNOWN — project ID is required." >&2; exit 1; }

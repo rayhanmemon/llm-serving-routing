@@ -147,11 +147,17 @@ class RunServingTest(unittest.TestCase):
             "--run-dir", str(run_dir), "--chart-path", str(chart),
             "--epp-archive", str(archive), "--epp-sha256", digest,
         ]
-        for profile in ("h200-evaluation", "h200-on-demand"):
+        for profile, terraform_dir, attention_backend in (
+            ("h200-evaluation", serving.TERRAFORM_DIR, None),
+            ("h200-on-demand", serving.TERRAFORM_DIR, None),
+            ("rtx-on-demand", serving.RTX_TERRAFORM_DIR, "TRITON_ATTN"),
+        ):
             with self.subTest(profile=profile):
                 (run_dir / "session.json").write_text(json.dumps({
                     "session_id": "session",
                     "profile": profile,
+                    "terraform_dir": str(terraform_dir.resolve()),
+                    "attention_backend": attention_backend,
                     "first_measurement_deadline_unix": 9999999999,
                 }))
                 with patch.object(
@@ -160,6 +166,26 @@ class RunServingTest(unittest.TestCase):
                     serving.main(argv)
                 self.assertIn("no subprocesses or RPCs", output.call_args_list[-1].args[0])
                 self.assertFalse((run_dir / "serving").exists())
+
+    def test_rtx_render_passes_required_attention_backend(self):
+        args = types.SimpleNamespace(run_dir=self.root, namespace="topology-measurement")
+        subject = serving.Runner(args, {
+            "profile": "rtx-on-demand",
+            "terraform_dir": str(serving.RTX_TERRAFORM_DIR.resolve()),
+            "attention_backend": "TRITON_ATTN",
+            "first_measurement_deadline_unix": 1000,
+        }, self.root / "serving", now_fn=lambda: 0)
+        subject.root.mkdir()
+        captured = []
+        subject.command = lambda command, **kwargs: (
+            captured.append(command)
+            or serving.subprocess.CompletedProcess(command, 0, "", "")
+        )
+
+        subject.render({"local": "local", "remote": "remote", "cpu": "cpu"})
+
+        self.assertIn("--attention-backend", captured[0])
+        self.assertEqual(captured[0][captured[0].index("--attention-backend") + 1], "TRITON_ATTN")
 
     def test_node_groups_map_to_exact_ready_shapes(self):
         groups = {"local": "group-local", "remote": "group-remote", "cpu": "group-cpu"}
