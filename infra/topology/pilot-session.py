@@ -21,6 +21,7 @@ import uuid
 HERE = Path(__file__).resolve().parent
 TERRAFORM_DIR = HERE / "terraform"
 RTX_TERRAFORM_DIR = HERE / "terraform-rtx"
+RDMA_TERRAFORM_DIR = HERE / "terraform-rdma"
 TEARDOWN = HERE / "teardown.sh"
 STATE_ROOT = Path.home() / ".codex/run-state/router-h100-pilot"
 PLACEMENT_TIMEOUT_SECONDS = 30 * 60
@@ -46,6 +47,21 @@ RTX_TOPOLOGY_CREATES = FULL_TOPOLOGY_CREATES - {"nebius_compute_v1_gpu_cluster.l
 RTX_PROJECT_ID = "project-e05tg6xqln007kjqm4t3rs"
 RTX_SUBNET_ID = "vpcsubnet-e05tskd8ywwvmzhed8"
 PROFILE_POLICIES = {
+    "rdma-h200-local": {
+        "placement_timeout_seconds": 20 * 60,
+        "cleanup_start_seconds": 90 * 60,
+        "deletion_target_seconds": 105 * 60,
+        "hourly_rate_usd_pretax": Decimal("19.625"),
+        "attempt_admission_usd_pretax": Decimal("36"),
+        "expected_creates": {"nebius_compute_v1_gpu_cluster.local",
+                             "nebius_mk8s_v1_cluster.topology",
+                             "nebius_mk8s_v1_node_group.local"},
+        "gpu_platform": "H200", "terraform_gpu_platform": "gpu-h200-sxm",
+        "infiniband_fabric": "us-central1-a", "allowed_fabrics": ("us-central1-a",),
+        "diagnostic_only": True, "gpu_preemptible": True,
+        "purchase_type": "preemptible", "terraform_dir": RDMA_TERRAFORM_DIR,
+        "require_project_binding": True,
+    },
     FULL_TOPOLOGY_PROFILE: {
         "placement_timeout_seconds": PLACEMENT_TIMEOUT_SECONDS,
         "cleanup_start_seconds": CLEANUP_START_SECONDS,
@@ -240,10 +256,12 @@ def session_terraform_settings(session: dict) -> tuple[str, str, bool, bool]:
 def session_infrastructure_settings(session: dict) -> tuple[Path, str | None, str | None]:
     policy = profile_policy(session_profile(session))
     expected_dir = profile_terraform_dir(session_profile(session))
-    if policy.get("project_id") is not None:
+    if policy.get("project_id") is not None or policy.get("require_project_binding"):
         missing = [key for key in ("terraform_dir", "project_id", "subnet_id") if key not in session]
         if missing:
             raise SessionError("Session lacks pinned RTX infrastructure settings: " + ", ".join(missing))
+        if not all(session.get(key) for key in ("terraform_dir", "project_id", "subnet_id")):
+            raise SessionError("Session has empty infrastructure settings")
     recorded_dir = Path(session.get("terraform_dir", expected_dir)).resolve()
     if recorded_dir != expected_dir:
         raise SessionError("Session Terraform directory does not match its profile")
@@ -472,8 +490,11 @@ def load_or_initialize_budget(state_root: Path, approval: dict, approved_budget:
             raise SessionError("Budget ledger authorization scope does not match this pilot")
         recorded_budget = positive_money(budget.get("approved_max_total_usd_pretax"))
         if approved_budget < recorded_budget:
-            raise SessionError("Approval record cannot reduce the existing cumulative budget")
-        if approved_budget > recorded_budget:
+            if approval.get("replace_remaining_budget") is not True:
+                raise SessionError("Approval record cannot reduce the existing cumulative budget")
+            if approved_budget < completed_spend(budget):
+                raise SessionError("Replacement budget is below completed spending")
+        if approved_budget != recorded_budget:
             budget["approved_max_total_usd_pretax"] = str(approved_budget)
             budget.setdefault("authorization_updates", []).append({
                 "approval_reference": approval["approval_reference"],
@@ -620,6 +641,10 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
     if not isinstance(allowed_profiles, list) or profile not in allowed_profiles:
         raise SessionError(f"Approval record does not allow profile {profile}")
     plan_settings = validate_terraform_plan(args.plan, profile)
+    if policy.get("require_project_binding"):
+        for key in ("project_id", "subnet_id"):
+            if not approval.get(key) or approval[key] != plan_settings[key]:
+                raise SessionError("RDMA plan differs from its approved " + key)
     started = time.time() if now is None else now
     authorization_expiry = authorization_expiry_unix(approval.get("authorization_expires_at"))
     if (

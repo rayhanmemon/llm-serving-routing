@@ -6,7 +6,7 @@ NEBIUS="${NEBIUS:-$HOME/.nebius/bin/nebius}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TERRAFORM_ROOT="${ROUTER_TERRAFORM_DIR:-$SCRIPT_DIR/terraform}"
 case "$TERRAFORM_ROOT" in
-  "$SCRIPT_DIR/terraform"|"$SCRIPT_DIR/terraform-rtx") ;;
+  "$SCRIPT_DIR/terraform"|"$SCRIPT_DIR/terraform-rtx"|"$SCRIPT_DIR/terraform-rdma") ;;
   *) echo "UNKNOWN — invalid Terraform root." >&2; exit 1 ;;
 esac
 PROJECT="${PROJECT_ID:-$(grep -E '^project_id' "$TERRAFORM_ROOT/terraform.tfvars" 2>/dev/null | cut -d'"' -f2)}"

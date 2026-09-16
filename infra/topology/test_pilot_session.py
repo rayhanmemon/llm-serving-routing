@@ -965,5 +965,24 @@ class PilotSessionTest(unittest.TestCase):
         self.assertFalse((run_dir / "cleanup-overdue.json").exists())
 
 
+
+    def test_rdma_plan_has_one_h200_host_and_saved_region(self):
+        plan = self.plan_json(profile="rdma-h200-local")
+        settings = pilot.validate_plan_structure(plan, "rdma-h200-local")
+        self.assertEqual(settings["gpu_platform"], "H200")
+        self.assertEqual(settings["infiniband_fabric"], "us-central1-a")
+        plan["resource_changes"].append({"address": "unexpected.node", "change": {"actions": ["create"], "after": {}}})
+        with self.assertRaises(pilot.SessionError):
+            pilot.validate_plan_structure(plan, "rdma-h200-local")
+
+    def test_explicit_new_budget_can_reduce_unused_authority(self):
+        approval = json.loads(self.approval.read_text())
+        pilot.load_or_initialize_budget(self.root, approval, Decimal("200"))
+        with self.assertRaises(pilot.SessionError):
+            pilot.load_or_initialize_budget(self.root, approval, Decimal("40"))
+        approval["replace_remaining_budget"] = True
+        reduced = pilot.load_or_initialize_budget(self.root, approval, Decimal("40"))
+        self.assertEqual(reduced["approved_max_total_usd_pretax"], "40")
+
 if __name__ == "__main__":
     unittest.main()
