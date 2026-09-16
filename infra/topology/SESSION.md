@@ -1,6 +1,6 @@
 # H100 controlled transfer check
 
-**Session closed September 15.** The one approved H100 attempt failed on eight-GPU capacity; no inference requests were sent. All rental resources were independently verified absent at **21:19:48 UTC** and the guard exited. Estimated cost **$0.50 before tax**. The monitor is paused; this procedure is preserved for review and does not authorize a second attempt. [Result](../../results/2026-09-15-h100-topology-transfer/RESULT.md).
+**Current authorization — September 16:** multiple unattended attempts are authorized within **$50 total before tax** to finish this first transfer pilot. Count the prior H100 cost ($0.50098345) in that total. One attempt runs at a time; cleanup and cost accounting precede each retry. The previous one-attempt restriction is superseded. The [September 15 failure](../../results/2026-09-15-h100-topology-transfer/RESULT.md) remains preserved.
 
 ## What this check answers
 
@@ -12,9 +12,9 @@ Use `router-none.values.yaml` for this diagnostic. The same prefill-first handle
 
 ## Price and approved limits
 
-Nine preemptible H100s: $19.35/hour including their associated CPU/RAM. Utility node: $0.3968/hour. 576 GiB Network SSD: $0.05602/hour. **Total about $19.80/hour before tax; two fully running hours about $39.61.** Approved allowance: **$50 before tax**, teardown starting by minute 90 from provisioning, deletion targeted by minute 120. Rayhan approved this separate H100 session; the previous $25 authorization covered the closed L40S attempt.
+Nine preemptible H100s: $19.35/hour including their associated CPU/RAM. Utility node: $0.3968/hour. 576 GiB Network SSD: $0.05602/hour. **Total about $19.80/hour before tax; two fully running hours about $39.61.** Approved cumulative allowance: **$50 before tax**, including earlier H100 attempts, teardown starting by minute 90 from provisioning, deletion targeted by minute 120. Rayhan approved this separate H100 session; the previous $25 authorization covered the closed L40S attempt.
 
-One placement attempt. Stop if the topology has not placed within 30 minutes, an engine has not become ready within 30 minutes on ready nodes, or an instance is preempted. Begin cleanup at the time limit even if diagnostics are incomplete. Preserve failed results. No on-demand substitution or larger rental without a new decision. Pricing sources: [compute/storage](https://docs.nebius.com/compute/resources/pricing), [other services](https://nebius.com/prices). Refresh live capacity immediately before the approved attempt.
+Multiple placement attempts are allowed under the cumulative budget. Provision the scarce eight-H100 node first; CPU and remote node groups depend on it. Stop the current attempt if the topology has not placed within 30 minutes, an engine has not become ready within 30 minutes on ready nodes, or an instance is preempted. Begin cleanup at the time limit even if diagnostics are incomplete. Preserve failed results. Keep preemptible pricing and the same topology. No on-demand substitution or larger rental. Before each attempt require at least $44.60564 remaining: two fully running hours plus a $5 cleanup reserve. Pricing sources: [compute/storage](https://docs.nebius.com/compute/resources/pricing), [other services](https://nebius.com/prices). Refresh live capacity immediately before the approved attempt.
 
 ## Exact software and prepared artifacts
 
@@ -28,9 +28,17 @@ One placement attempt. Stop if the topology has not placed within 30 minutes, an
 
 ## Unattended launch procedure
 
-Rayhan approved the H100 budget. Use the private JSON authorization record with `approved: true`, the actual approval reference, `approved_max_usd_pretax`, and `purchase_type`. Do not copy approval from the old L40S attempt. Verify the five-create plan and purchase type against the approval before invoking `pilot-session.py` with `--execute`, `--approval-record`, `--approved-max-usd-pretax`, `--purchase-type`, and `--plan`.
+Use `/Users/rayhanmemon/.codex/run-state/router-h100-pilot/approval-retries-2026-09-16.json`. Its authorization scope is `h100-pilot-2026-09-16`, meaning the cumulative September 16 retry authorization. It explicitly permits multiple attempts with a $50 total ceiling and the exact historical H100 cost. Keep the old `approval.json` and `attempt.json` unchanged as historical records.
 
-The helper claims one persistent attempt, records its start/deadlines and plan hash, starts a detached shutdown guard, then applies the reviewed plan. A failed or timed-out apply starts cleanup. After a successful measured block, invoke `python infra/topology/pilot-session.py cleanup RUN_DIR --execute` so normal completion and the deadline guard use the same lock and verified-cleanup marker. Never delete the attempt record to retry a rental. Cleanup continues deletion-only retries if verification fails; an overdue marker requires immediate attention. This local guard depends on the Mac remaining awake and connected; it is not a provider-side budget cap.
+`budget.json` under that state directory is the current attempt/spend ledger. The helper uses a lock to prevent overlapping launches and requires prior cleanup and cost records. New attempts have their own `runs/SESSION_ID/attempt.json`; do not infer current activity from the legacy top-level `attempt.json`.
+
+Regenerate and inspect the five-create Terraform plan: old saved plans predate the local-node-first dependency order and must not be applied. Run `pilot-session.py --execute --approval-record /Users/rayhanmemon/.codex/run-state/router-h100-pilot/approval-retries-2026-09-16.json --approved-max-usd-pretax 50 --purchase-type preemptible --plan FRESH_PLAN`. The helper starts its detached shutdown guard before apply. During provisioning inspect the actual instance create operation: the Kubernetes node-group operation can keep waiting after an instance has already failed with NotEnoughResources. Interrupt only this attempt's apply promptly on confirmed failure.
+
+After the block or a failure, run `python infra/topology/pilot-session.py cleanup RUN_DIR --execute`. The guard and normal cleanup share a lock. Cleanup completion marks the attempt as awaiting cost accounting. Save `RUN_DIR/cost-estimate.json` with the matching `session_id`, nonnegative `estimate_usd_pretax`, methodology and per-resource operation evidence. Count actual allocated resource lifetimes plus a conservative disk allowance; an unallocated eight-GPU VM has no running GPU charge. The next admission reconciles this record into the ledger. Missing cleanup/cost records block another attempt; never erase history to reset spending.
+
+Require a positive fresh capacity sample newer than the failed placement, plus single-H100 capacity. Wait at least 30 minutes after one capacity failure, 60 minutes after two consecutive failures, and two hours after three or more. After three consecutive capacity failures without material improvement, keep monitoring without paid retries until advice shows a larger eight-GPU count or a positive opening on another fabric. Repeated unresolved serving/transfer failures stop paid retries too. Stop after the first valid transfer block or when safe budget is insufficient; report the evidence after cleanup.
+
+The guard is local, so keep the Mac awake and connected. If system PodDisruptionBudgets block the last node during full-cluster teardown, preserve their state and remove only the observed blockers in this dedicated experiment cluster. Deletion-only retries continue until verification succeeds. The $50 limit is managed locally, not a provider-enforced billing cap. Private reusable correctness clients and operating notes are in the state directory's `prepared/` folder.
 
 ## Before any measured request
 
@@ -87,6 +95,4 @@ Later work calibrates unrestricted routing, hard locality, tuned soft scoring, l
 
 ## Latest capacity read
 
-**Post-approval preflight:** no positive eight-H100 availability reported on fabrics 2/3/4/6 (sample effective19:50:21 UTC); single-H100 capacity remains (sample effective20:06:24 UTC). No paid attempt was made. The earlier positive snapshot below is historical.
-
-At **20:13 UTC on September 15**, the advisor reports six preemptible eight-GPU H100 allocations on fabric-2 (sample effective 19:38:47 UTC), plus positive one-GPU H100 capacity (sample effective 19:50:12 UTC). Other H100 eight-GPU fabrics do not report positive capacity. Both samples are marked fresh. This is advice, not a reservation; recheck exact platform `gpu-h100-sxm` and both shapes immediately before launch. A matching preset name on H200 is not eligible for this session. The refreshed fabric-2 plan validates as five creates only; no resources were created.
+At 04:40 UTC September 16, no eligible eight-H100 preemptible availability was reported; positive single-H100 capacity remained. Check the live advisor before every launch. The positive September 15 snapshots did not guarantee placement and must not be replayed as authorization to rent.

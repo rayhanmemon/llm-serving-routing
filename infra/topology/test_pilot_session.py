@@ -2,6 +2,7 @@
 
 import importlib.util
 import json
+from decimal import Decimal
 from pathlib import Path
 import tempfile
 import types
@@ -37,7 +38,10 @@ class PilotSessionTest(unittest.TestCase):
         self.approval.write_text(json.dumps({
             "approved": True,
             "approval_reference": "test approval",
-            "approved_max_usd_pretax": "50",
+            "authorization_scope": pilot.AUTHORIZATION_SCOPE,
+            "allow_multiple_attempts": True,
+            "max_total_usd_pretax": "50",
+            "historical_spend_usd_pretax": "0",
             "purchase_type": "preemptible",
         }))
         self.args = types.SimpleNamespace(
@@ -48,11 +52,102 @@ class PilotSessionTest(unittest.TestCase):
             purchase_type="preemptible",
         )
 
-    def test_duplicate_launch_is_permanently_rejected(self):
+    def complete(self, run_dir, verified_unix, estimated_cost):
+        session = json.loads((run_dir / "session.json").read_text())
+        pilot.write_json(run_dir / "cleanup-verified.json", {
+            "session_id": session["session_id"],
+            "verified_unix": verified_unix,
+            "teardown_exit_code": 0,
+        })
+        pilot.write_json(run_dir / "cost-estimate.json", {
+            "session_id": session["session_id"],
+            "estimate_usd_pretax": str(estimated_cost),
+        })
+        pilot.mark_attempt_cleanup_verified(run_dir, verified_unix)
+
+    def test_overlapping_launch_is_rejected(self):
         pilot.prepare_session(self.args, self.root / "state", now=100)
-        with self.assertRaisesRegex(pilot.SessionError, "already recorded"):
+        with self.assertRaisesRegex(pilot.SessionError, "still active; overlapping launch rejected"):
             pilot.prepare_session(self.args, self.root / "state", now=101)
         self.assertEqual(len(list((self.root / "state/runs").iterdir())), 1)
+
+    def test_prior_cleanup_must_be_verified(self):
+        run_dir, _ = pilot.prepare_session(self.args, self.root / "state", now=100)
+        budget_path = self.root / "state/budget.json"
+        budget = json.loads(budget_path.read_text())
+        budget["attempts"][0].update({
+            "status": "completed",
+            "estimated_cost_usd_pretax": "1",
+        })
+        pilot.write_json(budget_path, budget)
+        with self.assertRaisesRegex(pilot.SessionError, "cleanup is not verified"):
+            pilot.prepare_session(self.args, self.root / "state", now=101)
+
+    def test_prior_attempt_without_recorded_cost_fails_closed(self):
+        run_dir, session = pilot.prepare_session(self.args, self.root / "state", now=100)
+        pilot.write_json(run_dir / "cleanup-verified.json", {
+            "session_id": session["session_id"],
+            "verified_unix": 110,
+            "teardown_exit_code": 0,
+        })
+        budget_path = self.root / "state/budget.json"
+        budget = json.loads(budget_path.read_text())
+        budget["attempts"][0].update({
+            "status": "cleanup_verified_cost_pending",
+            "cleanup_verified_unix": 110,
+        })
+        pilot.write_json(budget_path, budget)
+        with self.assertRaisesRegex(pilot.SessionError, "no recorded cost estimate"):
+            pilot.prepare_session(self.args, self.root / "state", now=111)
+
+    def test_cumulative_budget_requires_one_full_run_and_cleanup_reserve(self):
+        first, _ = pilot.prepare_session(self.args, self.root / "state", now=100)
+        five_dollar_seconds = float(Decimal("5") * 3600 / pilot.FULLY_RUNNING_HOURLY_USD)
+        self.complete(first, 100 + five_dollar_seconds, "5")
+        second, _ = pilot.prepare_session(self.args, self.root / "state", now=1000)
+        one_dollar_seconds = float(Decimal("1") * 3600 / pilot.FULLY_RUNNING_HOURLY_USD)
+        self.complete(second, 1000 + one_dollar_seconds, "1")
+        with self.assertRaisesRegex(pilot.SessionError, "below the .* attempt admission"):
+            pilot.prepare_session(self.args, self.root / "state", now=2000)
+
+    def test_low_cost_failed_placement_allows_another_attempt(self):
+        first, _ = pilot.prepare_session(self.args, self.root / "state", now=100)
+        self.complete(first, 130, "0.01")
+
+        _, second = pilot.prepare_session(self.args, self.root / "state", now=200)
+
+        self.assertEqual(second["budget_snapshot"]["completed_spend_usd_pretax"], "0.01")
+        self.assertEqual(second["budget_snapshot"]["remaining_before_attempt_usd_pretax"], "49.99")
+
+    def test_legacy_attempt_is_preserved_and_seeded_from_exact_cost(self):
+        state = self.root / "state"
+        legacy_run = state / "runs/legacy"
+        legacy_run.mkdir(parents=True)
+        legacy = {
+            "session_id": "legacy",
+            "run_dir": str(legacy_run),
+            "status": "closed; cleanup verified",
+        }
+        pilot.write_json(state / "attempt.json", legacy)
+        original = (state / "attempt.json").read_bytes()
+        pilot.write_json(legacy_run / "cleanup-verified.json", {
+            "session_id": "legacy",
+            "verified_unix": 99,
+            "teardown_exit_code": 0,
+        })
+        exact = "0.5009834534903475"
+        pilot.write_json(legacy_run / "cost-estimate.json", {"estimate_usd_pretax": exact})
+        approval = json.loads(self.approval.read_text())
+        approval["historical_spend_usd_pretax"] = exact
+        self.approval.write_text(json.dumps(approval))
+
+        run_dir, _ = pilot.prepare_session(self.args, state, now=100)
+
+        self.assertEqual((state / "attempt.json").read_bytes(), original)
+        budget = json.loads((state / "budget.json").read_text())
+        self.assertEqual(budget["attempts"][0]["estimated_cost_usd_pretax"], exact)
+        session = json.loads((run_dir / "session.json").read_text())
+        self.assertEqual(session["budget_snapshot"]["completed_spend_usd_pretax"], exact)
 
     def test_guard_waits_until_deadline_then_starts_cleanup(self):
         run_dir, session = pilot.prepare_session(self.args, self.root / "state", now=100)

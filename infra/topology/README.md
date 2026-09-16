@@ -1,6 +1,6 @@
 # Controlled topology-transfer check
 
-**Status:** the H100 attempt failed on eight-GPU capacity despite positive advice. Cleanup was verified at 21:19:48 UTC September 15; estimated cost $0.50 before tax, no inference. The monitor is paused after the one approved attempt. [H100 result](../../results/2026-09-15-h100-topology-transfer/RESULT.md); [earlier L40S result](../../results/2026-09-15-topology-transfer/RESULT.md).
+**Status:** September 16 retry authorization permits multiple unattended attempts within $50 total to finish the first transfer check. The prior H100 attempt cost about $0.50 and is included. The scarce eight-H100 node now provisions before the CPU and remote node; cumulative budget and verified cleanup gate each retry. No inference measurements yet. [Prior H100 result](../../results/2026-09-15-h100-topology-transfer/RESULT.md).
 
 [SESSION.md](SESSION.md) is the launch/measurement procedure and quote. One eight-GPU H100 VM supplies a prefiller and local decoder; a separate one-GPU H100 VM supplies the remote decoder. A CPU node runs Envoy, EPP and inference-perf. Three GPUs work; nine are billed. The first test qualifies the transfer path rather than comparing routing policies.
 
@@ -8,7 +8,7 @@
 
 | File | Purpose |
 |---|---|
-| `terraform/` | Five resources: Kubernetes cluster, CPU/local/remote node groups, and the local node's GPU-cluster fabric allocation. One approved apply failed on capacity; all five resources were destroyed. |
+| `terraform/` | Five resources: Kubernetes cluster, CPU/local/remote node groups, and the local node's GPU-cluster fabric allocation. Previous resources were destroyed; future plans allocate the eight-GPU node before CPU and remote. |
 | `render.py` | Render three workers, four router policies and sequential short/long workloads. Uses the published PR image tag and pinned supporting images/model. |
 | `workload.py` | Render a benchmark Pod/ConfigMap with a pinned tokenizer, unique run header and optional decoder pin. It does not deploy or send requests. |
 | `record-routes.py` | Add run ID and requested/selected decoder fields to the rendered Envoy access log. |
@@ -18,6 +18,7 @@
 | `validate-transfer.py` | Reject incomplete streams, wrong token counts, wrong routes, changed workers and mismatched paired request payloads. |
 | `transfer-delta.py` | Require the qualified transfer count, check failure counters, and summarize histogram deltas separately from client latency. It cannot identify the transport by itself. |
 | `import-image.py` | Validate and import the local EPP archive onto the selected CPU node using a temporary helper; remove the helper. |
+| `pilot-session.py` | Admit retries against one cumulative budget, prohibit overlap, require prior cleanup/cost records and run the independent shutdown guard. |
 | `verify-empty.sh`, `teardown.sh` | Destroy the dedicated state and independently check instances, clusters, disks, filesystems and GPU clusters. |
 
 ## Render and review

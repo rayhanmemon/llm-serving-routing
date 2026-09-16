@@ -27,6 +27,22 @@ resource "nebius_mk8s_v1_cluster" "topology" {
   }
 }
 
+resource "nebius_mk8s_v1_node_group" "local" {
+  parent_id        = nebius_mk8s_v1_cluster.topology.id
+  name             = "router-local"
+  fixed_node_count = 1
+  version          = "1.35"
+  template = {
+    resources          = { platform = "gpu-h100-sxm", preset = "8gpu-128vcpu-1600gb" }
+    gpu_cluster        = { id = nebius_compute_v1_gpu_cluster.local.id }
+    gpu_settings       = { drivers_preset = "cuda13.0" }
+    boot_disk          = { type = "NETWORK_SSD", size_gibibytes = 256 }
+    network_interfaces = [{ subnet_id = var.subnet_id }]
+    preemptible        = var.gpu_preemptible ? {} : null
+    reservation_policy = var.gpu_preemptible ? null : { policy = "FORBID" }
+  }
+}
+
 resource "nebius_mk8s_v1_node_group" "cpu" {
   parent_id        = nebius_mk8s_v1_cluster.topology.id
   name             = "router-cpu"
@@ -36,27 +52,26 @@ resource "nebius_mk8s_v1_node_group" "cpu" {
     boot_disk          = { type = "NETWORK_SSD", size_gibibytes = 64 }
     network_interfaces = [{ subnet_id = var.subnet_id }]
   }
+
+  depends_on = [nebius_mk8s_v1_node_group.local]
 }
 
-resource "nebius_mk8s_v1_node_group" "gpu" {
-  for_each = {
-    local  = "8gpu-128vcpu-1600gb"
-    remote = "1gpu-16vcpu-200gb"
-  }
+resource "nebius_mk8s_v1_node_group" "remote" {
   parent_id        = nebius_mk8s_v1_cluster.topology.id
-  name             = "router-${each.key}"
+  name             = "router-remote"
   fixed_node_count = 1
   version          = "1.35"
   template = {
-    resources = { platform = "gpu-h100-sxm", preset = each.value }
-    # Only the eight-GPU preset supports a GPU cluster; remote uses the ordinary network.
-    gpu_cluster        = each.key == "local" ? { id = nebius_compute_v1_gpu_cluster.local.id } : null
+    resources          = { platform = "gpu-h100-sxm", preset = "1gpu-16vcpu-200gb" }
+    gpu_cluster        = null
     gpu_settings       = { drivers_preset = "cuda13.0" }
     boot_disk          = { type = "NETWORK_SSD", size_gibibytes = 256 }
     network_interfaces = [{ subnet_id = var.subnet_id }]
     preemptible        = var.gpu_preemptible ? {} : null
     reservation_policy = var.gpu_preemptible ? null : { policy = "FORBID" }
   }
+
+  depends_on = [nebius_mk8s_v1_node_group.local]
 }
 
 output "cluster_id" {
@@ -64,7 +79,9 @@ output "cluster_id" {
 }
 
 output "node_group_ids" {
-  value = merge({ cpu = nebius_mk8s_v1_node_group.cpu.id }, {
-    for role, group in nebius_mk8s_v1_node_group.gpu : role => group.id
-  })
+  value = {
+    cpu    = nebius_mk8s_v1_node_group.cpu.id
+    local  = nebius_mk8s_v1_node_group.local.id
+    remote = nebius_mk8s_v1_node_group.remote.id
+  }
 }

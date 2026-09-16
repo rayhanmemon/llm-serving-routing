@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Start one approved H100 pilot apply with an independent teardown deadline."""
+"""Start an approved H100 pilot attempt with an independent teardown deadline."""
 
 from __future__ import annotations
 
@@ -24,6 +24,10 @@ STATE_ROOT = Path.home() / ".codex/run-state/router-h100-pilot"
 PLACEMENT_TIMEOUT_SECONDS = 30 * 60
 CLEANUP_START_SECONDS = 90 * 60
 DELETION_TARGET_SECONDS = 120 * 60
+AUTHORIZATION_SCOPE = "h100-pilot-2026-09-16"
+FULLY_RUNNING_HOURLY_USD = Decimal("19.80282")
+CLEANUP_RESERVE_USD = Decimal("5")
+ATTEMPT_ADMISSION_USD = FULLY_RUNNING_HOURLY_USD * Decimal("2") + CLEANUP_RESERVE_USD
 
 
 class SessionError(RuntimeError):
@@ -61,6 +65,16 @@ def positive_money(value) -> Decimal:
     return money
 
 
+def nonnegative_money(value, label: str) -> Decimal:
+    try:
+        money = Decimal(str(value))
+    except InvalidOperation as error:
+        raise SessionError(f"{label} must be a number") from error
+    if not money.is_finite() or money < 0:
+        raise SessionError(f"{label} must be non-negative and finite")
+    return money
+
+
 def cleanup_verified(run_dir: Path, session_id: str) -> bool:
     marker = run_dir / "cleanup-verified.json"
     try:
@@ -68,6 +82,124 @@ def cleanup_verified(run_dir: Path, session_id: str) -> bool:
     except (FileNotFoundError, json.JSONDecodeError, OSError, SessionError):
         return False
     return value.get("session_id") == session_id and value.get("teardown_exit_code") == 0
+
+
+def load_or_initialize_budget(state_root: Path, approval: dict, approved_budget: Decimal) -> dict:
+    budget_path = state_root / "budget.json"
+    historical_spend = nonnegative_money(
+        approval.get("historical_spend_usd_pretax"), "Historical spend"
+    )
+    if budget_path.exists():
+        budget = read_json(budget_path)
+        if budget.get("authorization_scope") != AUTHORIZATION_SCOPE:
+            raise SessionError("Budget ledger authorization scope does not match this pilot")
+        if positive_money(budget.get("approved_max_total_usd_pretax")) != approved_budget:
+            raise SessionError("Budget ledger total does not match the approval record")
+        return budget
+
+    attempts = []
+    legacy_path = state_root / "attempt.json"
+    if legacy_path.exists():
+        legacy = read_json(legacy_path)
+        run_dir = Path(legacy.get("run_dir", ""))
+        session_id = legacy.get("session_id")
+        if not session_id or not cleanup_verified(run_dir, session_id):
+            raise SessionError("Legacy attempt cleanup is not verified; refusing another attempt")
+        cost_path = run_dir / "cost-estimate.json"
+        if not cost_path.is_file():
+            raise SessionError("Legacy attempt has no recorded cost estimate; refusing another attempt")
+        recorded_cost = nonnegative_money(
+            read_json(cost_path).get("estimate_usd_pretax"), "Legacy attempt cost"
+        )
+        if recorded_cost != historical_spend:
+            raise SessionError("Approval historical spend does not match the legacy cost estimate")
+        attempts.append({
+            "session_id": session_id,
+            "run_dir": str(run_dir),
+            "status": "completed",
+            "estimated_cost_usd_pretax": str(recorded_cost),
+            "legacy_attempt_path": str(legacy_path),
+        })
+    elif historical_spend != 0:
+        raise SessionError("Approval records historical spend but no legacy attempt exists")
+
+    budget = {
+        "authorization_scope": AUTHORIZATION_SCOPE,
+        "approved_max_total_usd_pretax": str(approved_budget),
+        "historical_spend_usd_pretax": str(historical_spend),
+        "attempts": attempts,
+    }
+    write_json(budget_path, budget)
+    return budget
+
+
+def completed_spend(budget: dict) -> Decimal:
+    total = Decimal("0")
+    for attempt in budget.get("attempts", []):
+        if attempt.get("status") != "completed":
+            raise SessionError(
+                f"Attempt {attempt.get('session_id', '<unknown>')} is still active; overlapping launch rejected"
+            )
+        run_dir = Path(attempt.get("run_dir", ""))
+        session_id = attempt.get("session_id")
+        if not session_id or not cleanup_verified(run_dir, session_id):
+            raise SessionError("Prior attempt cleanup is not verified; refusing another attempt")
+        if "estimated_cost_usd_pretax" not in attempt:
+            raise SessionError("Prior attempt has no recorded cost estimate; refusing another attempt")
+        total += nonnegative_money(attempt["estimated_cost_usd_pretax"], "Prior attempt cost")
+    return total
+
+
+def validated_attempt_cost(run_dir: Path, session: dict, verified_unix: float) -> Decimal:
+    cost_path = run_dir / "cost-estimate.json"
+    if not cost_path.is_file():
+        raise SessionError("Prior attempt has no recorded cost estimate; refusing another attempt")
+    cost_record = read_json(cost_path)
+    if cost_record.get("session_id") != session["session_id"]:
+        raise SessionError("Attempt cost estimate does not match its session_id")
+    estimated_cost = nonnegative_money(cost_record.get("estimate_usd_pretax"), "Attempt cost")
+    elapsed = max(Decimal("0"), Decimal(str(verified_unix)) - Decimal(str(session["started_unix"])))
+    conservative_upper = elapsed * FULLY_RUNNING_HOURLY_USD / Decimal("3600") + Decimal("0.01")
+    if estimated_cost > conservative_upper:
+        raise SessionError("Attempt cost estimate exceeds the full-rate session upper bound")
+    return estimated_cost
+
+
+def mark_attempt_cleanup_verified(run_dir: Path, verified_unix: float) -> None:
+    session = read_json(run_dir / "session.json")
+    state_root = Path(session["state_root"])
+    attempt_path = run_dir / "attempt.json"
+    with (state_root / "budget.lock").open("a+") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        budget = read_json(state_root / "budget.json")
+        matches = [item for item in budget.get("attempts", []) if item.get("session_id") == session["session_id"]]
+        if len(matches) != 1:
+            raise SessionError("Completed attempt is missing from the budget ledger")
+        attempt = matches[0]
+        if attempt.get("status") == "completed":
+            return
+        attempt.update({
+            "status": "cleanup_verified_cost_pending",
+            "cleanup_verified_unix": verified_unix,
+        })
+        write_json(attempt_path, attempt)
+        write_json(state_root / "budget.json", budget)
+
+
+def reconcile_recorded_costs(budget: dict) -> None:
+    for attempt in budget.get("attempts", []):
+        if attempt.get("status") != "cleanup_verified_cost_pending":
+            continue
+        run_dir = Path(attempt["run_dir"])
+        session = read_json(run_dir / "session.json")
+        verified_unix = attempt["cleanup_verified_unix"]
+        estimated_cost = validated_attempt_cost(run_dir, session, verified_unix)
+        attempt.update({
+            "status": "completed",
+            "estimated_cost_usd_pretax": str(estimated_cost),
+            "cost_record_path": str(run_dir / "cost-estimate.json"),
+        })
+        write_json(run_dir / "attempt.json", attempt)
 
 
 def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = None) -> tuple[Path, dict]:
@@ -83,55 +215,70 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
         raise SessionError("Approval record must contain approved: true")
     if not approval.get("approval_reference"):
         raise SessionError("Approval record must contain a non-empty approval_reference")
-    approved_budget = positive_money(approval.get("approved_max_usd_pretax"))
+    if approval.get("authorization_scope") != AUTHORIZATION_SCOPE:
+        raise SessionError(f"Approval authorization_scope must be {AUTHORIZATION_SCOPE}")
+    if approval.get("allow_multiple_attempts") is not True:
+        raise SessionError("Approval must explicitly allow multiple attempts")
+    approved_budget = positive_money(approval.get("max_total_usd_pretax"))
     cli_budget = positive_money(args.approved_max_usd_pretax)
     if approved_budget != cli_budget:
         raise SessionError("CLI budget does not match the approval record")
     if approval.get("purchase_type") != args.purchase_type:
         raise SessionError("CLI purchase type does not match the approval record")
 
-    started = time.time() if now is None else now
-    session_id = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime(started)) + "-" + uuid.uuid4().hex[:8]
-    run_dir = state_root / "runs" / session_id
     state_root.mkdir(parents=True, exist_ok=True)
-
-    # This permanent, atomically-created record is the one-attempt gate. A dead
-    # process or an old lock file must never turn into permission to relaunch.
-    attempt = {
-        "session_id": session_id,
-        "created_unix": started,
-        "run_dir": str(run_dir),
-        "status": "reserved",
-    }
-    attempt_path = state_root / "attempt.json"
-    try:
-        with attempt_path.open("x") as destination:
-            json.dump(attempt, destination, indent=2, sort_keys=True)
-            destination.write("\n")
-    except FileExistsError as error:
-        raise SessionError(
-            f"Pilot attempt already recorded in {attempt_path}; automatic relaunch is forbidden"
-        ) from error
-
-    run_dir.mkdir(parents=True)
-
-    session = {
-        "session_id": session_id,
-        "started_unix": started,
-        "placement_deadline_unix": started + PLACEMENT_TIMEOUT_SECONDS,
-        "cleanup_start_deadline_unix": started + CLEANUP_START_SECONDS,
-        "deletion_target_unix": started + DELETION_TARGET_SECONDS,
-        "approved_max_usd_pretax": float(cli_budget),
-        "purchase_type": args.purchase_type,
-        "approval_reference": approval["approval_reference"],
-        "approval_record_path": str(args.approval_record.resolve()),
-        "approval_record_sha256": file_sha256(args.approval_record),
-        "terraform_plan_path": str(args.plan.resolve()),
-        "terraform_plan_sha256": file_sha256(args.plan),
-        "run_dir": str(run_dir),
-    }
-    write_json(run_dir / "session.json", session)
-    return run_dir, session
+    with (state_root / "budget.lock").open("a+") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        budget = load_or_initialize_budget(state_root, approval, approved_budget)
+        reconcile_recorded_costs(budget)
+        spent = completed_spend(budget)
+        remaining = approved_budget - spent
+        budget["completed_spend_usd_pretax"] = str(spent)
+        budget["remaining_usd_pretax"] = str(remaining)
+        write_json(state_root / "budget.json", budget)
+        if remaining < ATTEMPT_ADMISSION_USD:
+            raise SessionError(
+                f"Remaining budget ${remaining} is below the ${ATTEMPT_ADMISSION_USD} attempt admission"
+            )
+        started = time.time() if now is None else now
+        session_id = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime(started)) + "-" + uuid.uuid4().hex[:8]
+        run_dir = state_root / "runs" / session_id
+        run_dir.mkdir(parents=True)
+        session = {
+            "session_id": session_id,
+            "started_unix": started,
+            "placement_deadline_unix": started + PLACEMENT_TIMEOUT_SECONDS,
+            "cleanup_start_deadline_unix": started + CLEANUP_START_SECONDS,
+            "deletion_target_unix": started + DELETION_TARGET_SECONDS,
+            "approved_max_usd_pretax": float(cli_budget),
+            "purchase_type": args.purchase_type,
+            "approval_reference": approval["approval_reference"],
+            "approval_record_path": str(args.approval_record.resolve()),
+            "approval_record_sha256": file_sha256(args.approval_record),
+            "terraform_plan_path": str(args.plan.resolve()),
+            "terraform_plan_sha256": file_sha256(args.plan),
+            "run_dir": str(run_dir),
+            "state_root": str(state_root),
+            "budget_snapshot": {
+                "authorization_scope": AUTHORIZATION_SCOPE,
+                "approved_max_total_usd_pretax": str(approved_budget),
+                "completed_spend_usd_pretax": str(spent),
+                "remaining_before_attempt_usd_pretax": str(remaining),
+                "attempt_admission_usd_pretax": str(ATTEMPT_ADMISSION_USD),
+                "note": "Local admission estimate only; not a provider-side hard cap.",
+            },
+        }
+        attempt = {
+            "session_id": session_id,
+            "created_unix": started,
+            "run_dir": str(run_dir),
+            "status": "active",
+        }
+        write_json(run_dir / "session.json", session)
+        write_json(run_dir / "attempt.json", attempt)
+        budget["attempts"].append(attempt)
+        write_json(state_root / "budget.json", budget)
+        return run_dir, session
 
 
 def cleanup_until_target(
@@ -148,6 +295,10 @@ def cleanup_until_target(
     with (run_dir / "cleanup.lock").open("a+") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         if cleanup_verified(run_dir, session_id):
+            if "state_root" in session:
+                mark_attempt_cleanup_verified(
+                    run_dir, read_json(run_dir / "cleanup-verified.json")["verified_unix"]
+                )
             return 0
 
         attempt_number = 0
@@ -168,11 +319,14 @@ def cleanup_until_target(
             })
             if exit_code == 0:
                 (run_dir / "cleanup-overdue.json").unlink(missing_ok=True)
+                verified_unix = now_fn()
                 write_json(run_dir / "cleanup-verified.json", {
                     "session_id": session_id,
-                    "verified_unix": now_fn(),
+                    "verified_unix": verified_unix,
                     "teardown_exit_code": 0,
                 })
+                if "state_root" in session:
+                    mark_attempt_cleanup_verified(run_dir, verified_unix)
                 return 0
             remaining = session["deletion_target_unix"] - now_fn()
             if remaining <= 0:
@@ -311,7 +465,7 @@ def apply_plan(
 
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description=__doc__)
-    result.add_argument("--execute", action="store_true", help="permit the single paid Terraform apply")
+    result.add_argument("--execute", action="store_true", help="permit one admitted paid Terraform apply")
     result.add_argument("--approval-record", type=Path, required=True)
     result.add_argument("--approved-max-usd-pretax", required=True)
     result.add_argument("--purchase-type", choices=("preemptible",), required=True)
