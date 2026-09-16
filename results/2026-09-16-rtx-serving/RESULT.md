@@ -1,8 +1,8 @@
-# RTX serving session: functional comparison, timing pending
+# RTX serving session: correctness qualified, first timing block running
 
 ## Status
 
-This regular-capacity UK session is active on eight-GPU and one-GPU RTX PRO 6000 Blackwell workers plus one CPU worker. Only one GPU serves each inference engine. No NVLink or RDMA path is claimed. **No validated latency measurement exists yet.**
+This regular-capacity UK session is active on eight-GPU and one-GPU RTX PRO 6000 Blackwell workers plus one CPU worker. Only one GPU serves each inference engine. No NVLink or RDMA path is claimed. The user approved the prospective direct-versus-P/D parity rule, and a fresh frozen suite passed it. The first 48-request forced-route timing block started at **18:50:51 UTC**. **No validated latency result exists yet.**
 
 An initial image upload ended with an exec-stream EOF before inference. Setup correction `1d09dff` used a bounded SPDY upload, succeeded, and imported the unchanged reviewed image. The router and model configuration were unchanged.
 
@@ -32,6 +32,10 @@ Eight copy/retrieval cases were committed before execution (`a9e911b`): two case
 
 **All eight cases produced identical text across direct-local, direct-remote, local P/D and remote P/D.** Each P/D request added exactly one transfer; both decoders added eight transfers total. Transfer-failure counters stayed unchanged, and the three GPU identities plus worker/EPP identities stayed stable.
 
-This demonstrates functional agreement on this small suite, including the two shared task failures. It does not turn either failed acceptance rule into a pass. A proposed amendment would compare P/D against direct inference while reporting gold accuracy separately. If accepted, the amended rule must pass a fresh suite frozen before its outputs; the observed failed gold gate will not be relabelled. That decision is awaiting review; **no correctness marker or latency benchmark has been produced**.
+This demonstrates functional agreement on this small suite, including the two shared task failures. It does not turn either failed acceptance rule into a pass. The user then approved an explicit amendment: compare P/D against direct inference while reporting gold accuracy separately, and confirm it on a fresh suite frozen before its outputs.
 
-Evidence: [frozen plan](known-answer-suite/PLAN.md), [known-answer analysis](known-answer-analysis.json), [sanitized responses](known-answer-responses.json), [original numerical diagnostic](numerical-diagnostic.json).
+The fresh seed-`17092027` suite was committed before execution (`ef898194df31d2601bba1e3e0fe992fb009180e2`; SHA-256 `cf6fd79fe756d6dd75d7589bb1d05cd740fb6e9d70a2307d04d970d87d4e515c`). All 32 request-integrity checks passed and all eight cases produced identical normalized text across direct-local, direct-remote, local P/D and remote P/D. Each P/D request added exactly one transfer on its selected decoder; transfer-failure counters and worker/GPU identities stayed stable. Gold accuracy remained **24/32, 6/8 per route**, and is reported separately rather than relabelled.
+
+That prospective confirmation qualified correctness under the approved parity rule. A truthful correctness marker admitted the frozen first timing block. The timing block is still running; partial observations are not latency results.
+
+Evidence: [original frozen plan](known-answer-suite/PLAN.md), [original known-answer analysis](known-answer-analysis.json), [original sanitized responses](known-answer-responses.json), [original numerical diagnostic](numerical-diagnostic.json), [approved amendment](method-amendment.json), [fresh confirmation plan](confirmation-suite/PLAN.md), and [fresh confirmation analysis](confirmation-analysis.json).

@@ -1,0 +1,81 @@
+{
+  "session": "20260916T175123Z-b440a608",
+  "analysis": "prospective direct-versus-P/D functional-parity confirmation",
+  "method": {
+    "approved_by_user": true,
+    "approved_at": "2026-09-16T18:45:44Z",
+    "suite_seed": 17092027,
+    "frozen_commit": "ef898194df31d2601bba1e3e0fe992fb009180e2",
+    "suite_sha256": "cf6fd79fe756d6dd75d7589bb1d05cd740fb6e9d70a2307d04d970d87d4e515c",
+    "suite_created_before_requests": true,
+    "engine_settings_changed": false,
+    "normalization": "outer whitespace only",
+    "cases_replaced_or_dropped": false
+  },
+  "request_integrity": {
+    "passed": 32,
+    "required": 32,
+    "per_route": {
+      "direct-local": 8,
+      "direct-remote": 8,
+      "pd-local": 8,
+      "pd-remote": 8
+    },
+    "http_errors": 0,
+    "canonical_request_bodies_match_frozen_plan": true,
+    "prompt_and_completion_usage_match": true,
+    "route_pins_match": true
+  },
+  "direct_parity": {
+    "passed_cases": 8,
+    "required_cases": 8,
+    "all_four_routes_identical_for_every_case": true,
+    "criterion_passed": true
+  },
+  "gold_accuracy_reported_separately": {
+    "passed": 24,
+    "required": 32,
+    "per_route": {
+      "direct-local": 6,
+      "direct-remote": 6,
+      "pd-local": 6,
+      "pd-remote": 6
+    },
+    "criterion": false
+  },
+  "transfer_and_stability": {
+    "local_decoder": {
+      "operations": 8,
+      "bytes": 5133828096,
+      "observed_seconds": 21.856050000000003
+    },
+    "remote_decoder": {
+      "operations": 8,
+      "bytes": 5133828096,
+      "observed_seconds": 15.816492999999996
+    },
+    "one_transfer_on_selected_decoder_per_pd_request": true,
+    "transfer_notification_and_expiry_failure_deltas": 0,
+    "worker_epp_and_gpu_identities_stable": true,
+    "distinct_gpu_count": 3
+  },
+  "evidence_hashes": {
+    "private_responses_jsonl_sha256": "625540e4f47065a7232abaace6ffea897ab2a7603f5eb1915098f45f00527ab0",
+    "private_validation_json_sha256": "15fe31ab06057a13e1e141cc432d79d27e2de2c4e93088924b7aacd0686433d1"
+  },
+  "public_response_policy": {
+    "responses_embedded": false,
+    "reason": "The frozen public plan already contains the large prompt-token arrays. Raw responses remain private and are bound by hash; omitting them avoids duplicating prompt_token_ids and infrastructure metadata."
+  },
+  "preserved_failures": [
+    "The original five-token exact-string oracle failed.",
+    "The earlier frozen all-gold suite scored 24/32 and failed its declared rule."
+  ],
+  "admission": {
+    "correctness_marker_written": true,
+    "qualification": "prospective direct-versus-P/D functional parity",
+    "first_48_request_block_started_at": "2026-09-16T18:50:51Z",
+    "first_48_request_block_status": "running at publication update",
+    "validated_latency_result_available": false
+  }
+}
