@@ -40,6 +40,10 @@ def main():
         name = pod['metadata']['name']
         containers = pod['spec'].get('containers', []) + pod['spec'].get('initContainers', [])
         for container in containers:
+            # Earlier workload reports were retained before cleanup. Their Pods
+            # may disappear during this snapshot; collect only the requested run.
+            if container['name'] == 'benchmark' and name != a.benchmark_pod:
+                continue
             if container['name'] in ('modelserver', 'routing-proxy', 'benchmark') or 'llm-d-router-endpoint-picker' in container['image'] or 'envoyproxy' in container['image']:
                 capture(['-n', a.namespace, 'logs', name, '-c', container['name'], '--timestamps'], f'{name}-{container["name"]}.log')
         engine = next((c for c in containers if c['name'] == 'modelserver'), None)
