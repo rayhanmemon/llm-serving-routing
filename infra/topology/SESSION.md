@@ -1,12 +1,12 @@
 # H100 controlled transfer check
 
-**Current status — September 16, session closed:** direct, correctly pinned local P/D and remote P/D correctness passed. The fast local payload is unqualified: an isolated CUDA READ fell back to TCP after an IPC handle-open error. No latency benchmark ran. Rentals were deleted and independently verified at 06:09:48 UTC. Paid retries are paused for diagnosis; about $19.94 of the cumulative $50 budget is used, leaving $30.06. [Result](../../results/2026-09-16-h100-transfer-qualification/RESULT.md).
+**Current status — September 16:** real-model direct/local/remote P/D correctness passed, but no 512/8192-token latency block has run. Raw CUDA sharing passed within one container; the separate-pod test remains unfinished after a runner timeout and a stopped retry VM. All rentals are deleted. H100 spending is estimated at $29.18/$50, leaving $20.82. The existing full-session admission requires $44.61, so it cannot launch within the remainder unchanged. Reprice the next serving session before rental; no new resources or budget are authorized by this procedure revision.
 
-The September 16 multiple-attempt authorization superseded the old one-attempt rule. The remaining allowance is preserved; repeating the unresolved transport setup is not scheduled. The procedure below remains the intended measurement protocol, with the live fixture corrections recorded.
+**Measurement order revised September 16:** once the actual deployment passes correctness, route, transfer-count and worker-stability checks, collect the frozen first 48-request timing block. Then allow a bounded transport investigation within the remaining paid-session deadline. A separate CUDA/NIXL diagnostic failure does not automatically invalidate correct real-model client timing. Report known transport, suspected fallback or unknown payload path accurately; do not call those observations proof of NVLink or of the proposed routing policy's benefit.
 
 ## What this check answers
 
-Does transferring KV to a decoder on the prefiller's H100 host cost less than transferring it to a decoder on another VM, and is the intended local CUDA IPC payload path actually used? This check does not compare routing policies or establish the allowance's performance value.
+First: how do client time to first token (TTFT) and connector observations differ between forced-local and forced-remote routes in the deployment as it actually runs? Separately: is the intended local CUDA IPC payload path used? This check does not compare routing policies or establish the allowance's performance value.
 
 Placement: one prefill GPU plus one local decode GPU on an eight-GPU H100 VM; one remote decode GPU on a one-GPU H100 VM; one CPU utility node. Three GPUs work and nine are billed. The GPU-cluster resource selects an available fabric (2, 3, 4 or 6) for the eight-GPU VM only; the fresh Terraform plan must name the selected fabric. The remote VM is outside it and uses ordinary networking. Record actual placement and transport; separate VM identities do not establish separate physical chassis.
 
@@ -26,9 +26,9 @@ Multiple placement attempts are allowed under the cumulative budget. Provision t
 - Prepared fabric-2 plan: `/Users/rayhanmemon/.codex/run-state/router-h100-pilot/prepared/fabric2.tfplan`, five creates only. Refresh capacity and plan before a delayed launch; replan whenever inputs change.
 - Qwen3-8B BF16 revision, vLLM 0.26, sidecar 0.10, inference-perf 0.6.1 and Envoy image digests are pinned in the renderer/workload scripts.
 
-**September 16 startup correction:** default UCX selection attempted InfiniBand and exceeded the container's 8 MiB locked-memory limit, failing NIXL backend initialization. Before any inference, all three engines were configured with `UCX_TLS=tcp,cuda_copy,cuda_ipc,self`. This preserves the intended ordinary-network remote leg and CUDA-IPC local option without changing privileges. Actual executed transport must still be qualified. [UCX transport selection](https://openucx.readthedocs.io/en/master/faq.html).
+**September 16 startup correction:** default UCX selection attempted InfiniBand and exceeded the container's 8 MiB locked-memory limit, failing NIXL backend initialization. Before any inference, all three engines were configured with `UCX_TLS=tcp,cuda_copy,cuda_ipc,self`. This preserves the intended ordinary-network remote leg and CUDA-IPC local option without changing privileges. Actual executed transport still needs qualification before attributing a result to CUDA IPC; that attribution is separate from collecting valid client timings. [UCX transport selection](https://openucx.readthedocs.io/en/master/faq.html).
 
-`render.py` defaults to host IPC/PID namespaces and mounts the host's `/dev/shm` rather than shadowing it with a private mount. GPU resource allocation remains one per engine, CPU limit 6 per engine, with no privileged mode. This is a deliberate transfer-qualification setting on dedicated experiment VMs. `--ipc-mode isolated` renders the original namespace arrangement for diagnosis. Do not silently change namespaces or device access between local/remote arms. If the staged host mode cannot reach the peer GPU, stop for a focused configuration review rather than broadening privileges on the meter. CUDA IPC flags alone do not prove reachability or payload selection.
+`render.py` defaults to host IPC/PID namespaces and mounts the host's `/dev/shm` rather than shadowing it with a private mount. GPU resource allocation remains one per engine, CPU limit 6 per engine, with no privileged mode. This is a deliberate transfer-qualification setting on dedicated experiment VMs. `--ipc-mode isolated` renders the original namespace arrangement for diagnosis. Do not silently change namespaces or device access between local/remote arms. If raw CUDA cannot reach the peer GPU but real-model P/D correctness succeeds, preserve that finding, keep the deployment fixed across timing arms and investigate after the first block. Stop if actual inference or KV transfer fails; do not broaden privileges during the block. CUDA IPC flags alone do not prove reachability or payload selection.
 
 ## Unattended launch procedure
 
@@ -82,14 +82,18 @@ python infra/topology/transfer-delta.py --before RUN/before --after RUN/after \
 
 For the opposite route add `--paired-with FIRST_RUN/after/validation.json`. Copy reports within their ten-minute retention period; missing reports or a nonzero harness exit are failures. Python needs the existing benchmark environment's PyYAML and prometheus-client packages.
 
-## What passes qualification
+## Measurement validity and separate transport qualification
 
 - Correct selected decoder for all requests, complete valid SSE with terminal `[DONE]`, `finish_reason=length`, server-reported token counts, and valid client content timestamps.
 - Unchanged pod UID, container ID, restart count, node and GPU identity; three distinct allocated engine GPUs. No undrained work or transfer failure/expiry.
-- NIXL bytes/time histogram counts matching the qualified expected number of operations, positive bytes/time observations, and UCX evidence connecting the executed local GPU READ payload to `cuda_ipc`. Identify remote payload transport separately. Seeing TCP control traffic or a CUDA IPC capability listing is not enough to identify the KV payload path.
+- NIXL bytes/time histogram counts matching the expected number of operations, positive bytes/time observations and no transfer/notification failures. These observations support actual KV movement, not a specific transport.
 - Client TTFT comes from first generated content. Sidecar `true_ttft_ms` ends before decode KV loading and cannot replace it. Histogram deltas are aggregate connector observations, not per-request transfer decomposition or raw NVLink bandwidth.
 
-A small or absent latency advantage is a valid outcome when the transfer path is qualified. Missing/ambiguous path evidence is unqualified. Stop on route mismatch, malformed/truncated output, transfer errors, missing observations, changed workers or an unresolved slow local path. Do not claim the gate helps from this experiment alone.
+A small or absent latency advantage is a valid characterization of this deployment even when its exact payload transport is unknown. Stop on route mismatch, malformed/truncated output, actual transfer errors, missing required measurements or changed workers. Keep all observations from an interrupted block and label the incomplete comparison.
+
+Transport attribution separately requires evidence connecting the actual local GPU READ payload to `cuda_ipc`, plus identification of the remote path. TCP control traffic, a capability listing or an isolated probe alone cannot establish the model's payload path. Report uncertainty rather than substituting a standalone diagnostic's result. After the first timing block, allow at most five minutes of focused transport diagnosis within the original shutdown deadline; unfinished diagnosis stays open.
+
+The 12 samples per arm are an initial characterization, not a reliable p99 estimate or a routing-policy benchmark. A useful repeatable local/remote cost difference and comparisons against tuned existing policies remain necessary to justify the proposed allowance. No difference on a fallback deployment does not disprove affinity on a functioning fast local path. No gain is claimed here.
 
 ## Cleanup and next stage
 
@@ -99,4 +103,4 @@ Later work calibrates unrestricted routing, hard locality, tuned soft scoring, l
 
 ## Latest run
 
-A fresh fabric-2 capacity signal led to successful provisioning on September 16. All three nodes became ready, and real P/D correctness passed. The experiment stopped at transport qualification; all resources were verified absent at 06:09:48 UTC. Any future launch must recheck capacity, resolve the recorded failure, and fit the remaining cumulative budget.
+A fresh fabric-2 capacity signal led to successful provisioning on September 16. All three nodes became ready, and real P/D correctness passed. The experiment stopped at transport qualification; all resources were verified absent at 06:09:48 UTC. Any future serving launch must secure healthy capacity and a session budget. Collect valid client timing after correctness; keep transport attribution as a separate requirement for the claims it supports.
