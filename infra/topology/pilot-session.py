@@ -47,6 +47,20 @@ RTX_TOPOLOGY_CREATES = FULL_TOPOLOGY_CREATES - {"nebius_compute_v1_gpu_cluster.l
 RTX_PROJECT_ID = "project-e05tg6xqln007kjqm4t3rs"
 RTX_SUBNET_ID = "vpcsubnet-e05tskd8ywwvmzhed8"
 PROFILE_POLICIES = {
+    "rdma-h200-serving": {
+        "placement_timeout_seconds": 15 * 60,
+        "cleanup_start_seconds": 35 * 60,
+        "deletion_target_seconds": 48 * 60,
+        "hourly_rate_usd_pretax": Decimal("39.7"),
+        "attempt_admission_usd_pretax": Decimal("32"),
+        "expected_creates": FULL_TOPOLOGY_CREATES,
+        "remote_gpu_preset": "8gpu-128vcpu-1600gb", "remote_on_fabric": True,
+        "gpu_platform": "H200", "terraform_gpu_platform": "gpu-h200-sxm",
+        "infiniband_fabric": "us-central1-a", "allowed_fabrics": ("us-central1-a",),
+        "diagnostic_only": False, "gpu_preemptible": True,
+        "purchase_type": "preemptible", "terraform_dir": RDMA_TERRAFORM_DIR,
+        "require_project_binding": True,
+    },
     "rdma-h200-local": {
         "placement_timeout_seconds": 20 * 60,
         "cleanup_start_seconds": 90 * 60,
@@ -422,7 +436,12 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
             )
         if not valid_remote_reservation:
             raise SessionError("Terraform plan remote node reservation policy does not match its profile")
-        if remote_template.get("gpu_cluster") is not None:
+        if policy.get("remote_on_fabric"):
+            refs = plan.get("configuration", {}).get("root_module", {}).get("resources", [])
+            remote_config = next((r for r in refs if r.get("address") == "nebius_mk8s_v1_node_group.remote"), {})
+            if "nebius_compute_v1_gpu_cluster.local.id" not in json.dumps(remote_config):
+                raise SessionError("Remote node must reference the same GPU cluster")
+        if not policy.get("remote_on_fabric") and remote_template.get("gpu_cluster") is not None:
             raise SessionError("Terraform plan remote node must remain outside the local GPU cluster")
         if remote_disk.get("type") != "NETWORK_SSD" or remote_disk.get("size_gibibytes") != 256:
             raise SessionError("Terraform plan remote node boot disk must be a 256 GiB NETWORK_SSD")

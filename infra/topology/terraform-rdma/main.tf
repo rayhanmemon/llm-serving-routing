@@ -80,8 +80,8 @@ resource "nebius_mk8s_v1_node_group" "remote" {
   fixed_node_count = 1
   version          = "1.35"
   template = {
-    resources          = { platform = local.gpu_shape.platform, preset = local.gpu_shape.remote_preset }
-    gpu_cluster        = null
+    resources          = { platform = local.gpu_shape.platform, preset = local.gpu_shape.local_preset }
+    gpu_cluster        = { id = nebius_compute_v1_gpu_cluster.local.id }
     gpu_settings       = { drivers_preset = "cuda13.0" }
     boot_disk          = { type = "NETWORK_SSD", size_gibibytes = 256 }
     network_interfaces = [{ subnet_id = var.subnet_id }]

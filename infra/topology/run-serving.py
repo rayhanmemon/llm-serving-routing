@@ -95,8 +95,8 @@ def terraform_values(output):
     return cluster_id, values
 
 
-def ready_node_mapping(items, group_ids):
-    expected_gpus = {"local": 8, "remote": 1, "cpu": 0}
+def ready_node_mapping(items, group_ids, remote_gpus=1):
+    expected_gpus = {"local": 8, "remote": remote_gpus, "cpu": 0}
     result = {}
     for role, group_id in group_ids.items():
         matches = [
@@ -410,7 +410,7 @@ class Runner:
             if result.returncode == 0:
                 try:
                     items = json.loads(result.stdout)["items"]
-                    nodes = ready_node_mapping(items, group_ids)
+                    nodes = ready_node_mapping(items, group_ids, 8 if self.session["profile"] == "rdma-h200-serving" else 1)
                     write_json(self.root / "ready-nodes.json", {"nodes": nodes, "items": items})
                     return nodes
                 except (json.JSONDecodeError, KeyError, ServingError) as error:
