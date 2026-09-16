@@ -1,0 +1,12 @@
+[1789598389.943896] [rdma-consumer:63   :0]   |                      8239..inf | multi-frag zero-copy                             | rc_mlx5/mlx5_2:1/path0 |
+[1789598389.943897] [rdma-consumer:63   :0]   +--------------------------------+--------------------------------------------------+------------------------+
+[1789598389.946926] [rdma-consumer:63   :0]   +--------------------------------+--------------------------------------------------------------------------+
+[1789598389.946932] [rdma-consumer:63   :0]   | ucp_context_0 inter-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |
+[1789598389.946933] [rdma-consumer:63   :0]   +--------------------------------+-------------------------+------------------------------------------------+
+[1789598389.946933] [rdma-consumer:63   :0]   |                              0 | copy-out                | rc_mlx5/mlx5_2:1/path0                         |
+[1789598389.946934] [rdma-consumer:63   :0]   |                          1..64 | software emulation      | rc_mlx5/mlx5_2:1/path0                         |
+[1789598389.946935] [rdma-consumer:63   :0]   |                        65..inf | zero-copy               | rc_mlx5/mlx5_2:1 50% on path0 and 50% on path1 |
+[1789598389.946935] [rdma-consumer:63   :0]   +--------------------------------+-------------------------+------------------------------------------------+
+READ_RESULT {"bytes": 262144, "repeat": 0, "elapsed_seconds": 0.0082455639999921, "all_bytes_equal_73": true, "checksum": 19136512}
+READ_RESULT {"bytes": 262144, "repeat": 1, "elapsed_seconds": 0.0011271230000033938, "all_bytes_equal_73": true, "checksum": 19136512}
+READ_RESULT {"bytes": 262144, "repeat": 2, "elapsed_seconds": 0.001195650999989084, "all_bytes_equal_73": true, "checksum": 19136512}

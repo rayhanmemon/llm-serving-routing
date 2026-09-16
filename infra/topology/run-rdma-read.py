@@ -45,10 +45,16 @@ def main():
         cluster = outputs['cluster_id']['value']; group = outputs['node_group_ids']['value']['local']
         call([str(Path.home()/'.nebius/bin/nebius'), 'mk8s','cluster','get-credentials','--id',cluster,
               '--external','--kubeconfig',str(run/'kubeconfig'),'--context-name','router-topology','--force'], 'credentials', 60)
-        nodes = json.loads(call(k+['get','nodes','-o','json'], 'nodes').stdout)['items']
-        node = next(n for n in nodes if n['metadata']['labels'].get('nebius.com/node-group-id') == group)
-        assert any(c['type']=='Ready' and c['status']=='True' for c in node['status']['conditions'])
-        assert int(node['status']['allocatable'].get('nvidia.com/gpu',0)) == 8
+        device_deadline = time.time() + min(600, remaining())
+        while time.time() < device_deadline:
+            nodes = json.loads(call(k+['get','nodes','-o','json'], 'nodes').stdout)['items']
+            node = next(n for n in nodes if n['metadata']['labels'].get('nebius.com/node-group-id') == group)
+            if (any(c['type']=='Ready' and c['status']=='True' for c in node['status']['conditions'])
+                    and int(node['status']['allocatable'].get('nvidia.com/gpu',0)) == 8):
+                break
+            time.sleep(10)
+        else:
+            raise RuntimeError('GPU device plugin did not advertise eight GPUs')
         rdma_resources = {n:v for n,v in node['status']['allocatable'].items() if n.startswith('rdma/')}
         if len(rdma_resources)>1: raise RuntimeError('Multiple RDMA pools require explicit selection: '+str(rdma_resources))
         rdma = next(iter(rdma_resources), None)

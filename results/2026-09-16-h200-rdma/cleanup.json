@@ -1,0 +1,13 @@
+{
+  "session_id": "20260916T222327Z-9fa7fc55",
+  "teardown_exit_code": 0,
+  "verified_unix": 1789599182.925799,
+  "resource_counts": {
+    "instances": 0,
+    "kubernetes_clusters": 0,
+    "disks": 0,
+    "filesystems": 0,
+    "gpu_clusters": 0
+  },
+  "scope": "experiment project only; Terraform destroy exit 0"
+}

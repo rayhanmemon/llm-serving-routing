@@ -1,0 +1,11 @@
+{
+  "session_id": "20260916T222327Z-9fa7fc55",
+  "estimate_usd_pretax": "7.164661242963409436834094368",
+  "method": "Conservative native create-start to delete-finish for 8 spot H200; 256 GiB SSD for full session through verified cleanup; not an invoice.",
+  "gpu_start": "2026-09-16T22:28:09.898071Z",
+  "gpu_end": "2026-09-16T22:50:03.600721Z",
+  "gpu_seconds": "1313.702650",
+  "gpu_cost": "7.152381094444444444444444444",
+  "disk_cost": "0.01228014851896499238964992390",
+  "cleanup_verified_at": "2026-09-16T22:53:02.925799+00:00"
+}

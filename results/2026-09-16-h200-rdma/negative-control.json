@@ -1,0 +1,24 @@
+{
+  "exit_code": 124,
+  "timeout_seconds": 90,
+  "full_log_bytes": 245611011,
+  "full_log_sha256": "0c05d70a805938ca5b9b04191263c1c5d406b5858cc4d2c9125f378000be3e13",
+  "representative_errors": [
+    "CapEff:\t00000000a80425fb",
+    "[1789598622.056128] [rdma-consumer:157  :0]           ib_md.c:307  UCX  ERROR ibv_reg_mr(address=0x7f5aa44d6000, length=544768, access=0xf) failed: Cannot allocate memory : Please set max locked memory (ulimit -l) to 'unlimited' (current: 8192 kbytes)",
+    "[1789598622.056261] [rdma-consumer:157  :0]           mpool.c:246  UCX  ERROR Failed to allocate memory pool (name=ud_recv_skb) chunk: Input/output error",
+    "[1789598622.056423] [rdma-consumer:157  :0]           ib_md.c:307  UCX  ERROR ibv_reg_mr(address=0x7f5870a00000, length=20971520, access=0x10000f) failed: Cannot allocate memory : Please set max locked memory (ulimit -l) to 'unlimited' (current: 8192 kbytes)",
+    "[1789598622.056449] [rdma-consumer:157  :0]           mpool.c:246  UCX  ERROR Failed to allocate memory pool (name=ud_recv_skb) chunk: Input/output error",
+    "[1789598622.056471] [rdma-consumer:157  :0]           ib_md.c:307  UCX  ERROR ibv_reg_mr(address=0x7f5870a00000, length=20971520, access=0x10000f) failed: Cannot allocate memory : Please set max locked memory (ulimit -l) to 'unlimited' (current: 8192 kbytes)",
+    "[1789598622.056482] [rdma-consumer:157  :0]           mpool.c:246  UCX  ERROR Failed to allocate memory pool (name=ud_recv_skb) chunk: Input/output error",
+    "[1789598622.056500] [rdma-consumer:157  :0]           ib_md.c:307  UCX  ERROR ibv_reg_mr(address=0x7f5870a00000, length=20971520, access=0x10000f) failed: Cannot allocate memory : Please set max locked memory (ulimit -l) to 'unlimited' (current: 8192 kbytes)",
+    "[1789598622.056507] [rdma-consumer:157  :0]           mpool.c:246  UCX  ERROR Failed to allocate memory pool (name=ud_recv_skb) chunk: Input/output error",
+    "[1789598622.056522] [rdma-consumer:157  :0]           ib_md.c:307  UCX  ERROR ibv_reg_mr(address=0x7f5870a00000, length=20971520, access=0x10000f) failed: Cannot allocate memory : Please set max locked memory (ulimit -l) to 'unlimited' (current: 8192 kbytes)",
+    "[1789598622.056529] [rdma-consumer:157  :0]           mpool.c:246  UCX  ERROR Failed to allocate memory pool (name=ud_recv_skb) chunk: Input/output error",
+    "[1789598622.056545] [rdma-consumer:157  :0]           ib_md.c:307  UCX  ERROR ibv_reg_mr(address=0x7f5870a00000, length=20971520, access=0x10000f) failed: Cannot allocate memory : Please set max locked memory (ulimit -l) to 'unlimited' (current: 8192 kbytes)",
+    "[1789598622.056551] [rdma-consumer:157  :0]           mpool.c:246  UCX  ERROR Failed to allocate memory pool (name=ud_recv_skb) chunk: Input/output error",
+    "[1789598622.056566] [rdma-consumer:157  :0]           ib_md.c:307  UCX  ERROR ibv_reg_mr(address=0x7f5870a00000, length=20971520, access=0x10000f) failed: Cannot allocate memory : Please set max locked memory (ulimit -l) to 'unlimited' (current: 8192 kbytes)",
+    "[1789598622.056573] [rdma-consumer:157  :0]           mpool.c:246  UCX  ERROR Failed to allocate memory pool (name=ud_recv_skb) chunk: Input/output error",
+    "[1789598622.056588] [rdma-consumer:157  :0]           ib_md.c:307  UCX  ERROR ibv_reg_mr(address=0x7f5870a00000, length=20971520, access=0x10000f) failed: Cannot allocate memory : Please set max locked memory (ulimit -l) to 'unlimited' (current: 8192 kbytes)"
+  ]
+}

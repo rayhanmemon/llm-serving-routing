@@ -1,0 +1,64 @@
+[
+  {
+    "name": "rdma-consumer",
+    "node_alias": "single-h200-host",
+    "hostIPC": false,
+    "hostPID": false,
+    "containers": [
+      {
+        "name": "probe",
+        "image": "docker.io/vllm/vllm-openai:v0.26.0@sha256:770fe65b2c73ee74a5c42165cf3433de4048cc2cd9c57a937ca4e35aba5aa87b",
+        "resources": {
+          "limits": {
+            "cpu": "2",
+            "memory": "8Gi",
+            "nvidia.com/gpu": "1"
+          },
+          "requests": {
+            "cpu": "2",
+            "memory": "8Gi",
+            "nvidia.com/gpu": "1"
+          }
+        },
+        "securityContext": {
+          "capabilities": {
+            "add": [
+              "IPC_LOCK"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "rdma-producer",
+    "node_alias": "single-h200-host",
+    "hostIPC": false,
+    "hostPID": false,
+    "containers": [
+      {
+        "name": "probe",
+        "image": "docker.io/vllm/vllm-openai:v0.26.0@sha256:770fe65b2c73ee74a5c42165cf3433de4048cc2cd9c57a937ca4e35aba5aa87b",
+        "resources": {
+          "limits": {
+            "cpu": "2",
+            "memory": "8Gi",
+            "nvidia.com/gpu": "1"
+          },
+          "requests": {
+            "cpu": "2",
+            "memory": "8Gi",
+            "nvidia.com/gpu": "1"
+          }
+        },
+        "securityContext": {
+          "capabilities": {
+            "add": [
+              "IPC_LOCK"
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

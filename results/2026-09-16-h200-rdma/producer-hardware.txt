@@ -1,0 +1,13 @@
+8192
+CapEff:	00000000a80465fb
+total 0
+crw-rw-rw- 1 root root  10, 121 Sep 16 22:38 rdma_cm
+crw-rw-rw- 1 root root 231, 192 Sep 16 22:38 uverbs0
+crw-rw-rw- 1 root root 231, 193 Sep 16 22:38 uverbs1
+crw-rw-rw- 1 root root 231, 194 Sep 16 22:38 uverbs2
+crw-rw-rw- 1 root root 231, 195 Sep 16 22:38 uverbs3
+crw-rw-rw- 1 root root 231, 196 Sep 16 22:38 uverbs4
+crw-rw-rw- 1 root root 231, 197 Sep 16 22:38 uverbs5
+crw-rw-rw- 1 root root 231, 198 Sep 16 22:38 uverbs6
+crw-rw-rw- 1 root root 231, 199 Sep 16 22:38 uverbs7
+GPU 0: NVIDIA H200 (UUID: GPU-781cb1c7-3dbc-19f6-f917-a8d2d066d4fe)
