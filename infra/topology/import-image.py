@@ -3,13 +3,32 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
+import re
 import subprocess
 import tarfile
 import uuid
 
 IMAGE = 'ghcr.io/llm-d/llm-d-router-endpoint-picker:topology-0217d299-amd64'
 HELPER = 'docker.io/library/alpine:3.22@sha256:7c8cb692ae09657cbc4a3f3cbd0e8d5a2690ba38386aaaf252dbb060bf5eb2e6'
+
+
+def kubectl_supports_spdy_override(version):
+    client = version.get('clientVersion', {})
+    match = re.match(r'^(\d+)', str(client.get('minor', '')))
+    return str(client.get('major')) == '1' and match is not None and int(match.group(1)) >= 30
+
+
+def upload_command(context, namespace, pod_name):
+    return ['kubectl', '--context', context, '--request-timeout=0',
+            '-n', namespace, 'exec', '-i', pod_name, '--']
+
+
+def upload_environment(environ):
+    result = dict(environ)
+    result['KUBECTL_REMOTE_COMMAND_WEBSOCKETS'] = 'false'
+    return result
 
 
 def main():
@@ -57,8 +76,14 @@ def main():
         subprocess.run(exec_cmd + ['test', '-S', '/host/run/containerd/containerd.sock'], check=True)
         print('Using installed containerd client: ' + ctr_path, flush=True)
         ctr = ['chroot', '/host', ctr_path, '--address', '/run/containerd/containerd.sock', '--namespace', 'k8s.io']
+        version = json.loads(subprocess.check_output(['kubectl', 'version', '--client', '-o', 'json']))
+        if not kubectl_supports_spdy_override(version):
+            raise RuntimeError('kubectl 1.30 or newer is required for the verified SPDY upload override')
+        upload_exec_cmd = upload_command(a.context, a.namespace, name)
         with a.archive.open('rb') as source:
-            subprocess.run(exec_cmd + ctr + ['images', 'import', '--platform', 'linux/amd64', '-'], stdin=source, check=True, timeout=180)
+            subprocess.run(upload_exec_cmd + ctr + ['images', 'import', '--platform', 'linux/amd64', '-'],
+                           stdin=source, check=True, timeout=180,
+                           env=upload_environment(os.environ))
         images = subprocess.check_output(exec_cmd + ctr + ['images', 'list', '--quiet'], text=True)
         if IMAGE not in images.splitlines():
             raise RuntimeError('Expected EPP image not found after import')
