@@ -1,7 +1,7 @@
-# Frozen known-answer qualification
+# Prospective direct-versus-P/D confirmation
 
-Preparation performs tokenization only; it sends no model request. Execution is a separate, explicitly controlled step.
+Rayhan approved this revised acceptance rule before these outputs. Seed 17092027 fixes eight new cases: copy and early-context retrieval, two cases each at 512 and 8192 input tokens, across four routes (32 requests).
 
-The eight cases are fixed before outputs: four exact-copy and four early-context retrieval cases, with two cases at each of 512 and 8192 input tokens per family. Every case has an eight-word answer chosen by the recorded seeded rule. All 32 route/case combinations must match the gold text after outer-whitespace stripping only. Returned token IDs are diagnostic because leading whitespace is intentionally normalized. No case may be filtered, replaced or rerun selectively.
+Pass requires all 32 request-integrity checks and, for each of the eight cases, identical output across direct-local, direct-remote, P/D-local and P/D-remote after outer-whitespace stripping only. Gold-answer accuracy is reported separately; it is not the acceptance criterion. The suite JSON's explicit `criterion: direct-parity` selects this behavior; its legacy gold reference-count fields do not override that criterion.
 
-The original five-token equality failure remains evidence and remains unchanged. This suite is an additional aggregate known-answer diagnosis. Keep deployed images, TRITON_ATTN, compilation/CUDA graphs and non-eager execution unchanged. Route, worker identity and NIXL counter qualification remain separate mandatory checks.
+Exact route, one transfer per P/D request, zero transfer failures and stable worker/GPU identity remain mandatory separate checks. No case may be dropped, replaced or selectively rerun. The engine configuration is unchanged. Both earlier failed gates remain failed. This suite was frozen before any of its model requests.
