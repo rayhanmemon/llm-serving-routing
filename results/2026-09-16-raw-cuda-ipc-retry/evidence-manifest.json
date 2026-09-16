@@ -1,0 +1,61 @@
+{
+  "archive": {
+    "path": "evidence.tar.gz",
+    "bytes": 3117,
+    "sha256": "6c01fdf2da8913c8e24799d5d8b16c39b7e0279dd99d860dbf3f8ba2b2779990"
+  },
+  "members": {
+    "evidence/cause-assessment.json": {
+      "bytes": 668,
+      "sha256": "ea50d9e61213c486474bb64021c3077babc64f6bb3f49889f0aee33498bcf119"
+    },
+    "evidence/cleanup-verification.json": {
+      "bytes": 450,
+      "sha256": "b528c7e3710b9c87c8c0844bf39828f33880a086397fa482a18e99597376f9e1"
+    },
+    "evidence/cost-estimate.json": {
+      "bytes": 719,
+      "sha256": "703a474a7bdf41dfe63e36c00c974c473924b3e6f838928b8f698b9bbcdd36b7"
+    },
+    "evidence/execution-stop.json": {
+      "bytes": 538,
+      "sha256": "a22d26a7d8e1fcc56191a72518d251ce43266e6f7f7fc1abe250f9fd980af8a8"
+    },
+    "evidence/finalization-status.json": {
+      "bytes": 235,
+      "sha256": "0dc310e59c4fb79f6f0adb5d8a379c1b4dc600bae85fef4224b80984305b0bef"
+    },
+    "evidence/node-health.json": {
+      "bytes": 1408,
+      "sha256": "068c30e8148acf884d4ad5a987fa184c475d735b5f58ad7120349664164216e7"
+    },
+    "evidence/probe-execution.json": {
+      "bytes": 308,
+      "sha256": "d6eca2fd4125896cd2353dbd0ab35c12b9f9c9cda589ddfca83eade793ea339a"
+    },
+    "evidence/provider-operation-times.json": {
+      "bytes": 463,
+      "sha256": "1db9442951dd1074445eb7a54d6e7186a530d9350b2f99062b44bf0d8abb0a8e"
+    },
+    "evidence/provisioning-timeline.json": {
+      "bytes": 723,
+      "sha256": "2f3cae13c39d14d092e0f6d679f47d5b50202839bb5e60d97f7acfdcbb3c2ffc"
+    },
+    "evidence/source-record.json": {
+      "bytes": 461,
+      "sha256": "8d52605f3b75ada39288ab16b624a5a1754b0e479dfef6178cd5f44d999bf612"
+    }
+  },
+  "sanitization": {
+    "excluded": [
+      "credentials",
+      "kubeconfig",
+      "approval and private session-control records",
+      "provider resource and operation identifiers",
+      "node UUIDs and machine identifiers",
+      "network addresses",
+      "budget-authorization records"
+    ],
+    "source_run_directory_not_included": true
+  }
+}

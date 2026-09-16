@@ -1,0 +1,27 @@
+{
+  "observations": [
+    {
+      "observed_at": "2026-09-16T14:36:43Z",
+      "cluster_state": "PROVISIONING",
+      "instances_seen": 0
+    },
+    {
+      "observed_at": "2026-09-16T14:41:25Z",
+      "cluster_state": "RUNNING",
+      "node_group_state": "PROVISIONING",
+      "node_count": 1,
+      "instance_state": "STARTING",
+      "create_progress": "Starting instance"
+    },
+    {
+      "observed_at": "2026-09-16T14:48:53Z",
+      "cluster_state": "RUNNING",
+      "node_group_state": "PROVISIONING",
+      "node_count": 1,
+      "instance_state": "STOPPED",
+      "instance_spec_stopped": true,
+      "stop_error": null,
+      "terminal_monitor_reason": "instance stopped before node-group readiness"
+    }
+  ]
+}

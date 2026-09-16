@@ -1,0 +1,19 @@
+{
+  "estimate_usd_pretax": "3.113842342898301369863013699",
+  "method": "Conservative compute create-operation start through delete-operation finish, including stopped time, plus 256 GiB SSD for the full session; not invoice-verified.",
+  "session_seconds": "1104.816686",
+  "cleanup_verified_at": "2026-09-16T14:54:25.654570Z",
+  "components": {
+    "compute": {
+      "create_operation_start": "2026-09-16T14:40:14.152721Z",
+      "delete_operation_finish": "2026-09-16T14:51:04.287838Z",
+      "seconds": "650.135117",
+      "hourly_rate_usd": "17.2",
+      "estimated_usd": "3.106201114555555555555555556"
+    },
+    "disk": {
+      "gib": 256,
+      "estimated_usd": "0.007641228342745814307458143075"
+    }
+  }
+}

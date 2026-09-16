@@ -1,0 +1,11 @@
+{
+  "early_stop_at": "2026-09-16T14:50:02.028354Z",
+  "reason": "Native VM observed STOPPED; provider Stop Instance operation had finished. Cause not established. No raw probe ran.",
+  "action": "Interrupt only the current Terraform apply and stop the diagnostic supervisor; cleanup remains owned by the pilot.",
+  "terraform_apply": {
+    "exit_code": 1,
+    "placement_timeout": false,
+    "finished_at": "2026-09-16T14:50:02.325940Z",
+    "interpretation": "Interrupted after the VM stop was confirmed; not a diagnostic result."
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "compute_create": {
+    "started_at": "2026-09-16T14:40:14.152721Z",
+    "finished_at": "2026-09-16T14:42:43.478605Z"
+  },
+  "compute_stop": {
+    "started_at": "2026-09-16T14:48:11.540563Z",
+    "finished_at": "2026-09-16T14:48:24.686849Z",
+    "recorded_error": null
+  },
+  "compute_delete": {
+    "started_at": "2026-09-16T14:50:34.289192Z",
+    "finished_at": "2026-09-16T14:51:04.287838Z"
+  },
+  "provider_operation_ids_and_resource_ids_removed": true
+}

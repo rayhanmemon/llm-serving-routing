@@ -1,0 +1,21 @@
+{
+  "observed": [
+    "Kubernetes changed node readiness and pressure conditions to Unknown because the kubelet stopped posting status.",
+    "The provider recorded a native Stop Instance operation that finished without a recorded error.",
+    "The VM was stopped before node-group readiness and before any diagnostic probe."
+  ],
+  "cause": "unresolved",
+  "live_possibilities": [
+    "preemption",
+    "another VM or provider failure"
+  ],
+  "targeted_provider_audit_query": {
+    "result": "permission denied",
+    "evidence_in_bundle": false
+  },
+  "claims_not_supported": [
+    "the VM was preempted",
+    "CUDA IPC failed",
+    "the split-pod case failed"
+  ]
+}

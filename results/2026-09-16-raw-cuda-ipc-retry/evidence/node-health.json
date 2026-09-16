@@ -1,0 +1,49 @@
+{
+  "node_object_created_at": "2026-09-16T14:44:52Z",
+  "shape_and_software": {
+    "instance_type": "gpu-h100-sxm",
+    "gpu_name": "H100",
+    "resource_preset": "8gpu-128vcpu-1600gb",
+    "preemptible": true,
+    "cuda_version": "13.0.3-1",
+    "nvidia_driver_version": "580.173.02",
+    "nccl_version": "2.30.7-1-cuda13.0",
+    "kernel_version": "6.11.0-1016-nvidia",
+    "container_runtime_version": "containerd://2.2.6",
+    "kubelet_version": "v1.35.7",
+    "os_image": "Ubuntu 24.04.4 LTS"
+  },
+  "last_heartbeat_at": "2026-09-16T14:45:02Z",
+  "failure_transition_at": "2026-09-16T14:45:57Z",
+  "conditions": [
+    {
+      "type": "MemoryPressure",
+      "status": "Unknown",
+      "reason": "NodeStatusUnknown",
+      "message": "Kubelet stopped posting node status."
+    },
+    {
+      "type": "DiskPressure",
+      "status": "Unknown",
+      "reason": "NodeStatusUnknown",
+      "message": "Kubelet stopped posting node status."
+    },
+    {
+      "type": "PIDPressure",
+      "status": "Unknown",
+      "reason": "NodeStatusUnknown",
+      "message": "Kubelet stopped posting node status."
+    },
+    {
+      "type": "Ready",
+      "status": "Unknown",
+      "reason": "NodeStatusUnknown",
+      "message": "Kubelet stopped posting node status."
+    }
+  ],
+  "taint_added": {
+    "key": "node.kubernetes.io/unreachable",
+    "effect": "NoSchedule",
+    "time_added": "2026-09-16T14:45:57Z"
+  }
+}

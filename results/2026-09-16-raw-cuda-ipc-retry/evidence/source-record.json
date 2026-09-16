@@ -1,0 +1,8 @@
+{
+  "evaluation_repo_commit": "478a29ad0da5fe037deaa357c84dade6feb74c22",
+  "evaluation_repo_commit_time": "2026-09-16T10:33:23-04:00",
+  "evaluation_repo_commit_subject": "Prioritize split-pod IPC diagnosis and tolerate asynchronous deletion",
+  "mode": "split-first",
+  "reason": "Earlier same-container controls passed; run the missing split-pod case first, then exact-pair controls if needed.",
+  "runner_and_probe_unchanged_by_later_report_commit": true
+}

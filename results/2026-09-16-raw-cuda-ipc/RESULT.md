@@ -43,7 +43,7 @@ The provider records place the compute create operation at 14:10:11.075027 UTC a
 
 Estimated cost: **$6.13 before tax**, calculated conservatively as **$6.1185** for 1,280.614346 seconds from compute create-operation start through delete-operation finish at $17.20/hour, plus **$0.0121** for the 256 GiB SSD over the full 1,750.036334-second session. This is not invoice-verified. Cumulative estimated H100 evaluation cost is **$26.07**, leaving **$23.93** of the $50 authorization.
 
-A split-pod-first follow-up was prepared after this run and had not been launched when this record was finalized.
+A split-pod-first follow-up was launched after this run, but the new node became unreachable and stopped before any diagnostic probe ran. See the [retry record](../2026-09-16-raw-cuda-ipc-retry/RESULT.md). These two passing same-container controls are unchanged.
 
 ## Evidence
 

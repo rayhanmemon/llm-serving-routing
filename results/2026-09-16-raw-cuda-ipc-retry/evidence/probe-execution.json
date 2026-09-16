@@ -1,0 +1,12 @@
+{
+  "diagnostic_supervisor": {
+    "ok": false,
+    "only_recorded_event": "waiting_for_cluster_output",
+    "probe_started": false
+  },
+  "raw_cuda_probe_ran": false,
+  "nixl_or_ucx_probe_ran": false,
+  "inference_probe_ran": false,
+  "router_probe_ran": false,
+  "diagnostic_result_files_present": false
+}
