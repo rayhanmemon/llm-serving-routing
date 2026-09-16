@@ -1,10 +1,8 @@
 # Controlled topology-transfer check
 
-**Status:** real-model direct/local/remote P/D correctness passed on September 16. Fast local transport remains unqualified after a CUDA IPC handle-open error; no latency benchmark ran. All rentals were deleted; the monitor is paused for diagnosis. Estimated H100 spending: $19.94 of $50, with $30.06 remaining. [Result](../../results/2026-09-16-h100-transfer-qualification/RESULT.md).
+**Status — September 16:** real P/D correctness and same-container raw CUDA controls passed; no client-latency block has run. Prior resources are deleted. H200 evaluation is approved under today's $200 ceiling, conservatively including $29.18 prior evaluation spend. Preparation and validation are local; a fresh capacity check and exact resource-plan validation precede launch.
 
-[SESSION.md](SESSION.md) is the launch/measurement procedure and quote. One eight-GPU H100 VM supplies a prefiller and local decoder; a separate one-GPU H100 VM supplies the remote decoder. A CPU node runs Envoy, EPP and inference-perf. Three GPUs work; nine are billed. The first test qualifies the transfer path rather than comparing routing policies.
-
-[Short raw CUDA diagnostic](IPC-DIAGNOSTIC.md) is the next authorized step: one node, no model loading, three controlled process/container comparisons within the existing budget.
+[SESSION.md](SESSION.md) describes the measurement protocol. The approved H200 profile retains the three-worker placement: one prefiller and local decoder on an eight-GPU VM, a one-GPU remote decoder, and a CPU utility node. Nine GPUs are rented; three serve the model. [MEASUREMENT-CONFIGS.md](MEASUREMENT-CONFIGS.md) describes diagnostic versus evaluated policies. Raw IPC remains a bounded diagnostic option, not a prerequisite for collecting valid client timing.
 
 ## Files
 
@@ -12,7 +10,7 @@
 |---|---|
 | `terraform/` | Five resources: Kubernetes cluster, CPU/local/remote node groups, and the local node's GPU-cluster fabric allocation. Previous resources were destroyed; future plans allocate the eight-GPU node before CPU and remote. |
 | `raw-ipc.py`, `run-ipc-diagnostic.py` | Bounded raw CUDA export/import controls and their one-node orchestration; no model or network-transfer fallback. |
-| `render.py` | Render three workers, four router policies and sequential short/long workloads. Uses the published PR image tag and pinned supporting images/model. |
+| `render.py` | Render three workers, one diagnostic and five evaluated router policies, sequential timings, calibration workloads and candidate replay traces. Uses the published PR image tag and pinned supporting images/model. |
 | `workload.py` | Render a benchmark Pod/ConfigMap with a pinned tokenizer, unique run header and optional decoder pin. It does not deploy or send requests. |
 | `record-routes.py` | Add run ID and requested/selected decoder fields to the rendered Envoy access log. |
 | `gpu-inspect.py` | Inspect visible GPU UUIDs and peer capability inside the GPU engine image. It does not measure KV transfer. |
@@ -21,6 +19,8 @@
 | `validate-transfer.py` | Reject incomplete streams, wrong token counts, wrong routes, changed workers and mismatched paired request payloads. |
 | `transfer-delta.py` | Require the qualified transfer count, check failure counters, and summarize histogram deltas separately from client latency. It cannot identify the transport by itself. |
 | `import-image.py` | Validate and import the local EPP archive onto the selected CPU node using a temporary helper; remove the helper. |
+| `run-serving.py`, `correctness-client.py`, `render-correctness-pod.py` | Start the guarded serving fixture, verify exact direct/local/remote correctness and collect the first timing block. Dry-run by default. |
+| `run-measurements.py` | Validate correctness admission, warm four input/route pairs, collect the frozen 48 requests, and retain strictly validated reports before deleting benchmark Pods. |
 | `pilot-session.py` | Admit retries against one cumulative budget, prohibit overlap, require prior cleanup/cost records and run the independent shutdown guard. |
 | `verify-empty.sh`, `teardown.sh` | Destroy the dedicated state and independently check instances, clusters, disks, filesystems and GPU clusters. |
 
@@ -40,7 +40,7 @@ Render the standalone chart from published router commit `0217d29924ba93b90f952e
 
 ```sh
 helm template topology /PATH/TO/PINNED/llm-d-router-standalone \
-  -n topology-measurement -f infra/topology/rendered/router-none.values.yaml \
+  -n topology-measurement -f infra/topology/rendered/router-diagnostic.values.yaml \
   | python infra/topology/record-routes.py > infra/topology/rendered/router.yaml
 ```
 

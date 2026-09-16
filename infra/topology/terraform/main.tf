@@ -11,9 +11,25 @@ provider "nebius" {
   profile = { name = var.nebius_profile }
 }
 
+locals {
+  gpu_shapes = {
+    H100 = {
+      platform      = "gpu-h100-sxm"
+      local_preset  = "8gpu-128vcpu-1600gb"
+      remote_preset = "1gpu-16vcpu-200gb"
+    }
+    H200 = {
+      platform      = "gpu-h200-sxm"
+      local_preset  = "8gpu-128vcpu-1600gb"
+      remote_preset = "1gpu-16vcpu-200gb"
+    }
+  }
+  gpu_shape = local.gpu_shapes[var.gpu_platform]
+}
+
 resource "nebius_compute_v1_gpu_cluster" "local" {
   parent_id         = var.project_id
-  name              = "router-local-h100"
+  name              = "router-local-${lower(var.gpu_platform)}"
   infiniband_fabric = var.infiniband_fabric
 }
 
@@ -33,7 +49,7 @@ resource "nebius_mk8s_v1_node_group" "local" {
   fixed_node_count = 1
   version          = "1.35"
   template = {
-    resources          = { platform = "gpu-h100-sxm", preset = "8gpu-128vcpu-1600gb" }
+    resources          = { platform = local.gpu_shape.platform, preset = local.gpu_shape.local_preset }
     gpu_cluster        = { id = nebius_compute_v1_gpu_cluster.local.id }
     gpu_settings       = { drivers_preset = "cuda13.0" }
     boot_disk          = { type = "NETWORK_SSD", size_gibibytes = 256 }
@@ -64,7 +80,7 @@ resource "nebius_mk8s_v1_node_group" "remote" {
   fixed_node_count = 1
   version          = "1.35"
   template = {
-    resources          = { platform = "gpu-h100-sxm", preset = "1gpu-16vcpu-200gb" }
+    resources          = { platform = local.gpu_shape.platform, preset = local.gpu_shape.remote_preset }
     gpu_cluster        = null
     gpu_settings       = { drivers_preset = "cuda13.0" }
     boot_disk          = { type = "NETWORK_SSD", size_gibibytes = 256 }

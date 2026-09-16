@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Start an approved H100 pilot attempt with an independent teardown deadline."""
+"""Start an approved GPU pilot attempt with an independent teardown deadline."""
 
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 import fcntl
 import hashlib
@@ -30,6 +31,14 @@ CLEANUP_RESERVE_USD = Decimal("5")
 ATTEMPT_ADMISSION_USD = FULLY_RUNNING_HOURLY_USD * Decimal("2") + CLEANUP_RESERVE_USD
 FULL_TOPOLOGY_PROFILE = "full-topology"
 IPC_DIAGNOSTIC_PROFILE = "ipc-diagnostic"
+H200_EVALUATION_PROFILE = "h200-evaluation"
+FULL_TOPOLOGY_CREATES = {
+    "nebius_compute_v1_gpu_cluster.local",
+    "nebius_mk8s_v1_cluster.topology",
+    "nebius_mk8s_v1_node_group.local",
+    "nebius_mk8s_v1_node_group.cpu[0]",
+    "nebius_mk8s_v1_node_group.remote[0]",
+}
 PROFILE_POLICIES = {
     FULL_TOPOLOGY_PROFILE: {
         "placement_timeout_seconds": PLACEMENT_TIMEOUT_SECONDS,
@@ -37,13 +46,12 @@ PROFILE_POLICIES = {
         "deletion_target_seconds": DELETION_TARGET_SECONDS,
         "hourly_rate_usd_pretax": FULLY_RUNNING_HOURLY_USD,
         "attempt_admission_usd_pretax": ATTEMPT_ADMISSION_USD,
-        "expected_creates": {
-            "nebius_compute_v1_gpu_cluster.local",
-            "nebius_mk8s_v1_cluster.topology",
-            "nebius_mk8s_v1_node_group.local",
-            "nebius_mk8s_v1_node_group.cpu[0]",
-            "nebius_mk8s_v1_node_group.remote[0]",
-        },
+        "expected_creates": FULL_TOPOLOGY_CREATES,
+        "gpu_platform": "H100",
+        "terraform_gpu_platform": "gpu-h100-sxm",
+        "infiniband_fabric": "fabric-6",
+        "allowed_fabrics": ("fabric-2", "fabric-3", "fabric-4", "fabric-6"),
+        "diagnostic_only": False,
     },
     IPC_DIAGNOSTIC_PROFILE: {
         "placement_timeout_seconds": 15 * 60,
@@ -56,6 +64,25 @@ PROFILE_POLICIES = {
             "nebius_mk8s_v1_cluster.topology",
             "nebius_mk8s_v1_node_group.local",
         },
+        "gpu_platform": "H100",
+        "terraform_gpu_platform": "gpu-h100-sxm",
+        "infiniband_fabric": "fabric-6",
+        "allowed_fabrics": ("fabric-2", "fabric-3", "fabric-4", "fabric-6"),
+        "diagnostic_only": True,
+    },
+    H200_EVALUATION_PROFILE: {
+        "placement_timeout_seconds": 30 * 60,
+        "first_measurement_timeout_seconds": 90 * 60,
+        "cleanup_start_seconds": 270 * 60,
+        "deletion_target_seconds": 300 * 60,
+        "hourly_rate_usd_pretax": Decimal("22.503"),
+        "attempt_admission_usd_pretax": Decimal("120"),
+        "expected_creates": FULL_TOPOLOGY_CREATES,
+        "gpu_platform": "H200",
+        "terraform_gpu_platform": "gpu-h200-sxm",
+        "infiniband_fabric": "fabric-7",
+        "allowed_fabrics": ("fabric-7",),
+        "diagnostic_only": False,
     },
 }
 
@@ -105,6 +132,20 @@ def nonnegative_money(value, label: str) -> Decimal:
     return money
 
 
+def authorization_expiry_unix(value) -> float | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value:
+        raise SessionError("authorization_expires_at must be a UTC ISO 8601 timestamp")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise SessionError("authorization_expires_at must be a UTC ISO 8601 timestamp") from error
+    if parsed.tzinfo is None or parsed.utcoffset() != timezone.utc.utcoffset(parsed):
+        raise SessionError("authorization_expires_at must be a UTC ISO 8601 timestamp")
+    return parsed.timestamp()
+
+
 def profile_policy(profile: str) -> dict:
     try:
         return PROFILE_POLICIES[profile]
@@ -128,6 +169,17 @@ def session_hourly_rate(session: dict) -> Decimal:
     return recorded
 
 
+def session_terraform_settings(session: dict) -> tuple[str, str, bool]:
+    policy = profile_policy(session_profile(session))
+    platform = session.get("gpu_platform", policy["gpu_platform"])
+    fabric = session.get("infiniband_fabric", policy["infiniband_fabric"])
+    diagnostic = session.get("ipc_diagnostic_only", policy["diagnostic_only"])
+    if (platform != policy["gpu_platform"] or fabric not in policy["allowed_fabrics"]
+            or diagnostic is not policy["diagnostic_only"]):
+        raise SessionError("Session Terraform settings do not match its profile")
+    return platform, fabric, diagnostic
+
+
 def singleton_object(value, label: str) -> dict:
     if isinstance(value, list) and len(value) == 1:
         value = value[0]
@@ -144,7 +196,7 @@ def plan_boolean(value, label: str) -> bool:
     raise SessionError(f"Terraform plan has invalid {label}")
 
 
-def validate_plan_structure(plan: dict, profile: str) -> None:
+def validate_plan_structure(plan: dict, profile: str) -> dict:
     policy = profile_policy(profile)
     changes = plan.get("resource_changes")
     if not isinstance(changes, list):
@@ -172,13 +224,29 @@ def validate_plan_structure(plan: dict, profile: str) -> None:
     diagnostic_value = plan_boolean(
         variables.get("ipc_diagnostic_only", {}).get("value"), "ipc_diagnostic_only"
     )
-    if diagnostic_value is not (profile == IPC_DIAGNOSTIC_PROFILE):
+    if diagnostic_value is not policy["diagnostic_only"]:
         raise SessionError(f"Terraform plan ipc_diagnostic_only does not match profile {profile}")
     preemptible = plan_boolean(
         variables.get("gpu_preemptible", {}).get("value"), "gpu_preemptible"
     )
     if not preemptible:
         raise SessionError("Terraform plan must use preemptible GPU capacity")
+
+    gpu_platform = variables.get("gpu_platform", {}).get("value")
+    if gpu_platform != policy["gpu_platform"]:
+        raise SessionError(f"Terraform plan gpu_platform does not match profile {profile}")
+    infiniband_fabric = variables.get("infiniband_fabric", {}).get("value")
+    if infiniband_fabric not in policy["allowed_fabrics"]:
+        raise SessionError(f"Terraform plan infiniband_fabric does not match profile {profile}")
+
+    gpu_cluster_change = next(
+        change for change in material if change.get("address") == "nebius_compute_v1_gpu_cluster.local"
+    )
+    gpu_cluster = singleton_object(
+        gpu_cluster_change.get("change", {}).get("after"), "local GPU cluster"
+    )
+    if gpu_cluster.get("infiniband_fabric") != infiniband_fabric:
+        raise SessionError("Terraform plan local GPU cluster uses the wrong InfiniBand fabric")
 
     local_change = next(
         change for change in material if change.get("address") == "nebius_mk8s_v1_node_group.local"
@@ -189,15 +257,68 @@ def validate_plan_structure(plan: dict, profile: str) -> None:
     boot_disk = singleton_object(template.get("boot_disk"), "local node boot disk")
     if after.get("fixed_node_count") != 1:
         raise SessionError("Terraform plan must create exactly one local node")
-    if resources.get("platform") != "gpu-h100-sxm" or resources.get("preset") != "8gpu-128vcpu-1600gb":
-        raise SessionError("Terraform plan local node must use gpu-h100-sxm 8gpu-128vcpu-1600gb")
+    if (
+        resources.get("platform") != policy["terraform_gpu_platform"]
+        or resources.get("preset") != "8gpu-128vcpu-1600gb"
+    ):
+        raise SessionError(
+            "Terraform plan local node must use "
+            f"{policy['terraform_gpu_platform']} 8gpu-128vcpu-1600gb"
+        )
     if template.get("preemptible") != {}:
         raise SessionError("Terraform plan local node must use preemptible GPU capacity")
     if boot_disk.get("type") != "NETWORK_SSD" or boot_disk.get("size_gibibytes") != 256:
         raise SessionError("Terraform plan local node boot disk must be a 256 GiB NETWORK_SSD")
 
+    if not policy["diagnostic_only"]:
+        remote_change = next(
+            change
+            for change in material
+            if change.get("address") == "nebius_mk8s_v1_node_group.remote[0]"
+        )
+        remote = singleton_object(remote_change.get("change", {}).get("after"), "remote node group")
+        remote_template = singleton_object(remote.get("template"), "remote node template")
+        remote_resources = singleton_object(remote_template.get("resources"), "remote node resources")
+        remote_disk = singleton_object(remote_template.get("boot_disk"), "remote node boot disk")
+        if remote.get("fixed_node_count") != 1:
+            raise SessionError("Terraform plan must create exactly one remote node")
+        if (
+            remote_resources.get("platform") != policy["terraform_gpu_platform"]
+            or remote_resources.get("preset") != "1gpu-16vcpu-200gb"
+        ):
+            raise SessionError(
+                "Terraform plan remote node must use "
+                f"{policy['terraform_gpu_platform']} 1gpu-16vcpu-200gb"
+            )
+        if remote_template.get("preemptible") != {}:
+            raise SessionError("Terraform plan remote node must use preemptible GPU capacity")
+        if remote_template.get("gpu_cluster") is not None:
+            raise SessionError("Terraform plan remote node must remain outside the local GPU cluster")
+        if remote_disk.get("type") != "NETWORK_SSD" or remote_disk.get("size_gibibytes") != 256:
+            raise SessionError("Terraform plan remote node boot disk must be a 256 GiB NETWORK_SSD")
 
-def validate_terraform_plan(plan_path: Path, profile: str, *, run=subprocess.run) -> None:
+        cpu_change = next(
+            change
+            for change in material
+            if change.get("address") == "nebius_mk8s_v1_node_group.cpu[0]"
+        )
+        cpu = singleton_object(cpu_change.get("change", {}).get("after"), "CPU node group")
+        cpu_template = singleton_object(cpu.get("template"), "CPU node template")
+        cpu_resources = singleton_object(cpu_template.get("resources"), "CPU node resources")
+        cpu_disk = singleton_object(cpu_template.get("boot_disk"), "CPU node boot disk")
+        if cpu.get("fixed_node_count") != 1:
+            raise SessionError("Terraform plan must create exactly one CPU node")
+        if cpu_resources.get("platform") != "cpu-d3" or cpu_resources.get("preset") != "16vcpu-64gb":
+            raise SessionError("Terraform plan CPU node must use cpu-d3 16vcpu-64gb")
+        if cpu_template.get("preemptible") is not None:
+            raise SessionError("Terraform plan CPU node must use standard capacity")
+        if cpu_disk.get("type") != "NETWORK_SSD" or cpu_disk.get("size_gibibytes") != 64:
+            raise SessionError("Terraform plan CPU node boot disk must be a 64 GiB NETWORK_SSD")
+
+    return {"gpu_platform": gpu_platform, "infiniband_fabric": infiniband_fabric,
+            "ipc_diagnostic_only": diagnostic_value}
+
+def validate_terraform_plan(plan_path: Path, profile: str, *, run=subprocess.run) -> dict:
     completed = run(
         ["terraform", f"-chdir={TERRAFORM_DIR}", "show", "-json", str(plan_path.resolve())],
         capture_output=True,
@@ -213,7 +334,7 @@ def validate_terraform_plan(plan_path: Path, profile: str, *, run=subprocess.run
         raise SessionError("Terraform show returned invalid JSON") from error
     if not isinstance(plan, dict):
         raise SessionError("Terraform show did not return a JSON object")
-    validate_plan_structure(plan, profile)
+    return validate_plan_structure(plan, profile)
 
 
 def cleanup_verified(run_dir: Path, session_id: str) -> bool:
@@ -234,8 +355,16 @@ def load_or_initialize_budget(state_root: Path, approval: dict, approved_budget:
         budget = read_json(budget_path)
         if budget.get("authorization_scope") != AUTHORIZATION_SCOPE:
             raise SessionError("Budget ledger authorization scope does not match this pilot")
-        if positive_money(budget.get("approved_max_total_usd_pretax")) != approved_budget:
-            raise SessionError("Budget ledger total does not match the approval record")
+        recorded_budget = positive_money(budget.get("approved_max_total_usd_pretax"))
+        if approved_budget < recorded_budget:
+            raise SessionError("Approval record cannot reduce the existing cumulative budget")
+        if approved_budget > recorded_budget:
+            budget["approved_max_total_usd_pretax"] = str(approved_budget)
+            budget.setdefault("authorization_updates", []).append({
+                "approval_reference": approval["approval_reference"],
+                "approved_max_total_usd_pretax": str(approved_budget),
+            })
+            write_json(budget_path, budget)
         return budget
 
     attempts = []
@@ -371,7 +500,14 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
     allowed_profiles = approval.get("allowed_profiles", [FULL_TOPOLOGY_PROFILE])
     if not isinstance(allowed_profiles, list) or profile not in allowed_profiles:
         raise SessionError(f"Approval record does not allow profile {profile}")
-    validate_terraform_plan(args.plan, profile)
+    plan_settings = validate_terraform_plan(args.plan, profile)
+    started = time.time() if now is None else now
+    authorization_expiry = authorization_expiry_unix(approval.get("authorization_expires_at"))
+    if (
+        authorization_expiry is not None
+        and started + policy["deletion_target_seconds"] > authorization_expiry
+    ):
+        raise SessionError("Session deletion target would exceed authorization_expires_at")
 
     state_root.mkdir(parents=True, exist_ok=True)
     with (state_root / "budget.lock").open("a+") as lock:
@@ -388,7 +524,6 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
             raise SessionError(
                 f"Remaining budget ${remaining} is below the ${attempt_admission} attempt admission"
             )
-        started = time.time() if now is None else now
         session_id = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime(started)) + "-" + uuid.uuid4().hex[:8]
         run_dir = state_root / "runs" / session_id
         run_dir.mkdir(parents=True)
@@ -396,6 +531,9 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
             "session_id": session_id,
             "started_unix": started,
             "profile": profile,
+            "gpu_platform": plan_settings["gpu_platform"],
+            "infiniband_fabric": plan_settings["infiniband_fabric"],
+            "ipc_diagnostic_only": plan_settings["ipc_diagnostic_only"],
             "placement_timeout_seconds": policy["placement_timeout_seconds"],
             "cleanup_start_seconds": policy["cleanup_start_seconds"],
             "deletion_target_seconds": policy["deletion_target_seconds"],
@@ -421,6 +559,16 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
                 "note": "Local admission estimate only; not a provider-side hard cap.",
             },
         }
+        if "first_measurement_timeout_seconds" in policy:
+            session["first_measurement_timeout_seconds"] = policy[
+                "first_measurement_timeout_seconds"
+            ]
+            session["first_measurement_deadline_unix"] = (
+                started + policy["first_measurement_timeout_seconds"]
+            )
+        if authorization_expiry is not None:
+            session["authorization_expires_at"] = approval["authorization_expires_at"]
+            session["authorization_expires_unix"] = authorization_expiry
         attempt = {
             "session_id": session_id,
             "created_unix": started,
@@ -444,9 +592,10 @@ def cleanup_until_target(
     session = read_json(run_dir / "session.json")
     if run_teardown_fn is None:
         profile = session_profile(session)
+        _, fabric, _ = session_terraform_settings(session)
 
         def run_teardown_fn(log, timeout):
-            return run_teardown_once(log, timeout, profile=profile)
+            return run_teardown_once(log, timeout, profile=profile, infiniband_fabric=fabric)
 
     session_id = session["session_id"]
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -503,14 +652,18 @@ def run_teardown_once(
     timeout_seconds: float,
     *,
     profile: str = FULL_TOPOLOGY_PROFILE,
+    infiniband_fabric: str | None = None,
     popen_factory=subprocess.Popen,
     killpg_fn=os.killpg,
 ) -> int:
-    profile_policy(profile)
+    policy = profile_policy(profile)
     environment = {key: value for key, value in os.environ.items() if key != "NEBIUS_IAM_TOKEN"}
-    environment["TF_VAR_ipc_diagnostic_only"] = (
-        "true" if profile == IPC_DIAGNOSTIC_PROFILE else "false"
-    )
+    environment["TF_VAR_gpu_platform"] = policy["gpu_platform"]
+    fabric = infiniband_fabric or policy["infiniband_fabric"]
+    if fabric not in policy["allowed_fabrics"]:
+        raise SessionError("Cleanup fabric does not match its profile")
+    environment["TF_VAR_infiniband_fabric"] = fabric
+    environment["TF_VAR_ipc_diagnostic_only"] = "true" if policy["diagnostic_only"] else "false"
     process = popen_factory(
         ["bash", str(TEARDOWN), "--execute"],
         cwd=HERE,
@@ -537,18 +690,38 @@ def run_teardown_once(
         return 124
 
 
+def first_timing_block_complete(run_dir: Path, session_id: str) -> bool:
+    try:
+        marker = read_json(run_dir / "first-timing-block-complete.json")
+    except (FileNotFoundError, json.JSONDecodeError, OSError, SessionError):
+        return False
+    return marker.get("session_id") == session_id and marker.get("validated") is True
+
+
 def guard_run(run_dir: Path, *, now_fn=time.time, sleep_fn=time.sleep, cleanup_fn=cleanup_until_target) -> int:
     session = read_json(run_dir / "session.json")
+    session_terraform_settings(session)
     write_json(run_dir / "guard-ready.json", {
         "session_id": session["session_id"],
         "pid": os.getpid(),
         "ready_unix": now_fn(),
     })
     while not cleanup_verified(run_dir, session["session_id"]):
-        remaining = session["cleanup_start_deadline_unix"] - now_fn()
-        if remaining <= 0:
+        current = now_fn()
+        measurement_deadline = session.get("first_measurement_deadline_unix")
+        if (
+            measurement_deadline is not None
+            and current >= measurement_deadline
+            and not first_timing_block_complete(run_dir, session["session_id"])
+        ):
             return cleanup_fn(run_dir)
-        sleep_fn(min(5, remaining))
+        cleanup_remaining = session["cleanup_start_deadline_unix"] - current
+        if cleanup_remaining <= 0:
+            return cleanup_fn(run_dir)
+        wake_in = cleanup_remaining
+        if measurement_deadline is not None and current < measurement_deadline:
+            wake_in = min(wake_in, measurement_deadline - current)
+        sleep_fn(min(5, wake_in))
     return 0
 
 

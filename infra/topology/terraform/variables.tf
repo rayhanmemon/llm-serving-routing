@@ -11,10 +11,21 @@ variable "nebius_profile" {
   default = "default"
 }
 
+variable "gpu_platform" {
+  type        = string
+  default     = "H100"
+  description = "GPU platform for both local and remote node groups."
+
+  validation {
+    condition     = contains(["H100", "H200"], var.gpu_platform)
+    error_message = "gpu_platform must be H100 or H200."
+  }
+}
+
 variable "infiniband_fabric" {
   type        = string
   default     = "fabric-6"
-  description = "InfiniBand fabric for the local eight-GPU H100 node only. The single-GPU remote node cannot join a GPU cluster."
+  description = "InfiniBand fabric for the local eight-GPU node only. The single-GPU remote node cannot join a GPU cluster."
 }
 
 variable "gpu_preemptible" {
