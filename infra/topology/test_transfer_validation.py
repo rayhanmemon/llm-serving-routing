@@ -24,12 +24,17 @@ def stream():
 def record():
     return {'request': json.dumps({'model': 'test', 'prompt': 'prompt', 'max_tokens': 128, 'stream': True, 'ignore_eos': True}),
             'response': stream(), 'error': None, 'start_time': 10, 'end_time': 12,
-            'info': {'response_metrics': {'output_token_times': [11]}}}
+            'info': {'response_metrics': {
+                'response_chunks': [json.dumps({'choices': [
+                    {'index': 0, 'text': 'answer', 'finish_reason': None}]})],
+                'chunk_times': [11],
+                # This is an estimated per-token series, not 1:1 with SSE chunks.
+                'output_token_times': [11, 11.5]}}}
 
 
 class TransferValidationTest(unittest.TestCase):
     def test_complete_and_broken_streams(self):
-        self.assertEqual(v.validate_stream(stream(), 512, 128), 1)
+        self.assertEqual(len(v.validate_stream(stream(), 512, 128)), 1)
         cases = [stream().replace('data: [DONE]\n\n', ''),
                  stream().replace('"length"', '"stop"'),
                  stream().replace('"completion_tokens": 128', '"completion_tokens": 127'),
@@ -46,8 +51,10 @@ class TransferValidationTest(unittest.TestCase):
         hashes, times = v.validate_records([record()], 512, 128, 1)
         self.assertEqual(times, [1]); self.assertEqual(len(hashes), 1)
         cases = [[], [dict(record(), error={'error_msg': 'timeout'})]]
-        broken = record(); broken['info']['response_metrics']['output_token_times'] = [9]; cases.append([broken])
-        broken = record(); broken['info']['response_metrics']['output_token_times'] = [11, 11.5]; cases.append([broken])
+        broken = record(); broken['info']['response_metrics']['chunk_times'] = [9]; cases.append([broken])
+        broken = record(); broken['info']['response_metrics']['chunk_times'] = [11, 11.5]; cases.append([broken])
+        broken = record(); broken['info']['response_metrics']['response_chunks'] = ['{}']; cases.append([broken])
+        broken = record(); broken['info']['response_metrics']['output_token_times'] = [float('nan')]; cases.append([broken])
         for records in cases:
             with self.subTest(records=records), self.assertRaises(ValueError):
                 v.validate_records(records, 512, 128, 1)

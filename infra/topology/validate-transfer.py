@@ -4,6 +4,7 @@ import argparse
 import base64
 import hashlib
 import json
+import math
 from pathlib import Path
 from evidence import require_collection
 
@@ -19,6 +20,7 @@ def validate_stream(raw, input_tokens, output_tokens):
     finishes = []
     usage = None
     text = []
+    content_chunks = []
     for block in raw.replace('\r\n', '\n').split('\n\n'):
         lines = [line for line in block.splitlines() if line and not line.startswith(':')]
         if not lines:
@@ -32,21 +34,25 @@ def validate_stream(raw, input_tokens, output_tokens):
         value = json.loads(data)
         require(isinstance(value, dict) and not value.get('error'), 'error or invalid SSE payload')
         require(isinstance(value.get('choices'), list), 'missing choices')
+        has_content = False
         for choice in value['choices']:
             require(choice.get('index', 0) == 0, 'unexpected completion index')
             if choice.get('text'):
                 require(not finishes, 'generated text after finish reason')
                 text.append(choice['text'])
+                has_content = True
             if choice.get('finish_reason'):
                 finishes.append(choice['finish_reason'])
         if value.get('usage') is not None:
             usage = value['usage']
+        if has_content:
+            content_chunks.append(value)
     require(done and finishes == ['length'], 'missing completion terminator or incorrect finish reason')
     require(bool(''.join(text)), 'empty generated output')
     require(isinstance(usage, dict), 'missing server usage')
     require(usage.get('prompt_tokens') == input_tokens, 'server prompt token count mismatch')
     require(usage.get('completion_tokens') == output_tokens, 'server output token count mismatch')
-    return len(text)
+    return content_chunks
 
 
 def pod_identity(snapshot):
@@ -74,12 +80,30 @@ def validate_records(records, input_tokens, output_tokens, count):
         require(request.get('stream') is True and request.get('ignore_eos') is True, 'request settings mismatch')
         require(request.get('max_tokens') == output_tokens, 'output limit mismatch')
         require(isinstance(request.get('prompt'), str), 'prompt missing')
-        content_count = validate_stream(row['response'], input_tokens, output_tokens)
-        times = row['info']['response_metrics']['output_token_times']
-        require(len(times) == content_count, 'content timestamp count mismatch')
-        require(times and all(x <= y for x, y in zip(times, times[1:])), 'invalid content timestamps')
-        require(row['start_time'] <= times[0] <= times[-1] <= row['end_time'], 'invalid client timing interval')
-        ttfts.append(times[0] - row['start_time'])
+        content_chunks = validate_stream(row['response'], input_tokens, output_tokens)
+        metrics = row['info']['response_metrics']
+        recorded_chunks = metrics.get('response_chunks')
+        chunk_times = metrics.get('chunk_times')
+        require(isinstance(recorded_chunks, list) and isinstance(chunk_times, list) and
+                len(recorded_chunks) == len(chunk_times) == len(content_chunks) and content_chunks,
+                'content chunk/timestamp count mismatch')
+        try:
+            parsed_chunks = [json.loads(chunk) for chunk in recorded_chunks]
+        except (TypeError, json.JSONDecodeError) as error:
+            raise ValueError('invalid recorded response chunk') from error
+        require(parsed_chunks == content_chunks, 'recorded response chunks differ from raw SSE content')
+        require(all(isinstance(value, (int, float)) and math.isfinite(value) for value in chunk_times) and
+                all(x <= y for x, y in zip(chunk_times, chunk_times[1:])),
+                'invalid content timestamps')
+        require(row['start_time'] <= chunk_times[0] <= chunk_times[-1] <= row['end_time'],
+                'invalid client timing interval')
+        estimated = metrics.get('output_token_times')
+        require(isinstance(estimated, list) and estimated and
+                all(isinstance(value, (int, float)) and math.isfinite(value) for value in estimated) and
+                all(x <= y for x, y in zip(estimated, estimated[1:])) and
+                row['start_time'] <= estimated[0] <= estimated[-1] <= row['end_time'],
+                'invalid estimated output-token timestamps')
+        ttfts.append(chunk_times[0] - row['start_time'])
         hashes.append(hashlib.sha256(json.dumps(request, sort_keys=True, separators=(',', ':')).encode()).hexdigest())
     return hashes, ttfts
 
