@@ -71,12 +71,13 @@ def build_prompt(tokenizer, family, words, target_tokens, filler_id):
     return prompt_ids, gold, gold_ids
 
 
-def make_suite(tokenizer):
+def make_suite(tokenizer, suite_seed=SUITE_SEED, criterion="gold"):
+    require(criterion in ("gold", "direct-parity"), "unknown qualification criterion")
     for word in WORD_POOL:
         require(len(encode(tokenizer, " " + word)) == 1,
                 f"declared answer word is not one token: {word}")
     filler_text, filler_id = choose_filler_token(tokenizer)
-    rng = random.Random(SUITE_SEED)
+    rng = random.Random(suite_seed)
     cases = []
     for family in ("copy", "retrieval"):
         for tokens in (512, 8192):
@@ -94,12 +95,14 @@ def make_suite(tokenizer):
     require(len(cases) == 8 and Counter(case["family"] for case in cases) == {"copy": 4, "retrieval": 4},
             "suite topology is invalid")
     return {"schema_version": 1, "model": MODEL, "revision": REVISION, "request_seed": SEED,
-            "suite_seed": SUITE_SEED,
+            "suite_seed": suite_seed,
             "selection_rule": "Using one seeded RNG, sample eight distinct words from the declared 16-word pool for each case in recorded case order.",
             "normalization": "outer whitespace only (response_text.strip())",
             "routes": list(ROUTES), "expected_requests": 32,
             "filler": {"text": filler_text, "token_id": filler_id}, "cases": cases,
-            "qualification": {"required_gold_matches": 32, "required_per_route": "8/8",
+            "qualification": {"criterion": criterion, "required_gold_matches": 32,
+                              "required_per_route": "8/8",
+                              "direct_parity_rule": "For every case, normalized text must be identical across direct-local, direct-remote, pd-local and pd-remote.",
                               "filtered_or_replaced_cases_allowed": False,
                               "separate_transfer_requirement": "Each P/D request must add exactly one transfer; all failure deltas zero.",
                               "hardware_change_allowed": False,
@@ -140,14 +143,14 @@ raise SystemExit(0 if record["status"]==200 and record["error"] is None else 1)
 PLAN_DOC = """# Frozen known-answer qualification\n\nPreparation performs tokenization only; it sends no model request. Execution is a separate, explicitly controlled step.\n\nThe eight cases are fixed before outputs: four exact-copy and four early-context retrieval cases, with two cases at each of 512 and 8192 input tokens per family. Every case has an eight-word answer chosen by the recorded seeded rule. All 32 route/case combinations must match the gold text after outer-whitespace stripping only. Returned token IDs are diagnostic because leading whitespace is intentionally normalized. No case may be filtered, replaced or rerun selectively.\n\nThe original five-token equality failure remains evidence and remains unchanged. This suite is an additional aggregate known-answer diagnosis. Keep deployed images, TRITON_ATTN, compilation/CUDA graphs and non-eager execution unchanged. Route, worker identity and NIXL counter qualification remain separate mandatory checks.\n"""
 
 
-def prepare(out):
+def prepare(out, suite_seed=SUITE_SEED, criterion="gold"):
     require(not out.exists(), "output directory already exists")
     try:
         from transformers import AutoTokenizer
     except ImportError as error:
         raise SuiteError("prepare requires transformers in the selected Python environment") from error
     tokenizer = AutoTokenizer.from_pretrained(MODEL, revision=REVISION)
-    suite = make_suite(tokenizer)
+    suite = make_suite(tokenizer, suite_seed, criterion)
     temporary = Path(tempfile.mkdtemp(prefix="known-answer-suite-", dir=out.parent.resolve()))
     try:
         plan = temporary / "suite.json"
@@ -193,20 +196,42 @@ def validate(plan_path, responses_path):
         request_match = (isinstance(actual_request, dict) and actual_request == case["request_body"] and
                          digest(actual_request) == case["request_sha256"] and
                          row.get("request_sha256") == case["request_sha256"])
-        pin_ok = (row["route"].startswith("direct-") or
-                  (row.get("requested_decoder") and row.get("selected_decoder") == row["requested_decoder"]))
-        passed = (row.get("status") == 200 and not row.get("error") and
-                  request_match and pin_ok and gold_match and
-                  isinstance(usage, dict) and usage.get("prompt_tokens") == case["input_tokens"] and
-                  usage.get("completion_tokens") == len(case["gold_token_ids"]))
-        results.append({"case_id": row["case_id"], "route": row["route"], "passed": bool(passed),
+        if row["route"].startswith("direct-"):
+            pin_ok = row.get("requested_decoder") in (None, "", "-") and row.get("selected_decoder") in (None, "", "-")
+        else:
+            pin_ok = bool(row.get("requested_decoder")) and row.get("selected_decoder") == row["requested_decoder"]
+        integrity_passed = (row.get("status") == 200 and not row.get("error") and
+                            request_match and pin_ok and isinstance(text, str) and
+                            isinstance(usage, dict) and usage.get("prompt_tokens") == case["input_tokens"] and
+                            usage.get("completion_tokens") == len(case["gold_token_ids"]))
+        results.append({"case_id": row["case_id"], "route": row["route"],
+                        "request_integrity_passed": bool(integrity_passed),
                         "gold_match": gold_match, "request_match": request_match,
                         "token_ids_match_diagnostic_only": token_ids_match,
                         "actual_text": text, "gold_text": case["gold_text"]})
-    counts = {route: sum(item["passed"] for item in results if item["route"] == route) for route in ROUTES}
-    passed = all(value == 8 for value in counts.values())
-    return {"validated": passed, "passed": sum(item["passed"] for item in results), "required": 32,
-            "per_route": counts, "normalization": plan["normalization"], "results": results,
+    integrity_counts = {route: sum(item["request_integrity_passed"] for item in results
+                                   if item["route"] == route) for route in ROUTES}
+    gold_counts = {route: sum(item["gold_match"] for item in results if item["route"] == route)
+                   for route in ROUTES}
+    text_by_case = {case_id: {item["route"]: (item["actual_text"].strip()
+                                                   if isinstance(item["actual_text"], str) else None)
+                              for item in results if item["case_id"] == case_id}
+                    for case_id in cases}
+    parity_by_case = {case_id: len(set(texts.values())) == 1 for case_id, texts in text_by_case.items()}
+    criterion = plan.get("qualification", {}).get("criterion", "gold")
+    require(criterion in ("gold", "direct-parity"), "frozen suite criterion is invalid")
+    integrity_ok = all(value == 8 for value in integrity_counts.values())
+    gold_ok = all(value == 8 for value in gold_counts.values())
+    parity_ok = all(parity_by_case.values())
+    passed = integrity_ok and (gold_ok if criterion == "gold" else parity_ok)
+    return {"validated": passed, "criterion": criterion,
+            "request_integrity": {"passed": sum(integrity_counts.values()), "required": 32,
+                                  "per_route": integrity_counts},
+            "gold_accuracy": {"passed": sum(gold_counts.values()), "required": 32,
+                              "per_route": gold_counts},
+            "direct_parity": {"passed_cases": sum(parity_by_case.values()), "required_cases": 8,
+                              "per_case": parity_by_case},
+            "normalization": plan["normalization"], "results": results,
             "limits": "Transfer deltas, failure counters and worker stability are separate required evidence."}
 
 
@@ -214,16 +239,22 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     freeze = sub.add_parser("prepare"); freeze.add_argument("--out", required=True, type=Path)
+    freeze.add_argument("--suite-seed", type=int, default=SUITE_SEED)
+    freeze.add_argument("--criterion", choices=("gold", "direct-parity"), default="gold")
     check = sub.add_parser("validate"); check.add_argument("--plan", required=True, type=Path)
     check.add_argument("--responses", required=True, type=Path); check.add_argument("--out", required=True, type=Path)
     args = parser.parse_args(argv)
     if args.command == "prepare":
-        prepare(args.out); print("PASS: frozen suite prepared without model requests: " + str(args.out.resolve()))
+        prepare(args.out, args.suite_seed, args.criterion)
+        print("PASS: frozen suite prepared without model requests: " + str(args.out.resolve()))
     else:
         require(not args.out.exists(), "validation output already exists")
         result = validate(args.plan, args.responses)
         args.out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
-        print(("PASS" if result["validated"] else "FAIL") + f": {result['passed']}/32 known answers")
+        gold = result["gold_accuracy"]["passed"]
+        parity = result["direct_parity"]["passed_cases"]
+        print(("PASS" if result["validated"] else "FAIL") +
+              f": criterion={result['criterion']}, gold={gold}/32, parity={parity}/8")
         if not result["validated"]: raise SystemExit(1)
 
 

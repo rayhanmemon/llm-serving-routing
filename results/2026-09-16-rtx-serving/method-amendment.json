@@ -1,0 +1,13 @@
+{
+  "session_id": "20260916T175123Z-b440a608",
+  "approved_by_user": true,
+  "approval_reference": "Rayhan: Go ahead, following the explicit proposal to qualify P/D versus direct agreement, report gold accuracy separately, and confirm on fresh frozen cases before timing.",
+  "recorded_at": "2026-09-16T18:45:44Z",
+  "criterion": "Every case in a newly frozen eight-case suite must produce identical normalized text across direct-local, direct-remote, P/D-local and P/D-remote; all32requests retain exactpayload/token-count/route checks; everyP/Drequest mustadd exactlyone transfer onitsselecteddecoder withzero failures andstableworkers.",
+  "prospective_suite_seed": 17092027,
+  "normalization": "outer whitespace only",
+  "no_case_dropping_or_replacement": true,
+  "gold_accuracy": "Report separately; do not relabel prior24/32goldfailure ororiginal5-token equalityfailure.",
+  "runtime_changes": "none",
+  "timing_authorization": "Run the already planned 48-request block only after prospective confirmation passes."
+}
