@@ -32,6 +32,6 @@ Eight copy/retrieval cases were committed before execution (`a9e911b`): two case
 
 **All eight cases produced identical text across direct-local, direct-remote, local P/D and remote P/D.** Each P/D request added exactly one transfer; both decoders added eight transfers total. Transfer-failure counters stayed unchanged, and the three GPU identities plus worker/EPP identities stayed stable.
 
-This demonstrates functional agreement on this small suite, including the two shared task failures. It does not turn either failed acceptance rule into a pass. A proposed amendment would compare P/D against direct inference while reporting gold accuracy separately. That decision is awaiting review; **no correctness marker or latency benchmark has been produced**.
+This demonstrates functional agreement on this small suite, including the two shared task failures. It does not turn either failed acceptance rule into a pass. A proposed amendment would compare P/D against direct inference while reporting gold accuracy separately. If accepted, the amended rule must pass a fresh suite frozen before its outputs; the observed failed gold gate will not be relabelled. That decision is awaiting review; **no correctness marker or latency benchmark has been produced**.
 
 Evidence: [frozen plan](known-answer-suite/PLAN.md), [known-answer analysis](known-answer-analysis.json), [sanitized responses](known-answer-responses.json), [original numerical diagnostic](numerical-diagnostic.json).
