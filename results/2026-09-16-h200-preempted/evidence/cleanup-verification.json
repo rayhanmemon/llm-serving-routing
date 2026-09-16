@@ -1,0 +1,15 @@
+{
+  "teardown_exit_code": 0,
+  "terraform_destroyed_resource_count": 3,
+  "terraform_state_empty": true,
+  "guard_exited": true,
+  "verified_at": "2026-09-16T17:04:19.008602+00:00",
+  "project_scoped_empty_checks": {
+    "instances": 0,
+    "kubernetes_clusters": 0,
+    "disks": 0,
+    "filesystems": 0,
+    "gpu_clusters": 0
+  },
+  "scope_limit": "Other resource types and other projects were not checked."
+}

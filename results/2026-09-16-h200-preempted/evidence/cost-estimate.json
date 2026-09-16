@@ -1,0 +1,21 @@
+{
+  "estimate_usd_pretax": "3.347688460067212176560121765",
+  "method": "Conservative local eight-H200 create-operation start through delete-operation finish, including stopped interval; 256 GiB disk for the full session. CPU and remote nodes did not start. Not invoice-verified.",
+  "session_seconds": "1059.4555161",
+  "cleanup_verified_at": "2026-09-16T17:04:19.008602+00:00",
+  "components": {
+    "local_eight_h200": {
+      "create_operation_start": "2026-09-16T16:51:00.601199Z",
+      "delete_operation_finish": "2026-09-16T17:01:14.136886Z",
+      "seconds": "613.535687",
+      "hourly_rate_usd": "19.6",
+      "estimated_usd": "3.340360962555555555555555555"
+    },
+    "disk": {
+      "gib": 256,
+      "estimated_usd": "0.007327497511656621004566210047"
+    }
+  },
+  "cumulative_estimate_usd_pretax": "32.52751313379797521993911720",
+  "remaining_of_200_usd_pretax": "167.472486866202"
+}

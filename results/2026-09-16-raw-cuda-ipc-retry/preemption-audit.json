@@ -1,0 +1,12 @@
+{
+  "evidence_type": "Fields transcribed from authenticated Nebius Audit Logs web console event details",
+  "verified_at": "2026-09-16T17:17:27.638613+00:00",
+  "event_id": "b21ec9d0-1a36-442f-b389-4e3d4fee5457",
+  "source": "Preemption",
+  "action": "STOP",
+  "time": "2026-09-16T14:48:11.582901030Z",
+  "status": "STARTED",
+  "subject_label": "Nebius",
+  "conclusion": "Provider preemption confirmed for the H100 retry stop; no diagnostic probe ran.",
+  "resource_id_and_private_console_url_removed": true
+}

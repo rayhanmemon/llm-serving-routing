@@ -1,0 +1,12 @@
+{
+  "evidence_type": "Fields transcribed from authenticated Nebius Audit Logs web console event details",
+  "verified_at": "2026-09-16T17:12:44.502708+00:00",
+  "event_id": "7bcfc32f-ffd7-42b5-99d9-18cd04fab1f8",
+  "source": "Preemption",
+  "action": "STOP",
+  "time": "2026-09-16T16:55:40.162438296Z",
+  "status": "STARTED",
+  "subject_label": "Nebius",
+  "conclusion": "Provider preemption confirmed for the H200 stop; this is not a workload result.",
+  "resource_id_and_private_console_url_removed": true
+}

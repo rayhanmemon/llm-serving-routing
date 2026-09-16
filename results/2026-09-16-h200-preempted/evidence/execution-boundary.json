@@ -1,0 +1,13 @@
+{
+  "terraform_apply_exit_code": 1,
+  "placement_timed_out": false,
+  "apply_interrupted_after_stopped_instance": true,
+  "model_deployed": false,
+  "router_deployed": false,
+  "correctness_probe_ran": false,
+  "warmup_ran": false,
+  "inference_requests_issued": 0,
+  "benchmark_ran": false,
+  "policy_comparison_ran": false,
+  "result_class": "provider preemption before Kubernetes readiness"
+}

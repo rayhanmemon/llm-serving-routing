@@ -1,0 +1,7 @@
+{
+  "evaluation_commit": "8e12ca8eab4e848bc255b1357d50da126ff63f7f",
+  "router_commit": "0217d29924ba93b90f952e7a0281dd8dda146703",
+  "epp_archive_sha256": "7ab220d2eb3a56d62ffb5595f3981944256c4072be7e88913be4bb3e182dd0d5",
+  "planned_stage": "correctness, frozen first 48 requests, then reviewed calibration/evaluation",
+  "actual_stage_reached": "infrastructure provisioning only"
+}

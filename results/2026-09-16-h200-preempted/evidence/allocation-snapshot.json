@@ -1,0 +1,21 @@
+{
+  "observed_at": "2026-09-16T16:57:30Z",
+  "platform": "gpu-h200-sxm",
+  "preset": "8gpu-128vcpu-1600gb",
+  "purchase_type": "preemptible",
+  "driver_preset": "cuda13.0",
+  "boot_disk": {
+    "size_gibibytes": 256,
+    "type": "NETWORK_SSD"
+  },
+  "node_group": {
+    "created_at": "2026-09-16T16:50:58Z",
+    "state": "PROVISIONING",
+    "target_node_count": 1,
+    "node_count": 1,
+    "kubernetes_node_ready": false
+  },
+  "instance_state": "STOPPED",
+  "dependent_cpu_and_remote_groups_started": false,
+  "provider_resource_and_network_ids_removed": true
+}

@@ -1,0 +1,18 @@
+{
+  "compute_create": {
+    "started_at": "2026-09-16T16:51:00.601199Z",
+    "finished_at": "2026-09-16T16:51:56.507410Z",
+    "status": "completed"
+  },
+  "compute_stop": {
+    "started_at": "2026-09-16T16:55:40.145330Z",
+    "finished_at": "2026-09-16T16:55:57.151840Z",
+    "status": "completed"
+  },
+  "compute_delete": {
+    "started_at": "2026-09-16T17:00:47.685950Z",
+    "finished_at": "2026-09-16T17:01:14.136886Z",
+    "status": "completed"
+  },
+  "provider_operation_and_resource_ids_removed": true
+}

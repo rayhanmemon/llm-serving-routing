@@ -4,7 +4,11 @@
 
 The split-pod-first retry produced no CUDA, NIXL, inference or router result. One preemptible (spot) eight-GPU H100 VM started, joined the Kubernetes cluster briefly, became unreachable when its kubelet stopped posting status, and then stopped before the node group became ready. The diagnostic supervisor never received Terraform's cluster output and ran no probe.
 
-The cause is unresolved. Provider records show a native `Stop Instance` operation, but the available evidence does not say whether it was preemption or another VM failure. A targeted provider-audit query was denied by permissions and could not distinguish the cause. This run must not be cited as a CUDA IPC failure.
+The provider cause is now confirmed as preemption. At initial close, provider operations showed only a native `Stop Instance` and a targeted audit query was denied. A later authenticated Audit Logs console review found a `Preemption` / `STOP` event at **2026-09-16 14:48:11.582901030 UTC**, matching the stop operation. This run still must not be cited as a CUDA IPC failure.
+
+### Audit follow-up — 2026-09-16 17:17 UTC
+
+The sanitized [preemption audit record](preemption-audit.json) retains the audit event ID, source, action, time and status while removing the instance identifier and private console URL. This resolves the infrastructure cause only; it adds no CUDA, NIXL, inference or routing observation.
 
 The [preceding run's two same-container controls](../2026-09-16-raw-cuda-ipc/RESULT.md) remain valid: same-GPU and cross-GPU raw CUDA IPC passed inside one eight-GPU container. The missing split-pod case remains unmeasured.
 
@@ -45,9 +49,9 @@ The Terraform apply exit code was 1 because it was deliberately interrupted afte
 | NIXL or UCX transfer | NOT RUN |
 | vLLM inference or router behavior | NOT RUN |
 
-This run establishes only an infrastructure failure before the measurement. It does not establish preemption, a CUDA failure, a container-boundary failure, a transport result, H100 performance, locality benefit or routing-policy behavior. The node snapshot confirms the requested H100 shape and software labels, but no GPU user-space probe reached execution.
+This run establishes a provider preemption before the measurement. It does not establish a CUDA failure, a container-boundary failure, a transport result, H100 performance, locality benefit or routing-policy behavior. The node snapshot confirms the requested H100 shape and software labels, but no GPU user-space probe reached execution.
 
-No further paid attempt is scheduled. Another rental should wait for healthy capacity or enough provider evidence to understand the node stop, preserving the remaining evaluation budget.
+At initial close, no further paid attempt was scheduled pending provider evidence. The later audit resolved this stop as preemption; subsequent evaluation attempts are recorded separately.
 
 ## Cleanup and cost
 
@@ -57,4 +61,4 @@ Estimated cost: **$3.11 before tax**, calculated conservatively as **$3.1062** f
 
 ## Evidence
 
-[`evidence.tar.gz`](evidence.tar.gz) contains sanitized source, node-health, provisioning, provider-operation, supervisor, stop, cleanup and session-cost records. [`evidence-manifest.json`](evidence-manifest.json) lists every member's SHA-256 hash and size. Credentials, kubeconfig, approval and private session-control records, provider resource identifiers, node UUIDs, network addresses and budget-authorization records are excluded.
+[`evidence.tar.gz`](evidence.tar.gz) contains the original sanitized source, node-health, provisioning, provider-operation, supervisor, stop, cleanup and session-cost records. [`evidence-manifest.json`](evidence-manifest.json) lists every archived member's SHA-256 hash and size. The later sanitized [preemption audit record](preemption-audit.json) is intentionally separate so the historical archive remains unchanged. Credentials, kubeconfig, approval and private session-control records, provider resource identifiers, node UUIDs, network addresses and budget-authorization records are excluded.

@@ -1,0 +1,47 @@
+{
+  "archive": {
+    "path": "evidence.tar.gz",
+    "bytes": 2353,
+    "sha256": "a309e1af1d5f259c6ba06f5b30bd3e4734ded6c3715df7346f01cf49e765d7cf"
+  },
+  "members": {
+    "evidence/allocation-snapshot.json": {
+      "bytes": 563,
+      "sha256": "b42642ce40097becfb2fbad10631d6f482b5bc7e7d6cb061d45d6e31afea31ea"
+    },
+    "evidence/cleanup-verification.json": {
+      "bytes": 411,
+      "sha256": "b684340d45e190e5a7d86567d6c99d466065112cf28d4958bb6c9d269a5dfc41"
+    },
+    "evidence/cost-estimate.json": {
+      "bytes": 901,
+      "sha256": "4b08af33a9277d75da19fb21e0744dee3a157526257c91f5bea13dda66b94f3f"
+    },
+    "evidence/execution-boundary.json": {
+      "bytes": 396,
+      "sha256": "c9a8bccf30ce08ac94a84800c7b27e7a639908c98e9fe6c1cc17129cd42f59de"
+    },
+    "evidence/preemption-audit.json": {
+      "bytes": 510,
+      "sha256": "965c25cb714ab29c44a69721fe81e335a49e72f18c04d2c537ba6f9274081dfe"
+    },
+    "evidence/provider-operation-times.json": {
+      "bytes": 512,
+      "sha256": "b78e19c71971403307531f5f4998859a831c18fa7b7a2c0906a571894eddbd02"
+    },
+    "evidence/source-record.json": {
+      "bytes": 385,
+      "sha256": "aba260c47a0216e2f8cedd9770864812179b7c64ed9f41da76b398dc597e2daa"
+    }
+  },
+  "sanitization": {
+    "excluded": [
+      "credentials, tokens, kubeconfigs and certificates",
+      "provider resource, tenant, project, subnet and network identifiers",
+      "private console URLs and raw console boot logs",
+      "billing-readiness, account balance, payment and address data",
+      "approval and private session-control records"
+    ],
+    "source_run_directory_not_included": true
+  }
+}
