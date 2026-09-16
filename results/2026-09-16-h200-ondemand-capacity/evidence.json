@@ -1,0 +1,59 @@
+{
+  "result": "on-demand H200 capacity unavailable before GPU allocation",
+  "session": {
+    "started_at": "2026-09-16T17:19:31.052660Z",
+    "purchase_type": "on-demand",
+    "reservation_policy": "FORBID",
+    "requested_local_shape": "8gpu-128vcpu-1600gb"
+  },
+  "provider_create_operation": {
+    "started_at": "2026-09-16T17:23:54.274908Z",
+    "finished_at": "2026-09-16T17:29:54.419284Z",
+    "status_code": 8,
+    "service_error": "NotEnoughResources",
+    "retry_type": "NOTHING",
+    "gpu_vm_allocated": false
+  },
+  "execution_boundary": {
+    "placement_timed_out": false,
+    "cpu_node_started": false,
+    "remote_gpu_node_started": false,
+    "model_deployed": false,
+    "router_deployed": false,
+    "inference_requests_issued": 0,
+    "benchmark_ran": false
+  },
+  "cleanup": {
+    "teardown_exit_code": 0,
+    "terraform_destroyed_resource_count": 3,
+    "terraform_state_empty": true,
+    "guard_exited": true,
+    "verified_at": "2026-09-16T17:39:52.597027Z",
+    "project_scoped_empty_checks": {
+      "instances": 0,
+      "kubernetes_clusters": 0,
+      "disks": 0,
+      "filesystems": 0,
+      "gpu_clusters": 0
+    },
+    "scope_limit": "Other resource types and other projects were not checked."
+  },
+  "cost": {
+    "estimate_usd_pretax": "0.008448550386070015220700152208",
+    "compute_usd": "0",
+    "disk_gib": 256,
+    "session_seconds": "1221.544367",
+    "method": "No GPU allocation; conservatively count the 256 GiB network disk for the full session. Not invoice-verified."
+  },
+  "source": {
+    "evaluation_commit": "673de86490872afefab1ffb1f5b2602f6cfd375f",
+    "router_commit": "0217d29924ba93b90f952e7a0281dd8dda146703",
+    "epp_archive_sha256": "7ab220d2eb3a56d62ffb5595f3981944256c4072be7e88913be4bb3e182dd0d5"
+  },
+  "sanitization": {
+    "cloud_account_and_resource_ids_removed": true,
+    "private_paths_removed": true,
+    "billing_and_approval_details_removed": true,
+    "ssh_material_and_raw_logs_removed": true
+  }
+}
