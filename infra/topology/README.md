@@ -1,6 +1,6 @@
 # Controlled topology-transfer check
 
-**Status:** September 16 retry authorization permits multiple unattended attempts within $50 total to finish the first transfer check. The prior H100 attempt cost about $0.50 and is included. The scarce eight-H100 node now provisions before the CPU and remote node; cumulative budget and verified cleanup gate each retry. No inference measurements yet. [Prior H100 result](../../results/2026-09-15-h100-topology-transfer/RESULT.md).
+**Status:** real-model direct/local/remote P/D correctness passed on September 16. Fast local transport remains unqualified after a CUDA IPC handle-open error; no latency benchmark ran. All rentals were deleted; the monitor is paused for diagnosis. Estimated H100 spending: $19.94 of $50, with $30.06 remaining. [Result](../../results/2026-09-16-h100-transfer-qualification/RESULT.md).
 
 [SESSION.md](SESSION.md) is the launch/measurement procedure and quote. One eight-GPU H100 VM supplies a prefiller and local decoder; a separate one-GPU H100 VM supplies the remote decoder. A CPU node runs Envoy, EPP and inference-perf. Three GPUs work; nine are billed. The first test qualifies the transfer path rather than comparing routing policies.
 

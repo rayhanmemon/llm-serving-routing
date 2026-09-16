@@ -1,0 +1,16 @@
+{
+  "source_commit": "0217d29924ba93b90f952e7a0281dd8dda146703",
+  "source_tree": "dde90d86488efb449790a11224831fe070ca7665",
+  "evaluation_repo_commit": "d114466",
+  "image_archive_sha256": "7ab220d2eb3a56d62ffb5595f3981944256c4072be7e88913be4bb3e182dd0d5",
+  "prediction_commit": "562b482",
+  "model": "Qwen/Qwen3-8B",
+  "model_revision": "b968826d9c46dd6066d109eabc6255188de91218",
+  "nodes": {
+    "local": "computeinstance-e00gkcc67a2q47sh2f",
+    "remote": "computeinstance-e00fgb7kzgq8rzbwj2",
+    "cpu": "computeinstance-e00nwthm1pt6fsaqza"
+  },
+  "cluster_id": "mk8scluster-e00sp3hgpesbhscqgx",
+  "recorded_at": "2026-09-16T05:18:21.500259+00:00"
+}

@@ -1,0 +1,26 @@
+{
+  "inference_requests_issued": 4,
+  "qualified_correctness_routes": [
+    "direct",
+    "local PD with corrected endpoint pin",
+    "remote PD with corrected endpoint pin"
+  ],
+  "unqualified_pin_request": "correctness-local.json (excluded)",
+  "matching_text": " Paris. The capital of Italy is Rome. The capital of Germany is Berlin.",
+  "prompt_tokens": 5,
+  "completion_tokens": 16,
+  "engine_and_epp_identities_unchanged_across_correctness": true,
+  "gpu_identities_unchanged": true,
+  "nixl_received_transfer_counts": {
+    "local": 2,
+    "remote": 1
+  },
+  "nixl_received_bytes": {
+    "local": 18874368,
+    "remote": 9437184
+  },
+  "failed_transfers_and_notifications": 0,
+  "measured_benchmark_requests": 0,
+  "cuda_ipc_payload_qualified": false,
+  "diagnostic_finding": "StandaloneCUDA READ selectsTCP aftercuIpcOpenMemHandle invalidargument; actualvLLMallocation path notdirectlyobserved."
+}

@@ -1,0 +1,15 @@
+{
+  "recorded_at": "2026-09-16T05:57:59.760328+00:00",
+  "reason": "Local CUDAIPC payload notqualified. IsolatedNIXL CUDA READ underexistingpods selectedTCP softwareemulation; holdlatencybenchmark.",
+  "successful_correctness_routes": [
+    "direct",
+    "local PD correctedpin",
+    "remote PD correctedpin"
+  ],
+  "inference_requests_sent": 4,
+  "excluded_pin_request": "correctness-local (bare pod endpoint, fail-open; correctoutput butnotqualifiedpin)",
+  "measured_benchmark_requests": 0,
+  "no_more_paid_retry_for_same_unresolved_transport": true,
+  "teardown_requested_at": "2026-09-16T06:02:57.496763+00:00",
+  "debug_finding": "UCX created CUDAIPC lane and identified intra-node peer; cuIpcOpenMemHandle returned invalid argument, then isolated READ selectedTCP. UnderlyingCUDAcause unresolved; not a direct traceofvLLMbufferallocation."
+}

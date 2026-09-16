@@ -1,0 +1,10 @@
+{
+  "recorded_at": "2026-09-16T05:26:28.382023+00:00",
+  "failure": "UCX rc_mlx5 backend initialization tried39.8MB locked memory with8MB limit, causing NIXL_ERR_BACKEND",
+  "change": "UCX_TLS=tcp,cuda_copy,cuda_ipc,self on all3 model engines",
+  "reason": "Explicitly select the intended TCP remote and CUDAIPC local capabilities; exclude unsupported IB initialization. No transport proof yet.",
+  "privilege_change": false,
+  "requests_sent_before_change": 0,
+  "engine_startup_deadline_unchanged": "2026-09-16T05:45:08Z",
+  "reference": "https://openucx.readthedocs.io/en/master/faq.html"
+}

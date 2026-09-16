@@ -1,6 +1,8 @@
 # H100 controlled transfer check
 
-**Current authorization — September 16:** multiple unattended attempts are authorized within **$50 total before tax** to finish this first transfer pilot. Count the prior H100 cost ($0.50098345) in that total. One attempt runs at a time; cleanup and cost accounting precede each retry. The previous one-attempt restriction is superseded. The [September 15 failure](../../results/2026-09-15-h100-topology-transfer/RESULT.md) remains preserved.
+**Current status — September 16, session closed:** direct, correctly pinned local P/D and remote P/D correctness passed. The fast local payload is unqualified: an isolated CUDA READ fell back to TCP after an IPC handle-open error. No latency benchmark ran. Rentals were deleted and independently verified at 06:09:48 UTC. Paid retries are paused for diagnosis; about $19.94 of the cumulative $50 budget is used, leaving $30.06. [Result](../../results/2026-09-16-h100-transfer-qualification/RESULT.md).
+
+The September 16 multiple-attempt authorization superseded the old one-attempt rule. The remaining allowance is preserved; repeating the unresolved transport setup is not scheduled. The procedure below remains the intended measurement protocol, with the live fixture corrections recorded.
 
 ## What this check answers
 
@@ -24,7 +26,7 @@ Multiple placement attempts are allowed under the cumulative budget. Provision t
 - Prepared fabric-2 plan: `/Users/rayhanmemon/.codex/run-state/router-h100-pilot/prepared/fabric2.tfplan`, five creates only. Refresh capacity and plan before a delayed launch; replan whenever inputs change.
 - Qwen3-8B BF16 revision, vLLM 0.26, sidecar 0.10, inference-perf 0.6.1 and Envoy image digests are pinned in the renderer/workload scripts.
 
-**September16 startup correction:** default UCX selection attempted InfiniBand and exceeded the container's8MiB locked-memory limit, failing NIXL backend initialization. Before any inference, all three engines were configured with `UCX_TLS=tcp,cuda_copy,cuda_ipc,self`. This preserves the intended ordinary-network remote leg and CUDA-IPC local option without changing privileges. Actual executed transport must still be qualified. [UCX transport selection](https://openucx.readthedocs.io/en/master/faq.html).
+**September 16 startup correction:** default UCX selection attempted InfiniBand and exceeded the container's 8 MiB locked-memory limit, failing NIXL backend initialization. Before any inference, all three engines were configured with `UCX_TLS=tcp,cuda_copy,cuda_ipc,self`. This preserves the intended ordinary-network remote leg and CUDA-IPC local option without changing privileges. Actual executed transport must still be qualified. [UCX transport selection](https://openucx.readthedocs.io/en/master/faq.html).
 
 `render.py` defaults to host IPC/PID namespaces and mounts the host's `/dev/shm` rather than shadowing it with a private mount. GPU resource allocation remains one per engine, CPU limit 6 per engine, with no privileged mode. This is a deliberate transfer-qualification setting on dedicated experiment VMs. `--ipc-mode isolated` renders the original namespace arrangement for diagnosis. Do not silently change namespaces or device access between local/remote arms. If the staged host mode cannot reach the peer GPU, stop for a focused configuration review rather than broadening privileges on the meter. CUDA IPC flags alone do not prove reachability or payload selection.
 
@@ -95,6 +97,6 @@ Use a new durable private session directory under `/Users/rayhanmemon/.codex/run
 
 Later work calibrates unrestricted routing, hard locality, tuned soft scoring, load-filter-plus-locality and our allowance; prompt-size configuration remains unfinished. Held-out comparisons must cover low-load locality benefit, congestion/bursts and mixed workloads, followed by a more representative multi-local-decoder placement. That deployment and budget require a separate decision. No result here is a direct numerical comparison against Nili's different deployment.
 
-## Latest capacity read
+## Latest run
 
-At 04:40 UTC September 16, no eligible eight-H100 preemptible availability was reported; positive single-H100 capacity remained. Check the live advisor before every launch. The positive September 15 snapshots did not guarantee placement and must not be replayed as authorization to rent.
+A fresh fabric-2 capacity signal led to successful provisioning on September 16. All three nodes became ready, and real P/D correctness passed. The experiment stopped at transport qualification; all resources were verified absent at 06:09:48 UTC. Any future launch must recheck capacity, resolve the recorded failure, and fit the remaining cumulative budget.

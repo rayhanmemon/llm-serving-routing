@@ -1,0 +1,21 @@
+{
+  "decode-local": {
+    "pod": "decode-local-7bf684b865-qmh7p",
+    "ip": "10.0.24.254",
+    "uid": "ef982ab3-aaa8-48d5-a64f-e78b601bfc75",
+    "node": "computeinstance-e00gkcc67a2q47sh2f"
+  },
+  "decode-remote": {
+    "pod": "decode-remote-7c8d5f8778-2p59t",
+    "ip": "10.0.20.243",
+    "uid": "638ffcfb-a077-4821-8bf2-5c3da128d594",
+    "node": "computeinstance-e00fgb7kzgq8rzbwj2"
+  },
+  "prefill": {
+    "pod": "prefill-65f67b5759-rt7fw",
+    "ip": "10.0.24.53",
+    "uid": "0aa3a416-ff65-4975-8c7d-24a031320ddc",
+    "node": "computeinstance-e00gkcc67a2q47sh2f"
+  },
+  "all_ready_observed_at": "2026-09-16T05:33:59.171772+00:00"
+}

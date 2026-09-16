@@ -1,0 +1,12 @@
+{
+  "recorded_at": "2026-09-16T05:42:10.048258+00:00",
+  "cause": "Router endpoint ID includes target-port index: pod-name-rank-0. Bare pod ID left bothdecoders eligible in diagnostic filter.",
+  "change": "Encode namespace/pod-rank-0 for one configured target port; keep exactrequested+selected checks.",
+  "unqualified_request": "correctness-local: HTTP200 matchingoutput butpinfailedopen; excluded frombenchmarks",
+  "source_commit": "0217d29924ba93b90f952e7a0281dd8dda146703",
+  "sources": [
+    "pkg/epp/datastore/datastore.go:521",
+    "pkg/epp/framework/plugins/scheduling/filter/sessionaffinity/encoded_endpoint_header.go"
+  ],
+  "router_implementation_changed": false
+}
