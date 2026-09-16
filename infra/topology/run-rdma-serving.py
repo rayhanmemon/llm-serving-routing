@@ -5,7 +5,7 @@ from pathlib import Path
 HERE=Path(__file__).resolve().parent
 sp=importlib.util.spec_from_file_location('serving',HERE/'run-serving.py');m=importlib.util.module_from_spec(sp);sp.loader.exec_module(m)
 args=m.parse_args();run=args.run_dir;s=m.read_json(run/'session.json')
-assert s['profile']=='rdma-h200-serving'
+assert s['profile'] in ('rdma-h200-serving','rdma-h200-serving-retry')
 # Local runner deadline mirrors independent billing guard; no separate first-results cutoff.
 s['first_measurement_deadline_unix']=s['cleanup_start_deadline_unix']
 assert args.execute
@@ -15,7 +15,7 @@ r=m.Runner(args,s,root)
 r.environment['KUBECTL_REMOTE_COMMAND_WEBSOCKETS']='false'
 try:
  r.wait_apply();cluster,groups=r.terraform_outputs();r.fetch_kubeconfig(cluster);nodes=r.wait_nodes(groups)
- rendered=r.render(nodes)
+ rendered=r.render_for_resume(nodes)
  import yaml
  path=rendered/'modelservers.yaml';objects=list(yaml.safe_load_all(path.read_text()))
  for obj in objects:

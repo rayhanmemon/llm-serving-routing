@@ -1,0 +1,4 @@
+{
+  "error": "command failed (1): /Users/rayhanmemon/llm-d-benchmark/.venv/bin/python /Users/rayhanmemon/disagg-boundary/infra/topology/render.py --local-node computeinstance-u00kj8m9k8g237hw7s --remote-node computeinstance-u00bb0yhzx28bk3jhc --cpu-node computeinstance-u00wz5957xhgwhwktp --namespace topology-measurement --out /Users/rayhanmemon/.codex/run-state/router-h100-pilot/runs/20260916T230319Z-02b23ed8/rendered",
+  "failed_unix": 1789600796.285235
+}

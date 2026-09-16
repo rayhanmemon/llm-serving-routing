@@ -357,5 +357,25 @@ class RunServingTest(unittest.TestCase):
         self.assertEqual(clock[0], 30)
 
 
+class ResumeRenderTest(unittest.TestCase):
+    def test_existing_render_is_preserved_and_fresh_render_succeeds(self):
+        import subprocess, sys
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subject = serving.Runner.__new__(serving.Runner)
+            subject.args = types.SimpleNamespace(run_dir=root, namespace="test")
+            subject.root = root
+            subject.session = {}
+            subject.command = lambda command, **kwargs: subprocess.run(command, capture_output=True, text=True)
+            nodes = {"local":"local-host", "remote":"remote-host", "cpu":"cpu-host"}
+            first = subject.render_for_resume(nodes)
+            (first / "evidence-marker").write_text("keep")
+            second = subject.render_for_resume(nodes)
+            self.assertTrue((second / "modelservers.yaml").is_file())
+            backups = list(root.glob("rendered-before-*"))
+            self.assertEqual(len(backups), 1)
+            self.assertEqual((backups[0] / "evidence-marker").read_text(), "keep")
+
+
 if __name__ == "__main__":
     unittest.main()

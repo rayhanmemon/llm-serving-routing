@@ -70,7 +70,6 @@ resource "nebius_mk8s_v1_node_group" "cpu" {
     network_interfaces = [{ subnet_id = var.subnet_id }]
   }
 
-  depends_on = [nebius_mk8s_v1_node_group.local]
 }
 
 resource "nebius_mk8s_v1_node_group" "remote" {
@@ -89,7 +88,6 @@ resource "nebius_mk8s_v1_node_group" "remote" {
     reservation_policy = var.gpu_preemptible ? null : { policy = "FORBID" }
   }
 
-  depends_on = [nebius_mk8s_v1_node_group.local]
 }
 
 output "cluster_id" {

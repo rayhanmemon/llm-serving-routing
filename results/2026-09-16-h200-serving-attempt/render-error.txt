@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/Users/rayhanmemon/disagg-boundary/infra/topology/render.py", line 262, in <module>
+    main()
+    ~~~~^^
+  File "/Users/rayhanmemon/disagg-boundary/infra/topology/render.py", line 227, in main
+    a.out.mkdir(parents=True, exist_ok=False)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 1011, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+FileExistsError: [Errno 17] File exists: 'RUN_DIRECTORY/rendered'

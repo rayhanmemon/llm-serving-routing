@@ -410,7 +410,7 @@ class Runner:
             if result.returncode == 0:
                 try:
                     items = json.loads(result.stdout)["items"]
-                    nodes = ready_node_mapping(items, group_ids, 8 if self.session["profile"] == "rdma-h200-serving" else 1)
+                    nodes = ready_node_mapping(items, group_ids, 8 if self.session["profile"] in ("rdma-h200-serving", "rdma-h200-serving-retry") else 1)
                     write_json(self.root / "ready-nodes.json", {"nodes": nodes, "items": items})
                     return nodes
                 except (json.JSONDecodeError, KeyError, ServingError) as error:
@@ -420,6 +420,12 @@ class Runner:
             if self.remaining(60) <= 0:
                 raise ServingError("nodes did not become ready: " + str(last_error))
             self.sleep(min(10, self.remaining(60)))
+
+    def render_for_resume(self, nodes):
+        prior = self.args.run_dir / "rendered"
+        if prior.exists():
+            prior.rename(self.args.run_dir / ("rendered-before-" + str(time.time_ns())))
+        return self.render(nodes)
 
     def render(self, nodes):
         rendered = self.args.run_dir / "rendered"
