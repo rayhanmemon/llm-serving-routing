@@ -39,3 +39,7 @@ The current P/D overlay tree has AWS, CoreWeave, GKE and generic NVIDIA configur
 6. Freeze the deployment across routing policies. Requalify any image, namespace, transport or device-access change; do not merge the earlier restricted-TCP measurements into a corrected baseline.
 
 These changes were rendered and tested locally. They do not establish runtime RDMA/IPC performance, create cloud resources, or change the preserved September 16 results.
+
+## Subsequent runtime evidence
+
+The [H200 serving run](../../results/2026-09-16-h200-rdma-serving/RESULT.md) qualifies RDMA between isolated Pods with IPC_LOCK for actual P/D, including cross-host transfer. It deliberately forced `rc,cuda_copy,self`, so it is not an observation of default UCX selection or CUDA IPC. Pooled transfer means were nearly equal; a useful locality tradeoff still requires measurement. Both local orchestration failures and the missing client timings are recorded.

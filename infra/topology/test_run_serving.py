@@ -377,5 +377,21 @@ class ResumeRenderTest(unittest.TestCase):
             self.assertEqual((backups[0] / "evidence-marker").read_text(), "keep")
 
 
+class FrozenSuiteStagingTest(unittest.TestCase):
+    def test_custom_filename_gets_validator_sidecar_without_changing_plan(self):
+        import hashlib
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            plan = root / "frozen-suite.json"
+            plan.write_text('{"cases": []}\n')
+            expected = hashlib.sha256(plan.read_bytes()).hexdigest()
+            (root / "frozen-suite.sha256").write_text(expected)
+            self.assertEqual(serving.stage_frozen_suite(root), plan)
+            self.assertEqual((root / "suite.sha256").read_text().split()[0], expected)
+            plan.write_text("changed")
+            with self.assertRaises(serving.ServingError):
+                serving.stage_frozen_suite(root)
+
+
 if __name__ == "__main__":
     unittest.main()

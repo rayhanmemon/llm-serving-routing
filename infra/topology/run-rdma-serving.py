@@ -9,6 +9,7 @@ assert s['profile'] in ('rdma-h200-serving','rdma-h200-serving-retry')
 # Local runner deadline mirrors independent billing guard; no separate first-results cutoff.
 s['first_measurement_deadline_unix']=s['cleanup_start_deadline_unix']
 assert args.execute
+m.stage_frozen_suite(run)
 m.verify_archive(args.epp_archive,args.epp_sha256)
 root=run/'serving';root.mkdir()
 r=m.Runner(args,s,root)

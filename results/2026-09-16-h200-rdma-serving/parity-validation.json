@@ -1,0 +1,362 @@
+{
+  "criterion": "direct-parity",
+  "direct_parity": {
+    "passed_cases": 8,
+    "per_case": {
+      "copy-512-1": true,
+      "copy-512-2": true,
+      "copy-8192-1": true,
+      "copy-8192-2": true,
+      "retrieval-512-1": true,
+      "retrieval-512-2": true,
+      "retrieval-8192-1": true,
+      "retrieval-8192-2": true
+    },
+    "required_cases": 8
+  },
+  "gold_accuracy": {
+    "passed": 24,
+    "per_route": {
+      "direct-local": 6,
+      "direct-remote": 6,
+      "pd-local": 6,
+      "pd-remote": 6
+    },
+    "required": 32
+  },
+  "limits": "Transfer deltas, failure counters and worker stability are separate required evidence.",
+  "normalization": "outer whitespace only (response_text.strip())",
+  "request_integrity": {
+    "passed": 32,
+    "per_route": {
+      "direct-local": 8,
+      "direct-remote": 8,
+      "pd-local": 8,
+      "pd-remote": 8
+    },
+    "required": 32
+  },
+  "results": [
+    {
+      "actual_text": " gray gold pink cyan navy red blue silver",
+      "case_id": "copy-512-1",
+      "gold_match": true,
+      "gold_text": "gray gold pink cyan navy red blue silver",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " gray gold pink cyan navy red blue silver",
+      "case_id": "copy-512-1",
+      "gold_match": true,
+      "gold_text": "gray gold pink cyan navy red blue silver",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " gray gold pink cyan navy red blue silver",
+      "case_id": "copy-512-1",
+      "gold_match": true,
+      "gold_text": "gray gold pink cyan navy red blue silver",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " gray gold pink cyan navy red blue silver",
+      "case_id": "copy-512-1",
+      "gold_match": true,
+      "gold_text": "gray gold pink cyan navy red blue silver",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " teal cyan white brown pink black gold silver",
+      "case_id": "copy-512-2",
+      "gold_match": true,
+      "gold_text": "teal cyan white brown pink black gold silver",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " teal cyan white brown pink black gold silver",
+      "case_id": "copy-512-2",
+      "gold_match": true,
+      "gold_text": "teal cyan white brown pink black gold silver",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " teal cyan white brown pink black gold silver",
+      "case_id": "copy-512-2",
+      "gold_match": true,
+      "gold_text": "teal cyan white brown pink black gold silver",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " teal cyan white brown pink black gold silver",
+      "case_id": "copy-512-2",
+      "gold_match": true,
+      "gold_text": "teal cyan white brown pink black gold silver",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " pink gold teal purple white black green silver",
+      "case_id": "copy-8192-1",
+      "gold_match": true,
+      "gold_text": "pink gold teal purple white black green silver",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " pink gold teal purple white black green silver",
+      "case_id": "copy-8192-1",
+      "gold_match": true,
+      "gold_text": "pink gold teal purple white black green silver",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " pink gold teal purple white black green silver",
+      "case_id": "copy-8192-1",
+      "gold_match": true,
+      "gold_text": "pink gold teal purple white black green silver",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " pink gold teal purple white black green silver",
+      "case_id": "copy-8192-1",
+      "gold_match": true,
+      "gold_text": "pink gold teal purple white black green silver",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " purple black cyan gold gray green pink brown",
+      "case_id": "copy-8192-2",
+      "gold_match": true,
+      "gold_text": "purple black cyan gold gray green pink brown",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " purple black cyan gold gray green pink brown",
+      "case_id": "copy-8192-2",
+      "gold_match": true,
+      "gold_text": "purple black cyan gold gray green pink brown",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " purple black cyan gold gray green pink brown",
+      "case_id": "copy-8192-2",
+      "gold_match": true,
+      "gold_text": "purple black cyan gold gray green pink brown",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " purple black cyan gold gray green pink brown",
+      "case_id": "copy-8192-2",
+      "gold_match": true,
+      "gold_text": "purple black cyan gold gray green pink brown",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " red navy green pink black teal blue gray",
+      "case_id": "retrieval-512-1",
+      "gold_match": true,
+      "gold_text": "red navy green pink black teal blue gray",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " red navy green pink black teal blue gray",
+      "case_id": "retrieval-512-1",
+      "gold_match": true,
+      "gold_text": "red navy green pink black teal blue gray",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " red navy green pink black teal blue gray",
+      "case_id": "retrieval-512-1",
+      "gold_match": true,
+      "gold_text": "red navy green pink black teal blue gray",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " red navy green pink black teal blue gray",
+      "case_id": "retrieval-512-1",
+      "gold_match": true,
+      "gold_text": "red navy green pink black teal blue gray",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " red silver blue orange navy gold brown pink",
+      "case_id": "retrieval-512-2",
+      "gold_match": true,
+      "gold_text": "red silver blue orange navy gold brown pink",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " red silver blue orange navy gold brown pink",
+      "case_id": "retrieval-512-2",
+      "gold_match": true,
+      "gold_text": "red silver blue orange navy gold brown pink",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " red silver blue orange navy gold brown pink",
+      "case_id": "retrieval-512-2",
+      "gold_match": true,
+      "gold_text": "red silver blue orange navy gold brown pink",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " red silver blue orange navy gold brown pink",
+      "case_id": "retrieval-512-2",
+      "gold_match": true,
+      "gold_text": "red silver blue orange navy gold brown pink",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": true
+    },
+    {
+      "actual_text": " The secret sequence is black cyan blue orange",
+      "case_id": "retrieval-8192-1",
+      "gold_match": false,
+      "gold_text": "black cyan blue orange teal red green yellow",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is black cyan blue orange",
+      "case_id": "retrieval-8192-1",
+      "gold_match": false,
+      "gold_text": "black cyan blue orange teal red green yellow",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is black cyan blue orange",
+      "case_id": "retrieval-8192-1",
+      "gold_match": false,
+      "gold_text": "black cyan blue orange teal red green yellow",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is black cyan blue orange",
+      "case_id": "retrieval-8192-1",
+      "gold_match": false,
+      "gold_text": "black cyan blue orange teal red green yellow",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is brown gray navy silver",
+      "case_id": "retrieval-8192-2",
+      "gold_match": false,
+      "gold_text": "brown gray navy silver gold pink blue teal",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-local",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is brown gray navy silver",
+      "case_id": "retrieval-8192-2",
+      "gold_match": false,
+      "gold_text": "brown gray navy silver gold pink blue teal",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "direct-remote",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is brown gray navy silver",
+      "case_id": "retrieval-8192-2",
+      "gold_match": false,
+      "gold_text": "brown gray navy silver gold pink blue teal",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-local",
+      "token_ids_match_diagnostic_only": false
+    },
+    {
+      "actual_text": " The secret sequence is brown gray navy silver",
+      "case_id": "retrieval-8192-2",
+      "gold_match": false,
+      "gold_text": "brown gray navy silver gold pink blue teal",
+      "request_integrity_passed": true,
+      "request_match": true,
+      "route": "pd-remote",
+      "token_ids_match_diagnostic_only": false
+    }
+  ],
+  "validated": true
+}

@@ -8,6 +8,8 @@ The September 15 [L40S](results/2026-09-15-topology-transfer/RESULT.md) and [H10
 
 The [September 16 H100 run](results/2026-09-16-h100-transfer-qualification/RESULT.md) provisioned successfully and passed real-model direct/local/remote P/D correctness. The fast local transfer path remains unqualified after an IPC handle-open failure in an isolated diagnostic. No routing-performance benchmark or improvement is claimed; cleanup was verified.
 
+The [September 16 H200 RDMA serving run](results/2026-09-16-h200-rdma-serving/RESULT.md) verified 32 requests, 8/8 direct/P/D parity and 16 real KV transfers over RDMA. Mixed mean connector time was 14.16 ms local and 14.43 ms remote; this RDMA-only fixture does not establish meaningful locality savings. Harness errors prevented the client-latency block. All resources were deleted; no policy gain is claimed.
+
 ## Evaluation
 
 [Three-worker deployment draft](infra/topology/README.md): standalone infrastructure, routing policies and benchmark configuration, with local validation status and remaining checks.

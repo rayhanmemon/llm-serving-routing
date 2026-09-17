@@ -49,10 +49,10 @@ RTX_SUBNET_ID = "vpcsubnet-e05tskd8ywwvmzhed8"
 PROFILE_POLICIES = {
     "rdma-h200-serving-retry": {
         "placement_timeout_seconds": 20 * 60,
-        "cleanup_start_seconds": 24 * 60,
-        "deletion_target_seconds": 30 * 60,
+        "cleanup_start_seconds": 27 * 60,
+        "deletion_target_seconds": 33 * 60,
         "hourly_rate_usd_pretax": Decimal("39.7"),
-        "attempt_admission_usd_pretax": Decimal("20"),
+        "attempt_admission_usd_pretax": Decimal("21.9"),
         "expected_creates": FULL_TOPOLOGY_CREATES,
         "remote_gpu_preset": "8gpu-128vcpu-1600gb", "remote_on_fabric": True,
         "gpu_platform": "H200", "terraform_gpu_platform": "gpu-h200-sxm",

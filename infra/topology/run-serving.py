@@ -79,6 +79,20 @@ def verify_archive(path: Path, expected_sha256: str) -> None:
         raise ServingError("EPP archive is not linux/amd64")
 
 
+def stage_frozen_suite(run_dir):
+    """Check the pre-run digest and supply the validator's canonical sidecar name."""
+    plan = run_dir / "frozen-suite.json"
+    expected = (run_dir / "frozen-suite.sha256").read_text().split()[0]
+    if hashlib.sha256(plan.read_bytes()).hexdigest() != expected:
+        raise ServingError("Frozen suite differs from its recorded pre-run digest")
+    canonical = run_dir / "suite.sha256"
+    if canonical.exists() and canonical.read_text().split()[0] != expected:
+        raise ServingError("Conflicting suite digest sidecars")
+    if not canonical.exists():
+        canonical.write_text(expected + "  frozen-suite.json\n")
+    return plan
+
+
 def terraform_values(output):
     try:
         cluster_id = output["cluster_id"]["value"]

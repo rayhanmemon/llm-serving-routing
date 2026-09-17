@@ -1,0 +1,26 @@
+{
+  "session_id": "20260916T233238Z-1bc96bbf",
+  "estimate_usd_pretax": "13.68264174395818082191780822",
+  "components": {
+    "local": {
+      "start": "2026-09-16T23:36:51.401690Z",
+      "end": "2026-09-16T23:57:32.227549Z",
+      "hourly_rate": "19.6",
+      "estimate_usd": "6.755607454555555555555555556"
+    },
+    "remote": {
+      "start": "2026-09-16T23:36:51.614332Z",
+      "end": "2026-09-16T23:57:33.983639Z",
+      "hourly_rate": "19.6",
+      "estimate_usd": "6.764010671444444444444444444"
+    },
+    "cpu": {
+      "start": "2026-09-16T23:36:50.765797Z",
+      "end": "2026-09-16T23:57:32.320855Z",
+      "hourly_rate": ".3968",
+      "estimate_usd": "0.136846957504"
+    }
+  },
+  "disk_usd": "0.02617666045418082191780821918",
+  "method": "Conservative native create-start to delete-finish; SSD for full session; before tax, not invoice."
+}

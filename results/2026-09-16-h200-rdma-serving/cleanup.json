@@ -1,0 +1,12 @@
+{
+  "session_id": "20260916T233238Z-1bc96bbf",
+  "teardown_exit_code": 0,
+  "verified_unix": 1789603240.913899,
+  "resource_counts": {
+    "instances": 0,
+    "kubernetes_clusters": 0,
+    "disks": 0,
+    "filesystems": 0,
+    "gpu_clusters": 0
+  }
+}
