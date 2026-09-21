@@ -1,0 +1,7 @@
+{
+  "session_id": "20260921T011716Z-8b7bf2b2",
+  "estimate_usd_pretax": "0",
+  "method": "No CPU/GPU nodes or disks created. Only a managed Kubernetes control plane and an IAM service account were created and deleted; published Kubernetes pricing charges worker nodes. Not invoice-verified.",
+  "nodes_allocated": 0,
+  "pricing_source": "https://docs.nebius.com/kubernetes/resources/pricing"
+}

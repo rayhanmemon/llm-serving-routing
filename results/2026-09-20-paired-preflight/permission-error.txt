@@ -1,0 +1,18 @@
+╷
+│ Error: resource creation failed
+│ 
+│   with nebius_iam_v1_group.guard[0],
+│   on main.tf line 116, in resource "nebius_iam_v1_group" "guard":
+│  116: resource "nebius_iam_v1_group" "guard" {
+│ 
+│ resource creation failed: service create: rpc error: code =
+│ PermissionDenied desc = No permission
+│ request = 5effc309-44a3-4c2d-a91e-6f190885d12c
+│ caused by service error:
+│   Permission denied PermissionDenied: service iam, resource ID: project-u00k8gmbpr0067akfrxdah
+│ 
+│ This issue may be linked to the API request call. The following information
+│ may be helpful while debugging the issue:
+│ Request ID: 5effc309-44a3-4c2d-a91e-6f190885d12c
+│ Trace ID: 57068d577e9c6b1e354a3af5e107f3ea
+╵

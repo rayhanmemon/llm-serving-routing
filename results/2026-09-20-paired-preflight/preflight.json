@@ -1,0 +1,13 @@
+{
+  "session_id": "20260921T011716Z-8b7bf2b2",
+  "source_at_launch": "d9be1df",
+  "local_tests_passed": 179,
+  "stage": "cleanup identity bootstrap",
+  "failure": "Nebius PermissionDenied creating IAM group in experiment project",
+  "guard_armed": false,
+  "cpu_nodes_allocated": 0,
+  "gpu_nodes_allocated": 0,
+  "model_requests": 0,
+  "capacity_advice": "two reads failed with Unavailable",
+  "followup": "Project administrator must provision or authorize the dedicated cleanup identity; do not weaken unattended shutdown gate."
+}

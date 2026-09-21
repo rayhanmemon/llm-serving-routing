@@ -1,0 +1,13 @@
+{
+  "session_id": "20260921T011716Z-8b7bf2b2",
+  "teardown_exit_code": 0,
+  "verified_unix": 1789953839.778372,
+  "additional_iam_check": "No router-session-cleanup service account or group remains",
+  "paid_resource_lists_empty": [
+    "instances",
+    "kubernetes_clusters",
+    "disks",
+    "filesystems",
+    "gpu_clusters"
+  ]
+}
