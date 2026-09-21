@@ -101,6 +101,23 @@ class ClientFlowReplay(unittest.TestCase):
     client.run({},suite,out/'result',10**12)
    self.assertTrue((out/'result/qualified.json').exists());result=json.loads((out/'result/complete.json').read_text());self.assertEqual(result['timed_requests'],4)
    self.assertEqual(len(json.loads((out/'result/qualification.json').read_text())),32)
+   # Exercise the independent reader against a complete synthetic timing block.
+   summarizer=load('paired_summary','summarize-paired-hosts.py')
+   folder=out/'result';timing_plan=json.loads((folder/'timing-plan.json').read_text());timing_plan['pairs']=original(plan['cases']);(folder/'timing-plan.json').write_text(json.dumps(timing_plan))
+   old=json.loads((folder/'timings.json').read_text());new=[r for r in old if r['warmup']]
+   for pair in timing_plan['pairs']:
+    for route in pair['order']:
+     row=copy.deepcopy(next(r for r in old if not r['warmup'] and r['route']==route))
+     row.update(pair_id=pair['id'],request=pair['body'],load=pair['load'],tokens=pair['tokens'],background=[{}]*pair['load'])
+     row['before']['local'][client.RUNNING]=pair['load'];row['response']['usage']={'prompt_tokens':pair['tokens'],'completion_tokens':32}
+     row['response']['events']=[{'elapsed_seconds':.01,'data':{'choices':[{'text':'first'}]}}]
+     new.append(row)
+   (folder/'timings.json').write_text(json.dumps(new));summary=summarizer.summarize(folder,suite)
+   self.assertEqual(summary['complete_pairs'],48);self.assertTrue(summary['all_measurements_complete'])
+   self.assertTrue(all(x['mean_remote_minus_local_ms']==0 for x in summary['groups']))
+   new[-1]['request']=dict(new[-1]['request'],max_tokens=99);(folder/'timings.json').write_text(json.dumps(new))
+   with self.assertRaisesRegex(ValueError,'Measurement request changed'):summarizer.summarize(folder,suite)
+
 
 class ControllerReplay(unittest.TestCase):
  def replay(self,bad_guard=False):
