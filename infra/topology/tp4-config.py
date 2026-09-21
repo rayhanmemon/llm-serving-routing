@@ -127,8 +127,8 @@ def render(config_path, nodes, work_seconds=7200):
     spec = importlib.util.spec_from_file_location('single_manifest', HERE / 'run-single-host.py')
     single = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(single)
-    data = {name: (HERE / name).read_text() for name in ('tp4-config.py', 'tp4-engines.py')}
-    data.update({'config.json': json.dumps(config),
+    data = {name: (HERE / name).read_text() for name in ('tp4-config.py', 'tp4-engines.py', 'tp4-client.py', 'tp4-evidence.py')}
+    data.update({'config.json': config_path.read_text(),
                  'model-config.json': config_path.with_name('model-config.json').read_text()})
     items = [{'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': NS}},
              {'apiVersion': 'v1', 'kind': 'ConfigMap',

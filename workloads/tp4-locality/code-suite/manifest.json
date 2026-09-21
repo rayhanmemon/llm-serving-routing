@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "model": "Qwen/Qwen3-32B",
+  "revision": "9216db5781bf21249d130ec9da846c4624c16137",
+  "source_repository": "https://github.com/llm-d/llm-d-router",
+  "source_revision": "32d4ed2ac5ff1cc09f1dc8326caa0bab56d234b4",
+  "corpus_sha256": "c81bf4dde82ce7e4ef7f6dfaa3fdc6f82a67cd9c46449fea264fd6a87763626c",
+  "config_sha256": "3730eaefb0e9b36119683b24bdf33527662167866376fcbb26f77270827b5dfa",
+  "screening_scope": "isolated forced routes; no policy comparison",
+  "qualification": "cross-route normalized output parity; source-location gold recorded separately",
+  "expected_local_qualification_requests": 16,
+  "expected_remote_qualification_requests": 16,
+  "expected_warmups": 16,
+  "expected_timed_requests": 96
+}

@@ -1,0 +1,19 @@
+{
+  "full_http_rehearsal_passed": true,
+  "manifests_server_validated": true,
+  "request_configmap_roundtrip": true,
+  "staged_controller_rehearsed": true,
+  "cloud_actions": false,
+  "sha256": {
+    "config.json": "3730eaefb0e9b36119683b24bdf33527662167866376fcbb26f77270827b5dfa",
+    "suite.json.gz": "548b39c99db7cbad801fd274f84a7b317bca2b16ed9e8228ab624cbe598258ee",
+    "tp4-config.py": "49658eecd737608d0d05ab318e0c61195b93f7ca3a7fbafc3d10e6bfd50875fc",
+    "tp4-engines.py": "60b91322a330d9ba601ed504cba0737946588ad14f2f1d5fbd110bdaab7e1858",
+    "tp4-client.py": "4becd048d606f3c7f4137c3f7f0c6d863cb17f5d32637ade4f3f66e0e68e19df",
+    "tp4-evidence.py": "226e5e6a310f35b5bd267080369c88ad8368621f7a823cb8591c33939c65926f",
+    "run-tp4-staged.py": "dbac71015ba5d5351c7df85d6eb08738af380f38e2196ea258cabc6dcd904faf",
+    "run-paired-hosts.py": "0fc50deb061883188fe912af6ba1b585672820d69b8f97422d4ee0bff77141b4",
+    "pilot-session.py": "34db986ea49832638b3d599163fb6df4a7b2f51f08a0fa5da3e8e77b8c24a986",
+    "cloud-deadline-guard.py": "afa22eb04418d7351de9573e0af427fa8d396b30de95b53ecd4f0b0b5d9c7dba"
+  }
+}

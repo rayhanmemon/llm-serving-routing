@@ -1,0 +1,91 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "name": "router-tp4"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "guard-code",
+        "namespace": "router-tp4"
+      },
+      "data": {
+        "guard.py": "#!/usr/bin/env python3\n\"\"\"Cloud-side fallback: delete only this session's three named node groups.\n\nRuns on the non-preemptible CPU node with its temporary service account.\nCredentials come from instance metadata and never enter results or logs.\nThe normal controller still performs complete Terraform cleanup and verification.\n\"\"\"\nimport argparse\nimport asyncio\nimport json\nfrom pathlib import Path\nimport time\nimport urllib.request\n\nNAMES = {'router-local', 'router-remote', 'router-cpu'}\n\n\ndef select_groups(items, cluster):\n    result = {}\n    for item in items:\n        if item['parent_id'] != cluster or item['name'] not in NAMES:\n            raise ValueError('Unexpected node group; refuse unscoped cleanup')\n        if item['name'] in result:\n            raise ValueError('Duplicate group name')\n        result[item['name']] = item['id']\n    return result\n\n\ndef metadata(path):\n    req = urllib.request.Request('http://metadata.nebius.internal/v1/' + path,\n                                 headers={'Metadata': 'true'})\n    with urllib.request.urlopen(req, timeout=10) as response:\n        return response.read().decode()\n\n\nasync def main():\n    from nebius.sdk import SDK\n    from nebius.api.nebius.mk8s.v1 import NodeGroupServiceClient, ListNodeGroupsRequest, DeleteNodeGroupRequest\n    p = argparse.ArgumentParser()\n    p.add_argument('--cluster', required=True)\n    p.add_argument('--project', required=True)\n    p.add_argument('--deadline', type=float, required=True)\n    a = p.parse_args()\n    info = json.loads(metadata('instance-data'))\n    if info['parent_id'] != a.project or not info.get('service_account_id'):\n        raise ValueError('Guard has wrong project or lacks its own identity')\n    ready = False\n    while True:\n        try:\n            async with SDK(credentials=metadata('iam/sa/token/access_token').strip()) as sdk:\n                service = NodeGroupServiceClient(sdk)\n                response = await service.list(ListNodeGroupsRequest(parent_id=a.cluster), timeout=20)\n                if response.next_page_token:\n                    raise ValueError('Unexpected pagination')\n                groups = select_groups([{'id': x.metadata.id, 'name': x.metadata.name,\n                                          'parent_id': x.metadata.parent_id} for x in response.items], a.cluster)\n                if not ready:\n                    if 'router-cpu' not in groups:\n                        raise ValueError('CPU guard group missing')\n                    record = {'armed': True, 'cluster': a.cluster, 'project': a.project,\n                              'deadline': a.deadline, 'service_account': info['service_account_id'],\n                              'gpu_groups_present_at_arm': sorted(set(groups)-{'router-cpu'})}\n                    Path('/results/guard-ready.json').write_text(json.dumps(record))\n                    print(json.dumps(record), flush=True)\n                    ready = True\n                if time.time() >= a.deadline:\n                    gpu = [groups[x] for x in ('router-local','router-remote') if x in groups]\n                    for identifier in gpu:\n                        try:\n                            operation = await service.delete(DeleteNodeGroupRequest(id=identifier), timeout=25)\n                            print(json.dumps({'delete_requested': identifier, 'operation': operation.id}), flush=True)\n                        except Exception as error:\n                            print('Delete pending/retry: '+type(error).__name__, flush=True)\n                    if not gpu and 'router-cpu' in groups:\n                        await service.delete(DeleteNodeGroupRequest(id=groups['router-cpu']), timeout=25)\n                        print('Both GPU groups absent; CPU self-deletion requested.', flush=True)\n        except Exception as error:\n            # No credential-bearing request/exception repr in logs.\n            print('Guard retry: '+type(error).__name__, flush=True)\n        await asyncio.sleep(5 if time.time() >= a.deadline else 15)\n\n\nif __name__ == '__main__':\n    asyncio.run(main())\n"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "deadline-guard",
+        "namespace": "router-tp4"
+      },
+      "spec": {
+        "nodeSelector": {
+          "kubernetes.io/hostname": "tp4-cpu-placeholder"
+        },
+        "hostNetwork": true,
+        "dnsPolicy": "Default",
+        "automountServiceAccountToken": false,
+        "restartPolicy": "Always",
+        "containers": [
+          {
+            "name": "guard",
+            "image": "python:3.12-slim@sha256:44ff437bba879d4941b710a369a8f19266aea34b29002807f0c487fabc9eec9b",
+            "command": [
+              "sh",
+              "-c",
+              "pip install --disable-pip-version-check nebius==0.6.11 && exec python -u /code/guard.py \"$@\"",
+              "guard",
+              "--cluster",
+              "placeholder-cluster",
+              "--project",
+              "project-u00k8gmbpr0067akfrxdah",
+              "--deadline",
+              "9999999999"
+            ],
+            "resources": {
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              },
+              "limits": {
+                "memory": "512Mi"
+              }
+            },
+            "volumeMounts": [
+              {
+                "name": "code",
+                "mountPath": "/code",
+                "readOnly": true
+              },
+              {
+                "name": "results",
+                "mountPath": "/results"
+              }
+            ]
+          }
+        ],
+        "volumes": [
+          {
+            "name": "code",
+            "configMap": {
+              "name": "guard-code"
+            }
+          },
+          {
+            "name": "results",
+            "emptyDir": {}
+          }
+        ]
+      }
+    }
+  ]
+}

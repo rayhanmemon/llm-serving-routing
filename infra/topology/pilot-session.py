@@ -213,12 +213,18 @@ PROFILE_POLICIES = {
 }
 
 
-PAIRED_PROFILES = ("nvlink-rdma-h200-paired", "nvlink-rdma-h200-paired-short")
+PAIRED_PROFILES = ("nvlink-rdma-h200-paired", "nvlink-rdma-h200-paired-short", "tp4-h200-staged")
 PROFILE_POLICIES[PAIRED_PROFILES[1]] = {
     **PROFILE_POLICIES[PAIRED_PROFILES[0]],
     "cleanup_start_seconds": 40 * 60,
     "deletion_target_seconds": 55 * 60,
     "attempt_admission_usd_pretax": Decimal("38"),
+}
+PROFILE_POLICIES[PAIRED_PROFILES[2]] = {
+    **PROFILE_POLICIES[PAIRED_PROFILES[0]],
+    "cleanup_start_seconds": 120 * 60,
+    "deletion_target_seconds": 145 * 60,
+    "attempt_admission_usd_pretax": Decimal("100"),
 }
 
 

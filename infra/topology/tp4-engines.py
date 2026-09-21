@@ -7,7 +7,9 @@ import os
 from pathlib import Path
 import signal
 import subprocess
+import threading
 import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location('tp4_config', HERE / 'tp4-config.py')
@@ -33,6 +35,35 @@ def main():
     (out / 'engine-commands.json').write_text(json.dumps(commands, indent=2) + '\n')
     children = []
     stopping = False
+    device_map = {}
+
+    class EvidenceHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if self.path != '/evidence':
+                self.send_error(404)
+                return
+            try:
+                observed = {}
+                for name, query in {
+                    'identity': ['nvidia-smi', '--query-compute-apps=pid,gpu_uuid,process_name', '--format=csv,noheader'],
+                    'topology': ['nvidia-smi', 'topo', '-m'],
+                    'memory': ['nvidia-smi', '--query-gpu=uuid,memory.total,memory.used', '--format=csv,noheader'],
+                    'nvlink': ['nvidia-smi', 'nvlink', '-gt', 'd'],
+                }.items():
+                    p = subprocess.run(query, capture_output=True, text=True, timeout=15, check=True)
+                    observed[name] = p.stdout
+                observed.update(devices=device_map, processes_alive=all(p.poll() is None for p in children),
+                                engine_logs={s['role']: Path(s['log_path']).read_text(errors='replace') for s in commands},
+                                ucx_logs={p.name: p.read_text(errors='replace') for p in out.glob('ucx-*.log')})
+                body = json.dumps(observed).encode()
+                self.send_response(200)
+                self.send_header('Content-Length', str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            except Exception as error:
+                self.send_error(500, type(error).__name__)
+        def log_message(self, *_):
+            pass
 
     def stop(*_):
         nonlocal stopping
@@ -48,11 +79,20 @@ def main():
             env = {**os.environ, **command['env']}
             env.pop('UCX_TLS', None)
             env.pop('UCX_CUDA_IPC_GET_ZCOPY', None)
+            inspect = subprocess.run(['python3', '-c',
+                'import torch,json; print(json.dumps([str(torch.cuda.get_device_properties(i).uuid) for i in range(torch.cuda.device_count())]))'],
+                env=env, capture_output=True, text=True, check=True, timeout=60)
+            device_map[command['role']] = json.loads(inspect.stdout)
+            if len(device_map[command['role']]) != 4:
+                raise ValueError('TP4 group does not see exactly four CUDA devices')
             with Path(command['log_path']).open('w') as log:
                 child = subprocess.Popen(command['command'], stdout=log, stderr=subprocess.STDOUT,
                                          env=env, start_new_session=True)
             children.append(child)
         (out / 'supervisor-pids.json').write_text(json.dumps({c['role']: p.pid for c, p in zip(commands, children)}) + '\n')
+        (out / 'device-map.json').write_text(json.dumps(device_map) + '\n')
+        server = ThreadingHTTPServer(('0.0.0.0', 8300), EvidenceHandler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
         while not stopping and all(p.poll() is None for p in children):
             time.sleep(2)
         if not stopping:

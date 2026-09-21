@@ -129,7 +129,7 @@ class Controller(single.Controller):
             if len(found)==len(groups):return found
             self.sleep(4)
         raise TimeoutError('Healthy nodes did not become ready')
-    def bootstrap(self):
+    def bootstrap(self,allocate_gpus=True):
         # Only CPU, control plane and temporary IAM resources. No GPU allocation.
         self.call(self.tf+['apply','-auto-approve','-input=false','-target=nebius_mk8s_v1_node_group.cpu'], 'cpu-bootstrap',600)
         state=json.loads(self.call(self.tf+['show','-json'],'bootstrap-state').stdout)
@@ -138,6 +138,7 @@ class Controller(single.Controller):
         self.cluster=cluster
         self.call([str(Path.home()/'.nebius/bin/nebius'),'mk8s','cluster','get-credentials','--id',cluster,'--external','--kubeconfig',str(self.run/'kubeconfig'),'--context-name','router-topology','--force'],'credentials',60)
         node=self.nodes({'cpu':cpu})['cpu']
+        self.cpu_node=node
         # Remove drain blockers from this isolated experiment before guard arming.
         self.call([sys.executable,str(HERE/'prepare-teardown.py'),'--terraform-dir',self.session['terraform_dir']],'drain-preparation',90)
         self.apply(guard_manifest(node,self.session,cluster),'guard-manifest')
@@ -154,6 +155,8 @@ class Controller(single.Controller):
                 pilot.write_json(self.run/'cloud-guard-ready.json',ready);print('Cloud guard armed before GPU allocation.',flush=True);break
             self.sleep(3)
         else:raise TimeoutError('Cloud guard did not arm; no GPUs will be allocated')
+        if not allocate_gpus:
+            return
         if time.time()+1200>self.session['cleanup_start_deadline_unix']:raise TimeoutError('Too little work time remains for GPU admission')
         path=self.run/'gpu.tfplan'
         self.call(self.tf+['plan','-input=false','-out='+str(path)],'gpu-plan',90)

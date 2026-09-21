@@ -1,0 +1,7 @@
+{
+  "full_http_rehearsal_passed": true,
+  "requests": 144,
+  "timed_requests": 96,
+  "gpu_execution": false,
+  "scope": "Synthetic HTTP/SSE, metric and protocol fixtures; no serving performance result"
+}
