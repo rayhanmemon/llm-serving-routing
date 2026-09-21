@@ -118,8 +118,8 @@ class ClientFlowReplay(unittest.TestCase):
    for pair in timing_plan['pairs']:
     for route in pair['order']:
      row=copy.deepcopy(next(r for r in old if not r['warmup'] and r['route']==route))
-     row.update(pair_id=pair['id'],request=pair['body'],load=pair['load'],tokens=pair['tokens'],background=[{}]*pair['load'])
-     row['before']['local'][client.RUNNING]=pair['load'];row['response']['usage']={'prompt_tokens':pair['tokens'],'completion_tokens':32}
+     row.update(pair_id=pair['id'],request=pair['body'],load=pair['load'],tokens=pair['tokens'],background=[{'usage':{'prompt_tokens':512,'completion_tokens':1024}}]*pair['load'])
+     row['before']['local'][client.RUNNING]=pair['load'];row['after']['local'][client.RUNNING]=pair['load'];row['response']['usage']={'prompt_tokens':pair['tokens'],'completion_tokens':32}
      row['response']['events']=[{'elapsed_seconds':.01,'data':{'choices':[{'text':'first'}]}}]
      new.append(row)
    (folder/'timings.json').write_text(json.dumps(new));summary=summarizer.summarize(folder,suite)

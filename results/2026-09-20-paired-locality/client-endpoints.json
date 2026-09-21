@@ -1,0 +1,18 @@
+{
+  "prefill": "10.99.15.106:8100",
+  "endpoints": {
+    "direct-local": "http://10.99.15.106:8200",
+    "direct-remote": "http://10.99.101.75:8200",
+    "pd-local": "http://10.99.15.106:8000",
+    "pd-remote": "http://10.99.101.75:8000"
+  },
+  "metrics": {
+    "prefill": "http://10.99.15.106:8100/metrics",
+    "local": "http://10.99.15.106:8200/metrics",
+    "remote": "http://10.99.101.75:8200/metrics"
+  },
+  "evidence": {
+    "local": "http://10.99.15.106:8300/evidence",
+    "remote": "http://10.99.101.75:8300/evidence"
+  }
+}

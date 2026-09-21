@@ -1,0 +1,6 @@
+{
+  "background_tokens_match": true,
+  "observed_background_count_before_and_after_each_loaded_request_matches": true,
+  "gpu_process_identities_stable_from_start_to_finish": true,
+  "details": "Independent checks against all96 saved timing rows, background usage512/1024, and initial/final engine evidence."
+}

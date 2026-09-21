@@ -51,8 +51,9 @@ def summarize(folder,suite):
         events=r['events'];generated=[e for e in events if any(x.get('text') for x in e['data'].get('choices',[]))]
         require(generated and abs(generated[0]['elapsed_seconds']-r['ttft_seconds'])<1e-9,'TTFT not first generated text')
         require(len(row['background'])==pair['load'],'Wrong background cohort')
+        require(all(x['usage']['prompt_tokens']==512 and x['usage']['completion_tokens']==1024 for x in row['background']),'Wrong background token counts')
         if pair['load']:
-            require(row['before']['local'][c.RUNNING]>=pair['load'],'Local load was not observed')
+            require(row['before']['local'][c.RUNNING]>=pair['load'] and row['after']['local'][c.RUNNING]>=pair['load'],'Local load was not observed throughout the foreground request')
         pairs.setdefault(pair['id'],[]).append(row)
     require(len(warmups)==8,'Warmup block incomplete')
     groups={};incomplete=[]
@@ -76,6 +77,9 @@ def summarize(folder,suite):
             'exploratory_paired_bootstrap_95pct_ms':[boots[125],boots[4874]],
             'local_faster_pairs':sum(x>0 for x in differences),
             'mean_difference_by_first_route':{route:statistics.mean(x['remote_minus_local_ms'] for x in pairs_in_group if x['first']==route) for route in ('pd-local','pd-remote') if any(x['first']==route for x in pairs_in_group)},'pairs':pairs_in_group})
+    if (folder/'complete.json').exists():
+        end=read('complete.json')['final_evidence'];start=read('qualified.json')['baseline']
+        require(all(start[k]['identity']==end[k]['identity'] and end[k]['processes_alive'] for k in ('local','remote')),'Workers changed during timing')
     return {'qualified':True,'gold_matches':gold,'gold_total':32,'timed_requests_saved':len(rows)-len(warmups),
             'planned_timed_requests':96,'complete_pairs':sum(len(x) for x in groups.values()),'incomplete_pairs':incomplete,
             'all_measurements_complete':len(seen)==96 and (folder/'complete.json').exists(),

@@ -1,0 +1,470 @@
+{
+  "qualified": true,
+  "gold_matches": 16,
+  "gold_total": 32,
+  "timed_requests_saved": 96,
+  "planned_timed_requests": 96,
+  "complete_pairs": 48,
+  "incomplete_pairs": [],
+  "all_measurements_complete": true,
+  "groups": [
+    {
+      "background_requests": 0,
+      "prompt_tokens": 512,
+      "complete_pairs": 12,
+      "local_median_ms": 51.26221500000838,
+      "remote_median_ms": 49.008952999997746,
+      "mean_remote_minus_local_ms": -2.701327833354602,
+      "median_remote_minus_local_ms": -2.3506504999772915,
+      "exploratory_paired_bootstrap_95pct_ms": [
+        -4.373089333341795,
+        -1.1011681666654265
+      ],
+      "local_faster_pairs": 2,
+      "mean_difference_by_first_route": {
+        "pd-local": -1.656885500002166,
+        "pd-remote": -3.7457701667070373
+      },
+      "pairs": [
+        {
+          "pair": "load0-512-0",
+          "first": "pd-local",
+          "local_ms": 55.65152899998793,
+          "remote_ms": 50.19058999994286,
+          "remote_minus_local_ms": -5.460939000045073
+        },
+        {
+          "pair": "load0-512-1",
+          "first": "pd-remote",
+          "local_ms": 52.1797730000344,
+          "remote_ms": 48.15467399998852,
+          "remote_minus_local_ms": -4.025099000045884
+        },
+        {
+          "pair": "load0-512-2",
+          "first": "pd-local",
+          "local_ms": 48.52713299999323,
+          "remote_ms": 49.88105799998266,
+          "remote_minus_local_ms": 1.353924999989431
+        },
+        {
+          "pair": "load0-512-3",
+          "first": "pd-local",
+          "local_ms": 50.93799000007948,
+          "remote_ms": 49.933026999951835,
+          "remote_minus_local_ms": -1.0049630001276455
+        },
+        {
+          "pair": "load0-512-4",
+          "first": "pd-remote",
+          "local_ms": 51.586439999937284,
+          "remote_ms": 45.76651299998957,
+          "remote_minus_local_ms": -5.819926999947711
+        },
+        {
+          "pair": "load0-512-5",
+          "first": "pd-remote",
+          "local_ms": 49.52856099998826,
+          "remote_ms": 50.755300999981046,
+          "remote_minus_local_ms": 1.2267399999927875
+        },
+        {
+          "pair": "load0-512-6",
+          "first": "pd-remote",
+          "local_ms": 50.197881000030975,
+          "remote_ms": 49.39292399990336,
+          "remote_minus_local_ms": -0.8049570001276152
+        },
+        {
+          "pair": "load0-512-7",
+          "first": "pd-local",
+          "local_ms": 50.79999999998108,
+          "remote_ms": 49.005572999931246,
+          "remote_minus_local_ms": -1.7944270000498364
+        },
+        {
+          "pair": "load0-512-8",
+          "first": "pd-remote",
+          "local_ms": 53.13490100002127,
+          "remote_ms": 48.61855199999354,
+          "remote_minus_local_ms": -4.516349000027731
+        },
+        {
+          "pair": "load0-512-9",
+          "first": "pd-local",
+          "local_ms": 51.91920699996899,
+          "remote_ms": 49.012333000064245,
+          "remote_minus_local_ms": -2.9068739999047466
+        },
+        {
+          "pair": "load0-512-10",
+          "first": "pd-local",
+          "local_ms": 47.69027699990147,
+          "remote_ms": 47.562242000026345,
+          "remote_minus_local_ms": -0.12803499987512623
+        },
+        {
+          "pair": "load0-512-11",
+          "first": "pd-remote",
+          "local_ms": 54.928697000036664,
+          "remote_ms": 46.393667999950594,
+          "remote_minus_local_ms": -8.53502900008607
+        }
+      ]
+    },
+    {
+      "background_requests": 0,
+      "prompt_tokens": 8192,
+      "complete_pairs": 12,
+      "local_median_ms": 94.53759849998278,
+      "remote_median_ms": 98.76178050001272,
+      "mean_remote_minus_local_ms": 5.747062833336258,
+      "median_remote_minus_local_ms": 4.876857999988715,
+      "exploratory_paired_bootstrap_95pct_ms": [
+        2.305465416659066,
+        9.490348666683227
+      ],
+      "local_faster_pairs": 10,
+      "mean_difference_by_first_route": {
+        "pd-local": 10.365178833315744,
+        "pd-remote": 1.1289468333567736
+      },
+      "pairs": [
+        {
+          "pair": "load0-8192-0",
+          "first": "pd-local",
+          "local_ms": 82.6115380000374,
+          "remote_ms": 98.8155119999874,
+          "remote_minus_local_ms": 16.203973999949994
+        },
+        {
+          "pair": "load0-8192-1",
+          "first": "pd-local",
+          "local_ms": 95.21814699996867,
+          "remote_ms": 98.9400429999705,
+          "remote_minus_local_ms": 3.721896000001834
+        },
+        {
+          "pair": "load0-8192-2",
+          "first": "pd-remote",
+          "local_ms": 97.55375899999308,
+          "remote_ms": 95.26430699997945,
+          "remote_minus_local_ms": -2.2894520000136254
+        },
+        {
+          "pair": "load0-8192-3",
+          "first": "pd-local",
+          "local_ms": 92.9270120000183,
+          "remote_ms": 101.84370199999648,
+          "remote_minus_local_ms": 8.916689999978189
+        },
+        {
+          "pair": "load0-8192-4",
+          "first": "pd-remote",
+          "local_ms": 97.6020719999724,
+          "remote_ms": 95.95796500002507,
+          "remote_minus_local_ms": -1.6441069999473257
+        },
+        {
+          "pair": "load0-8192-5",
+          "first": "pd-local",
+          "local_ms": 92.67622900006245,
+          "remote_ms": 98.70804900003805,
+          "remote_minus_local_ms": 6.031819999975596
+        },
+        {
+          "pair": "load0-8192-6",
+          "first": "pd-remote",
+          "local_ms": 95.65609399999175,
+          "remote_ms": 97.20020999998269,
+          "remote_minus_local_ms": 1.544115999990936
+        },
+        {
+          "pair": "load0-8192-7",
+          "first": "pd-remote",
+          "local_ms": 93.4640009999157,
+          "remote_ms": 101.1728480000329,
+          "remote_minus_local_ms": 7.708847000117203
+        },
+        {
+          "pair": "load0-8192-8",
+          "first": "pd-remote",
+          "local_ms": 96.03666500004238,
+          "remote_ms": 96.4088719999836,
+          "remote_minus_local_ms": 0.37220699994122697
+        },
+        {
+          "pair": "load0-8192-9",
+          "first": "pd-local",
+          "local_ms": 93.85704999999689,
+          "remote_ms": 102.58258799990472,
+          "remote_minus_local_ms": 8.725537999907829
+        },
+        {
+          "pair": "load0-8192-10",
+          "first": "pd-local",
+          "local_ms": 85.2172630000041,
+          "remote_ms": 103.80841800008511,
+          "remote_minus_local_ms": 18.591155000081017
+        },
+        {
+          "pair": "load0-8192-11",
+          "first": "pd-remote",
+          "local_ms": 95.30684199989992,
+          "remote_ms": 96.38891199995214,
+          "remote_minus_local_ms": 1.0820700000522265
+        }
+      ]
+    },
+    {
+      "background_requests": 1,
+      "prompt_tokens": 512,
+      "complete_pairs": 6,
+      "local_median_ms": 74.08681949993934,
+      "remote_median_ms": 53.68841950001979,
+      "mean_remote_minus_local_ms": -20.45090383328822,
+      "median_remote_minus_local_ms": -19.914011499963635,
+      "exploratory_paired_bootstrap_95pct_ms": [
+        -23.372353166602505,
+        -17.860876499942908
+      ],
+      "local_faster_pairs": 0,
+      "mean_difference_by_first_route": {
+        "pd-local": -23.076583666617505,
+        "pd-remote": -17.825223999958933
+      },
+      "pairs": [
+        {
+          "pair": "load1-512-0",
+          "first": "pd-local",
+          "local_ms": 75.94819600001301,
+          "remote_ms": 53.295787000024575,
+          "remote_minus_local_ms": -22.652408999988438
+        },
+        {
+          "pair": "load1-512-1",
+          "first": "pd-remote",
+          "local_ms": 73.21051099995657,
+          "remote_ms": 53.403456999944865,
+          "remote_minus_local_ms": -19.807054000011703
+        },
+        {
+          "pair": "load1-512-2",
+          "first": "pd-remote",
+          "local_ms": 70.02049799996257,
+          "remote_ms": 54.24350199996297,
+          "remote_minus_local_ms": -15.776995999999599
+        },
+        {
+          "pair": "load1-512-3",
+          "first": "pd-local",
+          "local_ms": 80.52975500004322,
+          "remote_ms": 53.973382000094716,
+          "remote_minus_local_ms": -26.556372999948508
+        },
+        {
+          "pair": "load1-512-4",
+          "first": "pd-local",
+          "local_ms": 74.96312799992211,
+          "remote_ms": 54.94215900000654,
+          "remote_minus_local_ms": -20.020968999915567
+        },
+        {
+          "pair": "load1-512-5",
+          "first": "pd-remote",
+          "local_ms": 71.27233999995042,
+          "remote_ms": 53.380718000084926,
+          "remote_minus_local_ms": -17.891621999865492
+        }
+      ]
+    },
+    {
+      "background_requests": 1,
+      "prompt_tokens": 8192,
+      "complete_pairs": 6,
+      "local_median_ms": 115.10352700008752,
+      "remote_median_ms": 105.41197549991921,
+      "mean_remote_minus_local_ms": -11.056215500047983,
+      "median_remote_minus_local_ms": -7.546024000134821,
+      "exploratory_paired_bootstrap_95pct_ms": [
+        -15.923388333400604,
+        -6.745869499998965
+      ],
+      "local_faster_pairs": 0,
+      "mean_difference_by_first_route": {
+        "pd-local": -6.600630666753204,
+        "pd-remote": -15.511800333342762
+      },
+      "pairs": [
+        {
+          "pair": "load1-8192-0",
+          "first": "pd-remote",
+          "local_ms": 117.27134900002056,
+          "remote_ms": 109.30357799998092,
+          "remote_minus_local_ms": -7.967771000039647
+        },
+        {
+          "pair": "load1-8192-1",
+          "first": "pd-remote",
+          "local_ms": 119.73806100002093,
+          "remote_ms": 102.11075700010497,
+          "remote_minus_local_ms": -17.627303999915966
+        },
+        {
+          "pair": "load1-8192-2",
+          "first": "pd-local",
+          "local_ms": 111.33736100009628,
+          "remote_ms": 105.01252299991393,
+          "remote_minus_local_ms": -6.324838000182353
+        },
+        {
+          "pair": "load1-8192-3",
+          "first": "pd-remote",
+          "local_ms": 123.26145399993038,
+          "remote_ms": 102.32112799985771,
+          "remote_minus_local_ms": -20.940326000072673
+        },
+        {
+          "pair": "load1-8192-4",
+          "first": "pd-local",
+          "local_ms": 112.63779299997623,
+          "remote_ms": 106.28501600012896,
+          "remote_minus_local_ms": -6.352776999847265
+        },
+        {
+          "pair": "load1-8192-5",
+          "first": "pd-local",
+          "local_ms": 112.93570500015448,
+          "remote_ms": 105.81142799992449,
+          "remote_minus_local_ms": -7.124277000229995
+        }
+      ]
+    },
+    {
+      "background_requests": 3,
+      "prompt_tokens": 512,
+      "complete_pairs": 6,
+      "local_median_ms": 74.10988699996324,
+      "remote_median_ms": 53.78448549993209,
+      "mean_remote_minus_local_ms": -21.02883433341655,
+      "median_remote_minus_local_ms": -19.170527000028414,
+      "exploratory_paired_bootstrap_95pct_ms": [
+        -25.1745690000386,
+        -18.09684833343302
+      ],
+      "local_faster_pairs": 0,
+      "mean_difference_by_first_route": {
+        "pd-local": -23.596642000105323,
+        "pd-remote": -18.461026666727776
+      },
+      "pairs": [
+        {
+          "pair": "load3-512-0",
+          "first": "pd-local",
+          "local_ms": 76.44894800000657,
+          "remote_ms": 54.71016999990752,
+          "remote_minus_local_ms": -21.738778000099046
+        },
+        {
+          "pair": "load3-512-1",
+          "first": "pd-local",
+          "local_ms": 84.51703800005816,
+          "remote_ms": 53.54388199998539,
+          "remote_minus_local_ms": -30.973156000072777
+        },
+        {
+          "pair": "load3-512-2",
+          "first": "pd-remote",
+          "local_ms": 72.30454799992003,
+          "remote_ms": 53.75038599981963,
+          "remote_minus_local_ms": -18.554162000100405
+        },
+        {
+          "pair": "load3-512-3",
+          "first": "pd-remote",
+          "local_ms": 69.62509200002387,
+          "remote_ms": 52.58306599989737,
+          "remote_minus_local_ms": -17.042026000126498
+        },
+        {
+          "pair": "load3-512-4",
+          "first": "pd-remote",
+          "local_ms": 75.91522600000644,
+          "remote_ms": 56.12833400005002,
+          "remote_minus_local_ms": -19.786891999956424
+        },
+        {
+          "pair": "load3-512-5",
+          "first": "pd-local",
+          "local_ms": 71.8965770001887,
+          "remote_ms": 53.81858500004455,
+          "remote_minus_local_ms": -18.07799200014415
+        }
+      ]
+    },
+    {
+      "background_requests": 3,
+      "prompt_tokens": 8192,
+      "complete_pairs": 6,
+      "local_median_ms": 112.062663500069,
+      "remote_median_ms": 104.05786100000114,
+      "mean_remote_minus_local_ms": -6.890132333296606,
+      "median_remote_minus_local_ms": -9.695455000041875,
+      "exploratory_paired_bootstrap_95pct_ms": [
+        -10.624751666644746,
+        -1.7320716666138953
+      ],
+      "local_faster_pairs": 1,
+      "mean_difference_by_first_route": {
+        "pd-local": -4.901082666644167,
+        "pd-remote": -8.879181999949045
+      },
+      "pairs": [
+        {
+          "pair": "load3-8192-0",
+          "first": "pd-local",
+          "local_ms": 106.6105489999245,
+          "remote_ms": 111.84516299999814,
+          "remote_minus_local_ms": 5.234614000073634
+        },
+        {
+          "pair": "load3-8192-1",
+          "first": "pd-remote",
+          "local_ms": 111.65120000009665,
+          "remote_ms": 101.10591300008309,
+          "remote_minus_local_ms": -10.545287000013559
+        },
+        {
+          "pair": "load3-8192-2",
+          "first": "pd-local",
+          "local_ms": 112.47412700004134,
+          "remote_ms": 103.62850399997114,
+          "remote_minus_local_ms": -8.84562300007019
+        },
+        {
+          "pair": "load3-8192-3",
+          "first": "pd-local",
+          "local_ms": 114.63877699998193,
+          "remote_ms": 103.54653800004598,
+          "remote_minus_local_ms": -11.092238999935944
+        },
+        {
+          "pair": "load3-8192-4",
+          "first": "pd-remote",
+          "local_ms": 118.66274599992721,
+          "remote_ms": 107.57618499997079,
+          "remote_minus_local_ms": -11.086560999956419
+        },
+        {
+          "pair": "load3-8192-5",
+          "first": "pd-remote",
+          "local_ms": 109.49291599990829,
+          "remote_ms": 104.48721800003113,
+          "remote_minus_local_ms": -5.005697999877157
+        }
+      ]
+    }
+  ],
+  "sign": "Positive remote-minus-local means local TTFT was lower.",
+  "limits": "Small-model forced-route fixture, small samples, exploratory intervals. No router policy gain or production-scale conclusion."
+}

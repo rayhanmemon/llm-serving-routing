@@ -1,0 +1,284 @@
+{
+  "apiVersion": "v1",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "name": "router-paired"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "data": {
+        "paired-client.py": "#!/usr/bin/env python3\n\"\"\"Client-side forced-route qualification and paired TTFT. No router policy test.\"\"\"\nimport argparse\nfrom concurrent.futures import ThreadPoolExecutor\nimport hashlib\nimport importlib.util\nimport json\nimport math\nfrom pathlib import Path\nimport random\nimport re\nimport time\nimport urllib.request\n\nHERE=Path(__file__).resolve().parent\n\ndef load(name,file):\n    spec=importlib.util.spec_from_file_location(name,HERE/file)\n    m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m\nw=load('worker','single-host-worker.py')\nv=load('validator','validate-single-host.py')\nCOUNT=w.COUNT;SIZE=w.SIZE\nRUNNING='vllm:num_requests_running';WAITING='vllm:num_requests_waiting'\n\n\ndef get(url):\n    with urllib.request.urlopen(url,timeout=15) as r:return r.read().decode()\n\n\ndef snapshot(config):\n    result={}\n    for role,url in config['metrics'].items():\n        text=get(url);values=w.metrics(text)\n        for metric in (RUNNING,WAITING):\n            matches=[float(line.rsplit(' ',1)[1]) for line in text.splitlines() if line.startswith(metric+'{') or line.startswith(metric+' ')]\n            if not matches:raise ValueError('Missing load gauge')\n            values[metric]=sum(matches)\n        if not all(math.isfinite(x) for x in values.values()):raise ValueError('Non-finite metric')\n        result[role]=values\n    return result\n\n\ndef evidence(config):return {role:json.loads(get(url)) for role,url in config['evidence'].items()}\n\n\ndef protocol_tables(log,transport):\n    lines=log.splitlines()\n    return ['\\n'.join(lines[i:i+8]) for i,line in enumerate(lines)\n            if 'remote memory read' in line and 'cuda' in line\n            and any('zero-copy' in row and transport in row for row in lines[i+1:i+8])]\n\n\ndef rdma_read_tables(log):\n    return [table for transport in ('rc_mlx5','dc_mlx5','rc_verbs')\n            for table in protocol_tables(log,transport)]\n\n\ndef check_transfer(before,after,route):\n    chosen=route.removeprefix('pd-') if route.startswith('pd-') else None\n    for role in before:\n        if any(after[role][m]!=before[role][m] for m in w.FAILURES):raise ValueError('Transfer failure')\n        if after[role][COUNT]-before[role][COUNT] != int(role==chosen):raise ValueError('Wrong transfer count or route')\n        change=after[role][SIZE]-before[role][SIZE]\n        if (change>0) != (role==chosen):raise ValueError('Wrong payload delta')\n\n\ndef check_nvlink(a,b,route,payload):\n    ids=a['local']['selected_gpus']\n    if len(ids)!=2 or len(set(ids))!=2:raise ValueError('Expected distinct local GPUs')\n    for role in ('local','remote'):\n        if a[role]['selected_gpus']!=b[role]['selected_gpus'] or a[role]['identity']!=b[role]['identity'] or not b[role]['processes_alive']:\n            raise ValueError('Worker identities changed')\n    x=v.parse_counters(a['local']['nvlink']['stdout'],ids)\n    y=v.parse_counters(b['local']['nvlink']['stdout'],ids)\n    delta={g:{k:y[g][k]-x[g][k] for k in ('Tx','Rx')} for g in ids}\n    if route=='pd-local':\n        if abs(delta[ids[0]]['Tx']-payload/1024)>18 or abs(delta[ids[1]]['Rx']-payload/1024)>18:\n            raise ValueError('Local KV payload did not cross NVLink')\n        if delta[ids[0]]['Rx'] or delta[ids[1]]['Tx']:raise ValueError('Unexpected reverse NVLink traffic')\n    elif any(x for d in delta.values() for x in d.values()):raise ValueError('Control/remote request unexpectedly used local NVLink')\n    return delta\n\n\ndef request(config,route,body):\n    headers={'Content-Type':'application/json'}\n    if route.startswith('pd-'):headers['x-prefiller-host-port']=config['prefill']\n    req=urllib.request.Request(config['endpoints'][route]+'/v1/completions',data=json.dumps(body).encode(),headers=headers)\n    start=time.perf_counter();first=None;events=[];usage=None;text='';done=False\n    with urllib.request.urlopen(req,timeout=90) as response:\n        if not body.get('stream'):\n            result=json.load(response)\n            return {'status':response.status,'body':result,'completion_seconds':time.perf_counter()-start}\n        for line in response:\n            if not line.startswith(b'data:'):continue\n            data=line[5:].strip()\n            if data==b'[DONE]':done=True;break\n            event=json.loads(data);now=time.perf_counter();events.append({'elapsed_seconds':now-start,'data':event})\n            if event.get('usage'):usage=event['usage']\n            for choice in event.get('choices',[]):\n                fragment=choice.get('text','')\n                if fragment and first is None:first=now\n                text+=fragment\n        elapsed=time.perf_counter()-start\n    if not done or first is None or usage is None:raise ValueError('Incomplete SSE stream')\n    if usage['prompt_tokens']!=len(body['prompt']) or usage['completion_tokens']!=body['max_tokens']:\n        raise ValueError('Stream token count mismatch')\n    return {'status':200,'ttft_seconds':first-start,'completion_seconds':elapsed,'usage':usage,'text':text,'events':events}\n\n\ndef idle(config):\n    for _ in range(50):\n        s=snapshot(config)\n        if all(not x[RUNNING] and not x[WAITING] for x in s.values()):return s\n        time.sleep(.2)\n    raise ValueError('Engines did not become idle')\n\n\ndef plan_pairs(cases,repeats=12,seed=21092026):\n    rng=random.Random(seed);pairs=[]\n    for level,n in [(0,repeats),(1,6),(3,6)]:\n        for tokens in (512,8192):\n            choices=[c for c in cases if c['input_tokens']==tokens]\n            orders=[['pd-local','pd-remote'],['pd-remote','pd-local']]*(n//2)\n            rng.shuffle(orders)\n            for i,order in enumerate(orders):\n                body=dict(choices[i%len(choices)]['request_body'])\n                body.update(max_tokens=32,stream=True,stream_options={'include_usage':True})\n                body.pop('logprobs',None);body.pop('return_token_ids',None)\n                pairs.append({'id':f'load{level}-{tokens}-{i}','load':level,'tokens':tokens,'order':order,'body':body})\n    return pairs\n\n\ndef run(config,suite,out,deadline):\n    out.mkdir(exist_ok=True)\n    raw=suite.read_bytes();plan=json.loads(raw)\n    if plan['model']!=w.MODEL or plan['revision']!=w.REVISION:raise ValueError('Wrong frozen model')\n    frozen={'suite_sha256':hashlib.sha256(raw).hexdigest(),'pairs':plan_pairs(plan['cases']),\n            'ttft_definition':'HTTP request start to first nonempty generated text fragment',\n            'scope':'Forced sidecar routes; no EPP policy comparison. Qwen3-0.6B eager.',\n            'load_method':'1 or 3 concurrent direct-local 1024-token requests; fresh cohort per foreground request; observed gauges retained.'}\n    w.write(out/'timing-plan.json',frozen)\n    baseline=evidence(config);rows=[];texts={}\n    local_ids=baseline['local']['selected_gpus'];remote_ids=baseline['remote']['selected_gpus']\n    if len(local_ids)!=2 or len(remote_ids)!=1 or len(set(local_ids+remote_ids))!=3:\n        raise ValueError('Three distinct physical GPUs required')\n    if not re.search(r'^GPU0\\s+X\\s+NV18',baseline['local']['topology']['stdout'],re.M):\n        raise ValueError('Local physical NVLink topology missing')\n    if len(plan['cases'])!=8:raise ValueError('Expected eight qualification cases')\n    idle(config);time.sleep(1);check_nvlink(baseline,evidence(config),'idle',0)\n    def left():\n        if time.time()+150>=deadline:raise TimeoutError('Collection reserve reached')\n    def measured(route,body,qualification=False):\n        left();before=snapshot(config);a=evidence(config) if qualification else None\n        response=request(config,route,body)\n        for _ in range(30):\n            after=snapshot(config)\n            try:check_transfer(before,after,route);break\n            except ValueError:\n                time.sleep(.1)\n        check_transfer(before,after,route)\n        row={'route':route,'request':body,'response':response,'before':before,'after':after}\n        if qualification:\n            b=evidence(config);payload=after['local' if route=='pd-local' else 'remote'][SIZE]-before['local' if route=='pd-local' else 'remote'][SIZE] if route.startswith('pd-') else 0\n            row.update(evidence_before=a,evidence_after=b,nvlink_delta=check_nvlink(a,b,route,payload))\n        return row\n    for case in plan['cases']:\n        for route in ('direct-local','direct-remote','pd-local','pd-remote'):\n            idle(config);row=measured(route,case['request_body'],True);row['case_id']=case['case_id'];rows.append(row)\n            w.write(out/'qualification.json',rows)\n            body=row['response']['body']\n            if body['usage']['prompt_tokens']!=case['input_tokens'] or body['usage']['completion_tokens']!=8:raise ValueError('Wrong qualification tokens')\n            texts.setdefault(case['case_id'],[]).append(body['choices'][0]['text'].strip())\n        if len(set(texts[case['case_id']]))!=1:raise ValueError('Cross-route parity failed: '+case['case_id'])\n    final=evidence(config)\n    if not protocol_tables(final['local']['protocol'],'cuda_ipc'):raise ValueError('Local engine READ not CUDA IPC')\n    if not rdma_read_tables(final['remote']['protocol']):raise ValueError('Remote engine READ not RDMA')\n    w.write(out/'qualified.json',{'requests':32,'cases':8,'evidence':final,'baseline':baseline})\n    print('Both transports and 8/8 four-route parity passed; starting warmups.',flush=True)\n    timings=[]\n    for tokens in (512,8192):\n        body=next(p['body'] for p in frozen['pairs'] if p['tokens']==tokens)\n        for route in ('pd-local','pd-remote'):\n            for i in range(2):\n                idle(config);row=measured(route,body);row.update(warmup=True,tokens=tokens,repeat=i);timings.append(row)\n                w.write(out/'timings.json',timings)\n    for pair in frozen['pairs']:\n        for route in pair['order']:\n            left();idle(config)\n            futures=[]\n            with ThreadPoolExecutor(max_workers=3) as pool:\n                if pair['load']:\n                    bg=dict(next(c['request_body'] for c in plan['cases'] if c['input_tokens']==512))\n                    bg.update(max_tokens=1024,stream=True,stream_options={'include_usage':True});bg.pop('logprobs',None);bg.pop('return_token_ids',None)\n                    futures=[pool.submit(request,config,'direct-local',bg) for _ in range(pair['load'])]\n                    for _ in range(100):\n                        observed=snapshot(config)\n                        if observed['local'][RUNNING]>=pair['load']:break\n                        if any(f.done() for f in futures):raise ValueError('Background cohort ended before measurement')\n                        time.sleep(.05)\n                    else:raise ValueError('Requested local load not observed')\n                row=measured(route,pair['body']);row.update(pair_id=pair['id'],load=pair['load'],tokens=pair['tokens'],warmup=False)\n                if futures and any(f.done() for f in futures):raise ValueError('Background cohort ended during foreground request')\n                row['background']=[f.result(timeout=90) for f in futures]\n                timings.append(row);w.write(out/'timings.json',timings)\n        print('Completed '+pair['id'],flush=True)\n    idle(config);end=evidence(config)\n    for role in ('local','remote'):\n        if baseline[role]['identity']!=end[role]['identity'] or not end[role]['processes_alive']:raise ValueError('Workers changed during timing')\n    w.write(out/'complete.json',{'complete':True,'timed_requests':sum(not x['warmup'] for x in timings),'warmups':sum(x['warmup'] for x in timings),'final_evidence':end})\n\n\nif __name__=='__main__':\n    p=argparse.ArgumentParser();p.add_argument('--config',type=Path,required=True);p.add_argument('--suite',type=Path,required=True);p.add_argument('--out',type=Path,default=Path('/results'));p.add_argument('--deadline',type=float,required=True);a=p.parse_args()\n    try:run(json.loads(a.config.read_text()),a.suite,a.out,a.deadline)\n    except Exception as e:\n        w.write(a.out/'failure.json',{'error':repr(e),'time':time.time()});raise\n",
+        "paired-engines.py": "#!/usr/bin/env python3\n\"\"\"Fixed small-model engines, with internal evidence endpoints for the client.\"\"\"\nimport importlib.util\nimport json\nimport os\nfrom pathlib import Path\nimport subprocess\nimport threading\nimport time\nimport urllib.request\nfrom http.server import BaseHTTPRequestHandler, ThreadingHTTPServer\n\nHERE = Path(__file__).resolve().parent\nspec = importlib.util.spec_from_file_location('worker', HERE/'single-host-worker.py')\nw = importlib.util.module_from_spec(spec); spec.loader.exec_module(w)\nOUT = Path('/results'); OUT.mkdir(exist_ok=True)\nPROCESSES = []\nROLE = os.environ['ENGINE_ROLE']\nROLES = [('prefill',0,8100,5600),('decode',1,8200,5601)] if ROLE == 'local' else [('decode',0,8200,5601)]\n\n\ndef evidence():\n    result = {}\n    for name, cmd in {\n        'identity': ['nvidia-smi','--query-compute-apps=pid,gpu_uuid,process_name','--format=csv,noheader'],\n        'gpu_list': ['nvidia-smi','-L'], 'topology': ['nvidia-smi','topo','-m'],\n        'nvlink': ['nvidia-smi','nvlink','-gt','d'],\n    }.items():\n        p = subprocess.run(cmd, capture_output=True, text=True, timeout=10)\n        result[name] = {'code':p.returncode,'stdout':p.stdout,'stderr':p.stderr}\n    result['protocol'] = (OUT/'decode.log').read_text(errors='replace')\n    result['processes_alive'] = all(p.poll() is None for p in PROCESSES)\n    result['selected_gpus'] = [json.loads((OUT/f'gpu{g}.json').read_text())['selected_gpu_uuid'] for _,g,_,_ in ROLES]\n    return result\n\n\ndef main():\n    # Leave UCX transport selection unrestricted, on both hosts.\n    for role,gpu,port,side in ROLES:\n        subprocess.run(['python3',str(HERE/'raw-ipc.py'),'inspect','--device',str(gpu),\n                        '--stem',str(OUT/f'inspect{gpu}'),'--session-id','paired',\n                        '--result',str(OUT/f'gpu{gpu}.json')],check=True)\n        kv = {'kv_connector':'NixlConnector','kv_role':'kv_both','kv_buffer_device':'cuda',\n              'kv_load_failure_policy':'fail','kv_connector_extra_config':{'backends':['UCX']}}\n        cmd=['vllm','serve',w.MODEL,'--revision',w.REVISION,'--tokenizer-revision',w.REVISION,\n             '--port',str(port),'--tensor-parallel-size','1','--dtype','bfloat16','--block-size','64',\n             '--enforce-eager','--max-model-len','16384','--max-num-seqs','4',\n             '--max-num-batched-tokens','8192','--gpu-memory-utilization','0.2',\n             '--no-enable-prefix-caching','--kv-transfer-config',json.dumps(kv)]\n        env={**os.environ,'CUDA_VISIBLE_DEVICES':str(gpu),'HF_HOME':'/cache',\n             'VLLM_NIXL_SIDE_CHANNEL_HOST':os.environ['POD_IP'],\n             'VLLM_NIXL_SIDE_CHANNEL_PORT':str(side),'UCX_PROTO_INFO':'y','UCX_LOG_LEVEL':'info'}\n        env.pop('UCX_TLS',None)\n        log=(OUT/(role+'.log')).open('w')\n        PROCESSES.append(subprocess.Popen(cmd,stdout=log,stderr=subprocess.STDOUT,env=env))\n    class Handler(BaseHTTPRequestHandler):\n        def do_GET(self):\n            try:\n                if self.path != '/evidence':\n                    self.send_error(404); return\n                body=json.dumps(evidence()).encode()\n                self.send_response(200); self.send_header('Content-Length',str(len(body))); self.end_headers(); self.wfile.write(body)\n            except Exception as e:\n                self.send_error(500,type(e).__name__)\n        def log_message(self,*args): pass\n    server=ThreadingHTTPServer(('0.0.0.0',8300),Handler)\n    threading.Thread(target=server.serve_forever,daemon=True).start()\n    while all(p.poll() is None for p in PROCESSES): time.sleep(2)\n    raise RuntimeError('An engine process exited')\n\n\nif __name__=='__main__': main()\n",
+        "raw-ipc.py": "#!/usr/bin/env python3\n\"\"\"Bounded raw CUDA IPC diagnostic; no PyTorch, NIXL, or performance claims.\n\nDriver ABI: https://docs.nvidia.com/cuda/archive/13.0.3/cuda-driver-api/group__CUDA__MEM.html\nUse unique stems. Copy metadata to the consumer and its done file back to producer.\nAn external timeout (115 seconds) must bound a driver call that hangs in native code.\n\"\"\"\nimport argparse\nimport base64\nimport ctypes as C\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport signal\nimport stat\nimport time\nimport uuid\n\n\nclass Handle(C.Structure):\n    _fields_ = [(\"reserved\", C.c_ubyte * 64)]\n\n\nclass UUID(C.Structure):\n    _fields_ = [(\"bytes\", C.c_ubyte * 16)]\n\n\nPTR = C.c_uint64\nP = C.POINTER\nSIGNATURES = {\n    \"cuInit\": [C.c_uint], \"cuDriverGetVersion\": [P(C.c_int)],\n    \"cuDeviceGetCount\": [P(C.c_int)], \"cuDeviceGet\": [P(C.c_int), C.c_int],\n    \"cuDeviceGetUuid_v2\": [P(UUID), C.c_int],\n    \"cuDevicePrimaryCtxRetain\": [P(C.c_void_p), C.c_int],\n    \"cuDevicePrimaryCtxRelease_v2\": [C.c_int], \"cuCtxSetCurrent\": [C.c_void_p],\n    \"cuCtxSynchronize\": [], \"cuMemAlloc_v2\": [P(PTR), C.c_size_t],\n    \"cuMemFree_v2\": [PTR], \"cuMemsetD8_v2\": [PTR, C.c_ubyte, C.c_size_t],\n    \"cuIpcGetMemHandle\": [P(Handle), PTR],\n    # CUipcMemHandle is passed BY VALUE, not as a pointer.\n    \"cuIpcOpenMemHandle\": [P(PTR), Handle, C.c_uint],\n    \"cuIpcCloseMemHandle\": [PTR],\n    \"cuMemcpyDtoD_v2\": [PTR, PTR, C.c_size_t],\n    \"cuMemcpyDtoH_v2\": [C.c_void_p, PTR, C.c_size_t],\n    \"cuGetErrorName\": [C.c_int, P(C.c_char_p)],\n    \"cuGetErrorString\": [C.c_int, P(C.c_char_p)],\n}\n\n\nclass Driver:\n    def __init__(self, path, result):\n        self.lib = C.CDLL(path)\n        self.result = result\n        for name, types in SIGNATURES.items():\n            fn = getattr(self.lib, name)\n            fn.argtypes, fn.restype = types, C.c_int\n\n    def call(self, name, *args):\n        self.result[\"stage\"] = name\n        code = getattr(self.lib, name)(*args)\n        event = {\"api\": name, \"code\": code}\n        if code:\n            for key, api in ((\"name\", \"cuGetErrorName\"), (\"description\", \"cuGetErrorString\")):\n                value = C.c_char_p()\n                if getattr(self.lib, api)(code, C.byref(value)) == 0 and value.value:\n                    event[key] = value.value.decode(errors=\"replace\")\n        self.result[\"calls\"].append(event)\n        if code:\n            raise RuntimeError(json.dumps(event))\n\n\ndef atomic_json(path, value):\n    path = Path(path)\n    path.parent.mkdir(parents=True, exist_ok=True)\n    tmp = path.with_name(path.name + f\".{os.getpid()}.tmp\")\n    tmp.write_text(json.dumps(value, indent=2) + \"\\n\")\n    os.replace(tmp, path)\n\n\ndef wait_packet(path, session, deadline):\n    while time.monotonic() < deadline:\n        try:\n            packet = json.loads(Path(path).read_text())\n        except FileNotFoundError:\n            time.sleep(0.1)\n            continue\n        if packet.get(\"session_id\") != session:\n            raise ValueError(\"packet session_id mismatch\")\n        return packet\n    raise TimeoutError(f\"waiting for {path}\")\n\n\ndef decode_handle(packet, session, size):\n    if packet.get(\"session_id\") != session or packet.get(\"bytes\") != size:\n        raise ValueError(\"metadata session_id or allocation size mismatch\")\n    if packet.get(\"fill_byte\") != 73:\n        raise ValueError(\"metadata fill_byte mismatch\")\n    raw = base64.b64decode(packet[\"handle_base64\"], validate=True)\n    if len(raw) != C.sizeof(Handle) or hashlib.sha256(raw).hexdigest() != packet[\"handle_sha256\"]:\n        raise ValueError(\"IPC handle length or SHA256 mismatch\")\n    return Handle.from_buffer_copy(raw)\n\n\ndef read_text(path):\n    try:\n        return Path(path).read_text().strip()\n    except OSError as exc:\n        return {\"unavailable\": str(exc)}\n\n\ndef environment():\n    namespaces = {}\n    for name in (\"ipc\", \"pid\", \"user\", \"mnt\", \"net\"):\n        try:\n            namespaces[name] = os.readlink(f\"/proc/self/ns/{name}\")\n        except OSError as exc:\n            namespaces[name] = {\"unavailable\": str(exc)}\n    devices = []\n    for path in sorted(Path(\"/dev\").glob(\"nvidia*\")):\n        info = path.stat()\n        devices.append({\"path\": str(path), \"mode\": stat.filemode(info.st_mode),\n                        \"uid\": info.st_uid, \"gid\": info.st_gid,\n                        \"major\": os.major(info.st_rdev), \"minor\": os.minor(info.st_rdev)})\n    return {\"pid\": os.getpid(), \"uid\": os.getuid(), \"euid\": os.geteuid(),\n            \"gid\": os.getgid(), \"groups\": os.getgroups(), \"namespaces\": namespaces,\n            \"device_nodes\": devices, \"kernel_nvidia_version\": read_text(\"/proc/driver/nvidia/version\"),\n            \"environment\": {key: os.environ.get(key) for key in\n                            (\"CUDA_VISIBLE_DEVICES\", \"NVIDIA_VISIBLE_DEVICES\", \"LD_LIBRARY_PATH\")}}\n\n\ndef parse_args(argv=None):\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"role\", choices=(\"producer\", \"consumer\", \"inspect\"))\n    parser.add_argument(\"--device\", type=int, required=True)\n    parser.add_argument(\"--stem\", required=True)\n    parser.add_argument(\"--session-id\", required=True)\n    parser.add_argument(\"--result\", required=True)\n    parser.add_argument(\"--timeout\", type=float, default=90)\n    parser.add_argument(\"--bytes\", type=int, default=2097152)\n    parser.add_argument(\"--libcuda\", default=\"libcuda.so.1\")\n    args = parser.parse_args(argv)\n    if not (0 < args.timeout <= 90) or not (0 < args.bytes <= 2097152) or args.device < 0 or not args.session_id:\n        parser.error(\"timeout must be in (0,90], bytes in [1,2097152], device >=0, session-id nonempty\")\n    return args\n\n\ndef run(args):\n    started = time.monotonic()\n    deadline = started + args.timeout\n    result = {\"role\": args.role, \"session_id\": args.session_id, \"device\": args.device,\n              \"bytes\": args.bytes, \"ok\": False, \"calls\": [], \"errors\": [], \"cleanup\": [],\n              \"libcuda_requested\": args.libcuda, \"stage\": \"environment\"}\n    driver = None\n    context, own, imported, device = C.c_void_p(), PTR(), PTR(), C.c_int()\n    retained = exported = safe_export_free = False\n    import_active = False\n    metadata = args.stem + \".metadata.json\"\n    done = args.stem + \".done.json\"\n\n    def timeout(signum, frame):\n        raise TimeoutError(\"probe deadline exceeded\")\n\n    def cleanup(name, *values):\n        try:\n            driver.call(name, *values)\n            result[\"cleanup\"].append({\"api\": name, \"ok\": True})\n            return True\n        except Exception as exc:\n            result[\"errors\"].append({\"stage\": name, \"cleanup\": True, \"error\": str(exc)})\n            return False\n\n    old_handler = signal.signal(signal.SIGALRM, timeout)\n    signal.setitimer(signal.ITIMER_REAL, args.timeout)\n    try:\n        result.update(environment())\n        result[\"stage\"] = \"load_libcuda\"\n        driver = Driver(args.libcuda, result)\n        maps = read_text(\"/proc/self/maps\")\n        result[\"loaded_libcuda_maps\"] = [line for line in maps.splitlines() if \"libcuda\" in line] if isinstance(maps, str) else maps\n        driver.call(\"cuInit\", 0)\n        version, count = C.c_int(), C.c_int()\n        driver.call(\"cuDriverGetVersion\", C.byref(version))\n        result[\"driver_version\"] = version.value\n        driver.call(\"cuDeviceGetCount\", C.byref(count))\n        result[\"visible_gpus\"] = []\n        for ordinal in range(count.value):\n            dev, identity = C.c_int(), UUID()\n            driver.call(\"cuDeviceGet\", C.byref(dev), ordinal)\n            driver.call(\"cuDeviceGetUuid_v2\", C.byref(identity), dev)\n            result[\"visible_gpus\"].append({\"ordinal\": ordinal, \"uuid\": \"GPU-\" + str(uuid.UUID(bytes=bytes(identity)))})\n        if args.device >= count.value:\n            raise ValueError(\"selected device is not visible\")\n        result[\"selected_gpu_uuid\"] = result[\"visible_gpus\"][args.device][\"uuid\"]\n        driver.call(\"cuDeviceGet\", C.byref(device), args.device)\n        if args.role == \"inspect\":\n            result[\"ok\"] = True\n            return 0\n        driver.call(\"cuDevicePrimaryCtxRetain\", C.byref(context), device)\n        retained = True\n        driver.call(\"cuCtxSetCurrent\", context)\n        driver.call(\"cuMemAlloc_v2\", C.byref(own), args.bytes)\n        result[\"allocation\"] = {\"api\": \"cuMemAlloc_v2\", \"pointer\": hex(own.value), \"bytes\": args.bytes}\n        if args.role == \"producer\":\n            if Path(metadata).exists() or Path(done).exists():\n                raise ValueError(\"producer requires a fresh stem\")\n            driver.call(\"cuMemsetD8_v2\", own, 73, args.bytes)\n            driver.call(\"cuCtxSynchronize\")\n            handle = Handle()\n            driver.call(\"cuIpcGetMemHandle\", C.byref(handle), own)\n            raw = bytes(handle)\n            packet = {\"session_id\": args.session_id, \"bytes\": args.bytes, \"fill_byte\": 73,\n                      \"handle_base64\": base64.b64encode(raw).decode(), \"handle_sha256\": hashlib.sha256(raw).hexdigest(),\n                      \"allocation\": result[\"allocation\"], \"producer_pid\": os.getpid(),\n                      \"producer_gpu_uuid\": result[\"selected_gpu_uuid\"]}\n            exported = True\n            atomic_json(metadata, packet)\n            result[\"stage\"] = \"wait_consumer_closed\"\n            ack = wait_packet(done, args.session_id, deadline)\n            if ack.get(\"import_closed\") is not True:\n                raise ValueError(\"consumer did not confirm no active import\")\n            safe_export_free = True\n            result[\"consumer_done\"] = ack\n            if ack.get(\"ok\") is not True:\n                raise RuntimeError(\"consumer reported failure\")\n        else:\n            result[\"stage\"] = \"wait_metadata\"\n            packet = wait_packet(metadata, args.session_id, deadline)\n            handle = decode_handle(packet, args.session_id, args.bytes)\n            result[\"producer_gpu_uuid\"] = packet[\"producer_gpu_uuid\"]\n            result[\"handle_sha256\"] = packet[\"handle_sha256\"]\n            driver.call(\"cuIpcOpenMemHandle\", C.byref(imported), handle, 1)\n            import_active = True\n            driver.call(\"cuMemcpyDtoD_v2\", own, imported, args.bytes)\n            driver.call(\"cuCtxSynchronize\")\n            host = (C.c_ubyte * args.bytes)()\n            driver.call(\"cuMemcpyDtoH_v2\", host, own, args.bytes)\n            actual = bytes(host)\n            result[\"verification\"] = {\"all_bytes_equal_73\": actual == bytes([73]) * args.bytes,\n                                      \"checksum_sum\": sum(actual), \"expected_sum\": 73 * args.bytes,\n                                      \"sha256\": hashlib.sha256(actual).hexdigest()}\n            if not result[\"verification\"][\"all_bytes_equal_73\"]:\n                raise ValueError(\"payload mismatch\")\n        result[\"ok\"] = True\n    except Exception as exc:\n        result[\"errors\"].append({\"stage\": result[\"stage\"], \"type\": type(exc).__name__, \"error\": str(exc)})\n    finally:\n        # Native hangs remain bounded by the coordinator's external timeout.\n        signal.setitimer(signal.ITIMER_REAL, 0)\n        if driver:\n            if import_active and cleanup(\"cuIpcCloseMemHandle\", imported):\n                import_active = False\n            if own.value and (not exported or safe_export_free):\n                cleanup(\"cuMemFree_v2\", own)\n            elif own.value:\n                result[\"errors\"].append({\"stage\": \"cleanup\", \"error\": \"consumer closure unconfirmed; exporter allocation retained until process exit\"})\n            if retained and (not exported or safe_export_free) and not import_active:\n                cleanup(\"cuDevicePrimaryCtxRelease_v2\", device)\n        result[\"ok\"] = result[\"ok\"] and not result[\"errors\"]\n        result[\"import_closed\"] = not import_active\n        result[\"elapsed_seconds\"] = time.monotonic() - started\n        signal.signal(signal.SIGALRM, old_handler)\n        atomic_json(args.result, result)\n        if args.role == \"consumer\" and not import_active:\n            atomic_json(done, {\"session_id\": args.session_id, \"ok\": result[\"ok\"], \"import_closed\": True})\n        print(json.dumps(result), flush=True)\n    return 0 if result[\"ok\"] else 1\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(run(parse_args()))\n",
+        "single-host-worker.py": "#!/usr/bin/env python3\n\"\"\"One-container, two-GPU qualification. Runs inside the owned test Pod only.\"\"\"\nimport argparse\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport re\nimport subprocess\nimport sys\nimport time\nimport urllib.request\n\nMODEL = 'Qwen/Qwen3-0.6B'\nREVISION = 'c1899de289a04d12100db370d81485cdf75e47ca'\nUCX_TLS = 'cuda_ipc,cuda_copy,sm,self,tcp'\nFAILURES = ('vllm:nixl_num_failed_transfers_total', 'vllm:nixl_num_failed_notifications_total',\n            'vllm:nixl_num_kv_expired_reqs_total')\nCOUNT = 'vllm:nixl_bytes_transferred_count'\nSIZE = 'vllm:nixl_bytes_transferred_sum'\n\n\ndef write(path, value):\n    path.parent.mkdir(parents=True, exist_ok=True)\n    tmp = path.with_suffix('.tmp')\n    tmp.write_text(json.dumps(value, indent=2) + '\\n')\n    tmp.replace(path)\n\n\ndef ipc_read_tables(log):\n    lines = log.splitlines()\n    return ['\\n'.join(lines[i:i+8]) for i, line in enumerate(lines)\n            if 'remote memory read' in line and 'cuda' in line\n            and any('cuda_ipc' in row and 'zero-copy' in row for row in lines[i+1:i+8])]\n\n\ndef metrics(text):\n    result = {}\n    for line in text.splitlines():\n        if not line.strip() or line.startswith('#'):\n            continue\n        name = line.split('{')[0].split()[0]\n        if name in (COUNT, SIZE, *FAILURES):\n            result[name] = result.get(name, 0) + float(line.rsplit(' ', 1)[1])\n    for name in (COUNT, SIZE, *FAILURES):\n        if name not in result:\n            raise RuntimeError('Missing metric ' + name)\n    return result\n\n\ndef prepare_suite(out):\n    import importlib.util\n    spec = importlib.util.spec_from_file_location('suite', Path(__file__).with_name('known-answer-suite.py'))\n    suite = importlib.util.module_from_spec(spec)\n    spec.loader.exec_module(suite)\n    suite.MODEL, suite.REVISION = MODEL, REVISION\n    suite.prepare(out, criterion='direct-parity')\n\n\ndef main(argv=None):\n    p = argparse.ArgumentParser()\n    p.add_argument('--out', type=Path, default=Path('/results'))\n    p.add_argument('--execute', action='store_true')\n    a = p.parse_args(argv)\n    if not a.execute:\n        print(json.dumps({'model': MODEL, 'revision': REVISION, 'gpus': 2,\n                          'ucx_tls': UCX_TLS, 'cloud_actions': False}))\n        return\n    out = a.out\n    out.mkdir(parents=True, exist_ok=True)\n    code = Path(__file__).resolve().parent\n    processes = []\n    opened = []\n    deadline = time.monotonic() + 2100\n\n    def phase(name):\n        write(out/'status.json', {'phase': name, 'time': time.time()})\n    def remaining():\n        left = deadline - time.monotonic()\n        if left <= 0:\n            raise TimeoutError('Worker deadline reached')\n        return left\n    def command(cmd, name, timeout=30, check=True):\n        r = subprocess.run(cmd, capture_output=True, text=True,\n                           timeout=min(timeout, remaining()))\n        (out/(name+'.stdout')).write_text(r.stdout)\n        (out/(name+'.stderr')).write_text(r.stderr)\n        if check:\n            r.check_returncode()\n        return r\n    def start(cmd, name, gpu):\n        f = (out/(name+'.log')).open('w')\n        opened.append(f)\n        env = {**os.environ, 'CUDA_VISIBLE_DEVICES': str(gpu), 'HF_HOME': '/cache',\n               'UCX_TLS': UCX_TLS, 'UCX_PROTO_INFO': 'y', 'UCX_LOG_LEVEL': 'info',\n               'UCX_NET_DEVICES': 'all'}\n        proc = subprocess.Popen(cmd, stdout=f, stderr=subprocess.STDOUT, env=env)\n        processes.append(proc)\n        return proc\n    def get(url):\n        with urllib.request.urlopen(url, timeout=min(10, remaining())) as response:\n            return response.read().decode()\n    def wait_ready(url, proc, seconds=900):\n        end = time.monotonic() + min(seconds, remaining())\n        while time.monotonic() < end:\n            if proc.poll() is not None:\n                raise RuntimeError('Server process exited: ' + str(proc.returncode))\n            try:\n                get(url)\n                return\n            except Exception:\n                time.sleep(2)\n        raise TimeoutError('Readiness: ' + url)\n    def snap():\n        return metrics(get('http://127.0.0.1:8200/metrics'))\n    def counters(name):\n        return command(['nvidia-smi','nvlink','-gt','d'], name, check=False)\n\n    try:\n        phase('topology')\n        command(['nvidia-smi','-L'], 'gpu-identities')\n        command(['nvidia-smi','topo','-m'], 'gpu-topology')\n        command(['nvidia-smi','nvlink','-s'], 'nvlink-status')\n        # This small helper tells CUDA's selected GPU identities, not nvidia-smi's host indexes.\n        for gpu in (0, 1):\n            command([sys.executable,str(code/'raw-ipc.py'),'inspect','--device',str(gpu),\n                     '--stem',str(out/('inspect'+str(gpu))),'--session-id','single-host',\n                     '--result',str(out/('gpu'+str(gpu)+'.json'))], 'inspect'+str(gpu))\n        ids = [json.loads((out/('gpu'+str(g)+'.json')).read_text())['selected_gpu_uuid'] for g in (0,1)]\n        if len(set(ids)) != 2:\n            raise RuntimeError('Workers must use different physical GPUs')\n        write(out/'selected-gpus.json', ids)\n        phase('raw-cuda-ipc')\n        stem = str(out/'raw')\n        common = ['--device','0','--stem',stem,'--session-id','single-host','--timeout','90']\n        producer = start([sys.executable,str(code/'raw-ipc.py'),'producer',*common,\n                          '--result',str(out/'raw-producer.json')], 'raw-producer', 0)\n        consumer = start([sys.executable,str(code/'raw-ipc.py'),'consumer',*common,\n                          '--result',str(out/'raw-consumer.json')], 'raw-consumer', 1)\n        if consumer.wait(timeout=110) or producer.wait(timeout=10):\n            raise RuntimeError('Raw CUDA IPC failed')\n        phase('nixl-read')\n        producer = start([sys.executable,str(code/'rdma-read-probe.py'),'producer','--out',\n                          str(out/'nixl-producer'),'--lifetime','240'], 'nixl-producer', 0)\n        wait_ready('http://127.0.0.1:8123/metadata', producer, 120)\n        consumer = start([sys.executable,str(code/'rdma-read-probe.py'),'consumer','--out',\n                          str(out/'nixl-consumer'),'--peer','http://127.0.0.1:8123'], 'nixl-consumer', 1)\n        if consumer.wait(timeout=180):\n            raise RuntimeError('NIXL READ failed')\n        if not ipc_read_tables((out/'nixl-consumer.log').read_text()):\n            raise RuntimeError('Raw NIXL READ did not select CUDA IPC zero-copy')\n        producer.terminate()\n        producer.wait(timeout=10)\n        phase('model-startup')\n        servers = []\n        for role, gpu, port, side in [('prefill',0,8100,5600),('decode',1,8200,5601)]:\n            kv = json.dumps({'kv_connector':'NixlConnector','kv_role':'kv_both',\n                             'kv_buffer_device':'cuda','kv_load_failure_policy':'fail',\n                             'kv_connector_extra_config':{'backends':['UCX']}})\n            cmd = ['env','VLLM_NIXL_SIDE_CHANNEL_HOST=127.0.0.1',\n                   'VLLM_NIXL_SIDE_CHANNEL_PORT='+str(side),'vllm','serve',MODEL,\n                   '--revision',REVISION,'--tokenizer-revision',REVISION,'--port',str(port),\n                   '--tensor-parallel-size','1','--dtype','bfloat16','--block-size','64',\n                   '--enforce-eager','--max-model-len','16384','--max-num-seqs','4',\n                   '--max-num-batched-tokens','8192','--gpu-memory-utilization','0.2',\n                   '--no-enable-prefix-caching','--kv-transfer-config',kv]\n            servers.append(start(cmd, role, gpu))\n        for proc, port in zip(servers, (8100,8200)):\n            wait_ready(f'http://127.0.0.1:{port}/v1/models', proc)\n        # Use the same prospective case-generation method with this model's pinned tokenizer.\n        prepare_suite(out/'suite')\n        plan = json.loads((out/'suite/suite.json').read_text())\n        write(out/'scope.json', {'model':MODEL,'revision':REVISION,'routes':['direct','pd'],\n                                'criterion':'same normalized output per case; gold separately reported',\n                                'scope':'local transport qualification, no remote or router-policy claim'})\n        processes_before = command(['nvidia-smi','--query-compute-apps=pid,gpu_uuid,process_name',\n                                    '--format=csv,noheader'], 'compute-processes-before').stdout\n        prefill_before = metrics(get('http://127.0.0.1:8100/metrics'))\n        phase('real-pd')\n        rows = []\n        counters('nvlink-idle-before')\n        time.sleep(1)\n        counters('nvlink-idle-after')\n        for case in plan['cases']:\n            pair = {}\n            for route, port in [('direct',8200),('pd',8000)]:\n                before = snap()\n                headers = {'Content-Type':'application/json'}\n                if route == 'pd':\n                    headers['x-prefiller-host-port'] = '127.0.0.1:8100'\n                label = case['case_id']+'-'+route\n                counters('nvlink-'+label+'-before')\n                req = urllib.request.Request(f'http://127.0.0.1:{port}/v1/completions',\n                                             data=json.dumps(case['request_body']).encode(),headers=headers)\n                start_at = time.monotonic()\n                with urllib.request.urlopen(req,timeout=90) as response:\n                    body = json.load(response)\n                    status = response.status\n                elapsed = time.monotonic()-start_at\n                counters('nvlink-'+label+'-after')\n                for _ in range(30):\n                    after = snap()\n                    if after[COUNT]-before[COUNT] == int(route=='pd'):\n                        break\n                    time.sleep(.2)\n                row = {'case_id':case['case_id'],'route':route,'request':case['request_body'],\n                       'status':status,'response':body,'completion_seconds':elapsed,\n                       'before':before,'after':after,'gold':case['gold_text']}\n                rows.append(row)\n                write(out/'responses.json',rows)\n                assert status == 200\n                assert body['usage']['prompt_tokens'] == case['input_tokens']\n                assert body['usage']['completion_tokens'] == len(case['gold_token_ids'])\n                assert after[COUNT]-before[COUNT] == int(route=='pd')\n                assert all(after[x] == before[x] for x in FAILURES)\n                assert after[SIZE] > before[SIZE] if route=='pd' else after[SIZE] == before[SIZE]\n                pair[route] = body['choices'][0]['text'].strip()\n            assert pair['direct'] == pair['pd'], 'Output mismatch: '+case['case_id']\n        prefill_after = metrics(get('http://127.0.0.1:8100/metrics'))\n        write(out/'prefill-metrics.json', {'before':prefill_before,'after':prefill_after})\n        assert all(prefill_before[x] == prefill_after[x] for x in FAILURES)\n        processes_after = command(['nvidia-smi','--query-compute-apps=pid,gpu_uuid,process_name',\n                                   '--format=csv,noheader'], 'compute-processes-after').stdout\n        assert sorted(processes_before.splitlines()) == sorted(processes_after.splitlines()), 'GPU processes changed'\n        assert all(identity in processes_after for identity in ids), 'GPU worker identity missing'\n        tables = ipc_read_tables((out/'decode.log').read_text())\n        if not tables:\n            raise RuntimeError('Real KV READ did not select CUDA IPC zero-copy')\n        write(out/'worker-result.json',{'inference_and_cuda_ipc_passed':True,'requests':len(rows),\n               'pd_transfers':8,'physical_gpu_uuids':ids,'selected_protocol_tables':tables,\n               'nvlink_hardware_counters_require_review':True,\n               'limits':'No TTFT benchmark, remote comparison, or policy gain.'})\n        phase('evidence-ready')\n    except Exception as error:\n        write(out/'worker-failure.json',{'error':repr(error),'time':time.time()})\n        phase('failed-evidence-ready')\n    finally:\n        for proc in reversed(processes):\n            if proc.poll() is None:\n                proc.terminate()\n                try:\n                    proc.wait(timeout=10)\n                except subprocess.TimeoutExpired:\n                    proc.kill()\n                    proc.wait()\n        for f in opened:\n            f.close()\n        # Leave the artifact volume available until the external collector finishes.\n        (out/'DONE').write_text('Collection required; see worker-result or worker-failure.')\n        time.sleep(7200)\n\n\nif __name__ == '__main__':\n    main()\n",
+        "validate-single-host.py": "#!/usr/bin/env python3\n\"\"\"Independently validate saved single-host real P/D and NVLink evidence.\"\"\"\nimport argparse\nimport hashlib\nimport importlib.util\nimport json\nfrom pathlib import Path\nimport re\n\nSPEC=importlib.util.spec_from_file_location('worker',Path(__file__).with_name('single-host-worker.py'))\nworker=importlib.util.module_from_spec(SPEC)\nSPEC.loader.exec_module(worker)\n\n\ndef require(ok,message):\n    if not ok:raise ValueError(message)\n\n\ndef parse_counters(text,ids):\n    result={};gpu=None\n    for line in text.splitlines():\n        match=re.search(r'UUID: (GPU-[^)]+)',line)\n        if match:\n            gpu=match[1];result[gpu]={'Tx':{},'Rx':{}}\n        match=re.search(r'Link (\\d+): Data (Tx|Rx): (\\d+) KiB',line)\n        if match:\n            require(gpu is not None,'Counter lacks GPU identity')\n            link,direction,value=match.groups()\n            require(int(link) not in result[gpu][direction],'Duplicate link counter')\n            result[gpu][direction][int(link)]=int(value)\n    require(set(result)==set(ids),'Unexpected GPU counter identities')\n    require(all(set(d[k])==set(range(18)) for d in result.values() for k in ['Tx','Rx']),\n            'Expected all 18 NVLink counters on each selected H200')\n    return {g:{k:sum(v.values()) for k,v in d.items()} for g,d in result.items()}\n\n\ndef validate(folder):\n    read=lambda name:json.loads((folder/name).read_text())\n    ids=read('selected-gpus.json');require(len(ids)==2 and len(set(ids))==2,'Two distinct GPUs required')\n    topology=(folder/'gpu-topology.stdout').read_text()\n    require(re.search(r'^GPU0\\s+X\\s+NV18',topology,re.M) and\n            re.search(r'^GPU1\\s+NV18\\s+X',topology,re.M),'NV18 physical pairing missing')\n    for index,role in enumerate(['producer','consumer']):\n        raw=read('raw-'+role+'.json')\n        require(raw['ok'] and raw['selected_gpu_uuid']==ids[index],'Raw CUDA control or identity failed')\n    transfers=read('nixl-consumer/transfers.json')\n    require(len(transfers)==9 and all(x['all_bytes_equal_73'] and x['checksum']==73*x['bytes'] for x in transfers),\n            'NIXL byte checks failed')\n    require(worker.ipc_read_tables((folder/'nixl-consumer.log').read_text()),'Raw NIXL data lane was not CUDA IPC')\n    tables=worker.ipc_read_tables((folder/'decode.log').read_text())\n    require(tables,'Real KV READ data lane was not CUDA IPC')\n    before=(folder/'compute-processes-before.stdout').read_text().splitlines()\n    after=(folder/'compute-processes-after.stdout').read_text().splitlines()\n    require(sorted(before)==sorted(after) and all(any(g in line for line in after) for g in ids),\n            'GPU processes changed or are missing')\n    scope=read('scope.json');require(scope['routes']==['direct','pd'],'Wrong local execution scope')\n    raw_plan=(folder/'suite/suite.json').read_bytes()\n    require(hashlib.sha256(raw_plan).hexdigest()==(folder/'suite/suite.sha256').read_text().split()[0],\n            'Frozen suite hash mismatch')\n    plan=json.loads(raw_plan);cases={c['case_id']:c for c in plan['cases']}\n    require(plan['model']==scope['model']==worker.MODEL,'Wrong model')\n    require(plan['revision']==scope['revision']==worker.REVISION,'Wrong model revision')\n    rows=read('responses.json')\n    expected={(case,route) for case in cases for route in scope['routes']}\n    require(len(cases)==8 and len(rows)==16 and {(x['case_id'],x['route']) for x in rows}==expected,\n            'Expected eight cases on each of two routes')\n    def delta(name):\n        a=parse_counters((folder/(name+'-before.stdout')).read_text(),ids)\n        b=parse_counters((folder/(name+'-after.stdout')).read_text(),ids)\n        return {g:{k:b[g][k]-a[g][k] for k in ['Tx','Rx']} for g in ids}\n    idle=delta('nvlink-idle');require(all(v==0 for d in idle.values() for v in d.values()),'Idle NVLink traffic')\n    results=[];texts={};gold=0\n    for row in rows:\n        case=cases[row['case_id']];pd=row['route']=='pd';a,b=row['before'],row['after'];body=row['response']\n        require(row['request']==case['request_body'] and row['status']==200,'Request mismatch or failure')\n        require(body['usage']['prompt_tokens']==case['input_tokens'] and\n                body['usage']['completion_tokens']==len(case['gold_token_ids']),'Wrong token counts')\n        require(b[worker.COUNT]-a[worker.COUNT]==int(pd),'Wrong transfer count')\n        require(all(b[x]==a[x] for x in worker.FAILURES),'Transfer error counter changed')\n        text=body['choices'][0]['text'].strip();texts.setdefault(row['case_id'],{})[row['route']]=text\n        gold+=text==case['gold_text']\n        payload=b[worker.SIZE]-a[worker.SIZE]\n        change=delta('nvlink-'+row['case_id']+'-'+row['route'])\n        if pd:\n            # Each of 18 integer-KiB counters can contribute <1 KiB rounding\n            # error when differencing two samples. This is not a fitted tolerance.\n            require(payload>0 and abs(change[ids[0]]['Tx']-payload/1024)<=18 and\n                    abs(change[ids[1]]['Rx']-payload/1024)<=18,'NVLink bytes do not match the KV payload')\n            require(change[ids[0]]['Rx']==0 and change[ids[1]]['Tx']==0,'Unexpected reverse NVLink data')\n        else:\n            require(payload==0 and all(v==0 for d in change.values() for v in d.values()),'Direct control moved peer data')\n        results.append({'case':row['case_id'],'route':row['route'],'prompt_tokens':case['input_tokens'],\n                        'kv_bytes':payload,'nvlink_prefill_tx_kib':change[ids[0]]['Tx'],\n                        'nvlink_decode_rx_kib':change[ids[1]]['Rx']})\n    require(all(d['direct']==d['pd'] for d in texts.values()),'Direct/P/D output mismatch')\n    pref=read('prefill-metrics.json')\n    require(all(pref['before'][x]==pref['after'][x] for x in worker.FAILURES),'Prefill errors changed')\n    return {'nvlink_verified':True,'requests':16,'matched_cases':8,'pd_transfers':8,\n            'gold_matches':gold,'physical_gpu_uuids':ids,'protocol_tables':tables,\n            'idle_delta':idle,'request_evidence':results,'rounding_tolerance_kib':18,\n            'scope':'Qwen3-0.6B eager, shared two-GPU container, pinned llm-d sidecar. No remote TTFT or router-policy gain.'}\n\n\nif __name__=='__main__':\n    parser=argparse.ArgumentParser();parser.add_argument('--evidence',type=Path,required=True);parser.add_argument('--out',type=Path,required=True)\n    args=parser.parse_args();result=validate(args.evidence);args.out.write_text(json.dumps(result,indent=2)+'\\n')\n    print('PASS: 16 requests, 8 matching cases, real KV payload verified on NVLink; gold '+str(result['gold_matches'])+'/16')\n"
+      },
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "experiment-code",
+        "namespace": "router-paired"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "local",
+        "namespace": "router-paired"
+      },
+      "spec": {
+        "activeDeadlineSeconds": 3600,
+        "automountServiceAccountToken": false,
+        "containers": [
+          {
+            "command": [
+              "python3",
+              "-u",
+              "/probe/paired-engines.py"
+            ],
+            "env": [
+              {
+                "name": "ENGINE_ROLE",
+                "value": "local"
+              },
+              {
+                "name": "POD_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "fieldPath": "status.podIP"
+                  }
+                }
+              }
+            ],
+            "image": "docker.io/vllm/vllm-openai:v0.26.0@sha256:770fe65b2c73ee74a5c42165cf3433de4048cc2cd9c57a937ca4e35aba5aa87b",
+            "name": "engines",
+            "resources": {
+              "limits": {
+                "cpu": "24",
+                "memory": "96Gi",
+                "nvidia.com/gpu": "2"
+              },
+              "requests": {
+                "cpu": "12",
+                "memory": "64Gi",
+                "nvidia.com/gpu": "2"
+              }
+            },
+            "securityContext": {
+              "capabilities": {
+                "add": [
+                  "IPC_LOCK"
+                ]
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/probe",
+                "name": "code",
+                "readOnly": true
+              },
+              {
+                "mountPath": "/results",
+                "name": "results"
+              },
+              {
+                "mountPath": "/cache",
+                "name": "cache"
+              },
+              {
+                "mountPath": "/dev/shm",
+                "name": "shm"
+              }
+            ]
+          },
+          {
+            "args": [
+              "--port=8000",
+              "--model-server-port=8200",
+              "--kv-connector=nixlv2",
+              "--secure-proxy=false",
+              "--zap-log-level=4"
+            ],
+            "image": "ghcr.io/llm-d/llm-d-router-disagg-sidecar:v0.10.0@sha256:1344adff65f96f76fc00c6003a1c63c1e9bb70f3628307f61f748a89a265b260",
+            "name": "routing-proxy",
+            "resources": {
+              "limits": {
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "250m",
+                "memory": "256Mi"
+              }
+            },
+            "securityContext": {
+              "allowPrivilegeEscalation": false,
+              "runAsNonRoot": true
+            }
+          }
+        ],
+        "nodeSelector": {
+          "kubernetes.io/hostname": "computeinstance-u00v7m3sp7w6vk13be"
+        },
+        "restartPolicy": "Never",
+        "volumes": [
+          {
+            "configMap": {
+              "name": "experiment-code"
+            },
+            "name": "code"
+          },
+          {
+            "emptyDir": {
+              "sizeLimit": "8Gi"
+            },
+            "name": "results"
+          },
+          {
+            "emptyDir": {},
+            "name": "cache"
+          },
+          {
+            "emptyDir": {
+              "medium": "Memory",
+              "sizeLimit": "16Gi"
+            },
+            "name": "shm"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "remote",
+        "namespace": "router-paired"
+      },
+      "spec": {
+        "activeDeadlineSeconds": 3600,
+        "automountServiceAccountToken": false,
+        "containers": [
+          {
+            "command": [
+              "python3",
+              "-u",
+              "/probe/paired-engines.py"
+            ],
+            "env": [
+              {
+                "name": "ENGINE_ROLE",
+                "value": "remote"
+              },
+              {
+                "name": "POD_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "fieldPath": "status.podIP"
+                  }
+                }
+              }
+            ],
+            "image": "docker.io/vllm/vllm-openai:v0.26.0@sha256:770fe65b2c73ee74a5c42165cf3433de4048cc2cd9c57a937ca4e35aba5aa87b",
+            "name": "engines",
+            "resources": {
+              "limits": {
+                "cpu": "24",
+                "memory": "96Gi",
+                "nvidia.com/gpu": "1"
+              },
+              "requests": {
+                "cpu": "12",
+                "memory": "64Gi",
+                "nvidia.com/gpu": "1"
+              }
+            },
+            "securityContext": {
+              "capabilities": {
+                "add": [
+                  "IPC_LOCK"
+                ]
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/probe",
+                "name": "code",
+                "readOnly": true
+              },
+              {
+                "mountPath": "/results",
+                "name": "results"
+              },
+              {
+                "mountPath": "/cache",
+                "name": "cache"
+              },
+              {
+                "mountPath": "/dev/shm",
+                "name": "shm"
+              }
+            ]
+          },
+          {
+            "args": [
+              "--port=8000",
+              "--model-server-port=8200",
+              "--kv-connector=nixlv2",
+              "--secure-proxy=false",
+              "--zap-log-level=4"
+            ],
+            "image": "ghcr.io/llm-d/llm-d-router-disagg-sidecar:v0.10.0@sha256:1344adff65f96f76fc00c6003a1c63c1e9bb70f3628307f61f748a89a265b260",
+            "name": "routing-proxy",
+            "resources": {
+              "limits": {
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "250m",
+                "memory": "256Mi"
+              }
+            },
+            "securityContext": {
+              "allowPrivilegeEscalation": false,
+              "runAsNonRoot": true
+            }
+          }
+        ],
+        "nodeSelector": {
+          "kubernetes.io/hostname": "computeinstance-u00ne5h345hckjcscp"
+        },
+        "restartPolicy": "Never",
+        "volumes": [
+          {
+            "configMap": {
+              "name": "experiment-code"
+            },
+            "name": "code"
+          },
+          {
+            "emptyDir": {
+              "sizeLimit": "8Gi"
+            },
+            "name": "results"
+          },
+          {
+            "emptyDir": {},
+            "name": "cache"
+          },
+          {
+            "emptyDir": {
+              "medium": "Memory",
+              "sizeLimit": "16Gi"
+            },
+            "name": "shm"
+          }
+        ]
+      }
+    }
+  ],
+  "kind": "List"
+}
