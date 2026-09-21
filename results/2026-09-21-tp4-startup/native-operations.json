@@ -1,0 +1,62 @@
+{
+  "computeinstance-u00zrhytya9xw84jrj-operations.json": {
+    "operations": [
+      {
+        "id": "computeoperation-u00tp2fw6yn57he7jp",
+        "description": "Delete Instance",
+        "created_at": "2026-09-21T17:57:02.182180Z",
+        "finished_at": "2026-09-21T17:58:45.343485Z",
+        "resource_id": "computeinstance-u00zrhytya9xw84jrj",
+        "status": {},
+        "progress_tracker": {
+          "description": "Deleting instance",
+          "started_at": "2026-09-21T17:57:02.182180Z",
+          "finished_at": "2026-09-21T17:58:45.343485Z"
+        }
+      },
+      {
+        "id": "computeoperation-u00qa97z23j0smcxea",
+        "description": "Create Instance",
+        "created_at": "2026-09-21T17:33:15.448737Z",
+        "finished_at": "2026-09-21T17:33:52.727500Z",
+        "resource_id": "computeinstance-u00zrhytya9xw84jrj",
+        "status": {},
+        "progress_tracker": {
+          "description": "Starting instance",
+          "started_at": "2026-09-21T17:33:15.448737Z",
+          "finished_at": "2026-09-21T17:33:52.727500Z"
+        }
+      }
+    ]
+  },
+  "computeinstance-u00eapgv7e4dmjb6xz-operations.json": {
+    "operations": [
+      {
+        "id": "computeoperation-u00f6wnz8v4zf6ypn9",
+        "description": "Delete Instance",
+        "created_at": "2026-09-21T17:56:41.318621Z",
+        "finished_at": "2026-09-21T17:58:44.420808Z",
+        "resource_id": "computeinstance-u00eapgv7e4dmjb6xz",
+        "status": {},
+        "progress_tracker": {
+          "description": "Deleting instance",
+          "started_at": "2026-09-21T17:56:41.318621Z",
+          "finished_at": "2026-09-21T17:58:44.420808Z"
+        }
+      },
+      {
+        "id": "computeoperation-u00cvannkvefze6yz4",
+        "description": "Create Instance",
+        "created_at": "2026-09-21T17:36:38.653301Z",
+        "finished_at": "2026-09-21T17:37:47.109776Z",
+        "resource_id": "computeinstance-u00eapgv7e4dmjb6xz",
+        "status": {},
+        "progress_tracker": {
+          "description": "Starting instance",
+          "started_at": "2026-09-21T17:36:38.653301Z",
+          "finished_at": "2026-09-21T17:37:47.109776Z"
+        }
+      }
+    ]
+  }
+}

@@ -25,6 +25,8 @@ def main():
     commands = settings.engine_specs(config, os.environ['ENGINE_ROLE'], os.environ['POD_IP'])
     out = Path('/results')
     out.mkdir(exist_ok=True)
+    # Use the installed parser before incurring a large model download.
+    subprocess.run(['python3',str(HERE/'validate-tp4-args.py'),'--config',str(args.config)],check=True)
     # One download per Pod; both local instances share the same immutable cache.
     from huggingface_hub import snapshot_download
     snapshot_download(repo_id=config['model'], revision=config['revision'],
@@ -109,4 +111,17 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except BaseException as error:
+        import traceback
+        out=Path('/results');out.mkdir(exist_ok=True)
+        (out/'engine-failure.json').write_text(json.dumps({'error':repr(error)})+'\n')
+        traceback.print_exc()
+        for path in out.glob('*.log'):
+            print('\n'+path.name+'\n'+path.read_text(errors='replace')[-16000:],flush=True)
+        signal.signal(signal.SIGTERM,signal.SIG_DFL)
+        signal.signal(signal.SIGINT,signal.SIG_DFL)
+        # Keep the evidence volume readable until the controller collects it.
+        # The independent cloud/session deadline still bounds VM lifetime.
+        while True:time.sleep(5)

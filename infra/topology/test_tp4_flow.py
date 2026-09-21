@@ -70,9 +70,12 @@ class TP4FlowTests(unittest.TestCase):
         self.assertEqual(doc['items'][1]['spec']['containers'][0]['command'],['sleep','8000'])
 
     def test_quota_envelope_covers_worst_case_runtime(self):
-        policy=s.pilot.PROFILE_POLICIES[s.PROFILE]
-        self.assertLess(float(policy['hourly_rate_usd_pretax'])*policy['deletion_target_seconds']/3600,100)
-        self.assertLess(policy['cleanup_start_seconds'],policy['deletion_target_seconds'])
+        for profile in s.PROFILES:
+            policy=s.pilot.PROFILE_POLICIES[profile]
+            maximum=float(policy['hourly_rate_usd_pretax'])*policy['deletion_target_seconds']/3600
+            self.assertLess(maximum,float(policy['attempt_admission_usd_pretax']))
+            self.assertLessEqual(float(policy['attempt_admission_usd_pretax']),100)
+            self.assertLess(policy['cleanup_start_seconds'],policy['deletion_target_seconds'])
 
     def test_targeted_allocation_uses_resources_not_incomplete_outputs(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -1,0 +1,22 @@
+{
+  "native_vllm_parser_passed": true,
+  "full_http_rehearsal_passed": true,
+  "manifests_server_validated": true,
+  "request_configmap_roundtrip": true,
+  "staged_controller_rehearsed": true,
+  "cloud_actions": false,
+  "sha256": {
+    "config.json": "3730eaefb0e9b36119683b24bdf33527662167866376fcbb26f77270827b5dfa",
+    "suite.json.gz": "548b39c99db7cbad801fd274f84a7b317bca2b16ed9e8228ab624cbe598258ee",
+    "tp4-config.py": "44407c90b6dcb4895c2092ee1bbf7bd3e9b0f05c9b70ee938d7d1f6a101884a9",
+    "tp4-engines.py": "7331405ec59e485cd29bba1f87aea8fb1f4f24a7b42cfb048a57624477553ec6",
+    "tp4-client.py": "4becd048d606f3c7f4137c3f7f0c6d863cb17f5d32637ade4f3f66e0e68e19df",
+    "tp4-evidence.py": "226e5e6a310f35b5bd267080369c88ad8368621f7a823cb8591c33939c65926f",
+    "validate-tp4-args.py": "efffe8e4a01dc8280c0f1e4b31c4c9053a590deda93153ee2d1aec14aec4804e",
+    "run-tp4-staged.py": "c834e08a1f3e2f5f0d6536e9c5c92fe50239db72060a326468eefe03303aea7f",
+    "run-paired-hosts.py": "0fc50deb061883188fe912af6ba1b585672820d69b8f97422d4ee0bff77141b4",
+    "pilot-session.py": "c67928528359abb527e6e6521ded583236d6bcd27a0f8e151cac6d662568004c",
+    "cloud-deadline-guard.py": "afa22eb04418d7351de9573e0af427fa8d396b30de95b53ecd4f0b0b5d9c7dba"
+  },
+  "followup_validation": "26 targeted TP4 tests passed after only the retry time/budget policy changed to 100min work,120min deletion,$82 admission; native parser, HTTP workflow and manifests unchanged."
+}

@@ -28,6 +28,9 @@ class TP4ConfigurationTests(unittest.TestCase):
             self.assertNotIn('--enforce-eager', engine['command'])
             self.assertNotIn('UCX_TLS', engine['env'])
             self.assertIn(self.config['revision'], engine['command'])
+            self.assertNotIn('--rope-scaling', engine['command'])
+            overrides=json.loads(engine['command'][engine['command'].index('--hf-overrides')+1])
+            self.assertEqual(overrides, {'rope_scaling': self.config['rope_scaling']})
 
     def test_long_input_has_output_headroom(self):
         bad = copy.deepcopy(self.config)

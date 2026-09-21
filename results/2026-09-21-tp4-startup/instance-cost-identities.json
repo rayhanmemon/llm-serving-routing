@@ -1,0 +1,12 @@
+{
+  "computeinstance-u00eapgv7e4dmjb6xz": {
+    "platform": "gpu-h200-sxm",
+    "created_at": "2026-09-21T17:36:38.409214Z",
+    "rate_usd_hour": "19.6"
+  },
+  "computeinstance-u00zrhytya9xw84jrj": {
+    "platform": "cpu-d3",
+    "created_at": "2026-09-21T17:33:14.955401Z",
+    "rate_usd_hour": "0.3968"
+  }
+}

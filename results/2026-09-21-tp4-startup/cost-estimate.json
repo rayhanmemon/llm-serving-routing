@@ -1,0 +1,20 @@
+{
+  "session_id": "20260921T172754Z-5fed2269",
+  "estimate_usd_pretax": "7.404495006774222222222222222",
+  "components": {
+    "computeinstance-u00eapgv7e4dmjb6xz": {
+      "start": "2026-09-21T17:36:38.653301Z",
+      "end": "2026-09-21T17:58:44.420808Z",
+      "rate": "19.6",
+      "cost_usd": "7.218067538111111111111111111"
+    },
+    "computeinstance-u00zrhytya9xw84jrj": {
+      "start": "2026-09-21T17:33:15.448737Z",
+      "end": "2026-09-21T17:58:45.343485Z",
+      "rate": "0.3968",
+      "cost_usd": "0.1686283988906666666666666667"
+    }
+  },
+  "disk_cost_usd": "0.01779906977244444444444444444",
+  "method": "Native VM create-start to delete-finish; all 320 GiB disks for full session; before tax, not invoice."
+}

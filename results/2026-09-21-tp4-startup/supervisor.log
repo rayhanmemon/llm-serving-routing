@@ -1,0 +1,23 @@
+
+Fetching 24 files:   0%|          | 0/24 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+
+Fetching 24 files:  12%|█▎        | 3/24 [00:00<00:00, 28.99it/s]
+Fetching 24 files:  12%|█▎        | 3/24 [00:19<00:00, 28.99it/s]
+Fetching 24 files:  17%|█▋        | 4/24 [03:59<25:45, 77.25s/it]
+Fetching 24 files:  21%|██        | 5/24 [05:02<23:03, 72.82s/it]
+Fetching 24 files:  29%|██▉       | 7/24 [05:30<12:41, 44.81s/it]
+Fetching 24 files:  33%|███▎      | 8/24 [06:31<13:02, 48.90s/it]
+Fetching 24 files:  46%|████▌     | 11/24 [06:45<05:37, 25.95s/it]
+Fetching 24 files:  50%|█████     | 12/24 [07:49<06:42, 33.55s/it]
+Fetching 24 files:  54%|█████▍    | 13/24 [09:00<07:40, 41.86s/it]
+Fetching 24 files:  58%|█████▊    | 14/24 [09:19<06:02, 36.25s/it]
+Fetching 24 files:  62%|██████▎   | 15/24 [09:41<04:53, 32.60s/it]
+Fetching 24 files:  75%|███████▌  | 18/24 [09:49<01:42, 17.04s/it]
+Fetching 24 files:  83%|████████▎ | 20/24 [09:57<00:50, 12.71s/it]
+Fetching 24 files: 100%|██████████| 24/24 [09:57<00:00, 24.91s/it]
+Traceback (most recent call last):
+  File "/probe/tp4-engines.py", line 112, in <module>
+    main()
+  File "/probe/tp4-engines.py", line 99, in main
+    raise RuntimeError('A TP4 engine exited; inspect retained role logs')
+RuntimeError: A TP4 engine exited; inspect retained role logs

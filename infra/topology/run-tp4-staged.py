@@ -16,7 +16,8 @@ def module(name):
 paired=module('run-paired-hosts');tp4=module('tp4-config');pilot=paired.pilot
 paired.NS=tp4.NS
 PROFILE='tp4-h200-staged'
-CODE=('tp4-config.py','tp4-engines.py','tp4-client.py','tp4-evidence.py','run-tp4-staged.py','run-paired-hosts.py','pilot-session.py','cloud-deadline-guard.py')
+PROFILES=(PROFILE,'tp4-h200-staged-retry')
+CODE=('tp4-config.py','tp4-engines.py','tp4-client.py','tp4-evidence.py','validate-tp4-args.py','run-tp4-staged.py','run-paired-hosts.py','pilot-session.py','cloud-deadline-guard.py')
 
 
 def validate_stage(original,new,expected):
@@ -45,7 +46,7 @@ def client_manifest(node,suite):
 class Controller(paired.Controller):
     def __init__(self,run,config_path):
         super().__init__(run)
-        if self.session['profile']!=PROFILE:raise ValueError('Requires TP4 staged admission')
+        if self.session['profile'] not in PROFILES:raise ValueError('Requires TP4 staged admission')
         self.config_path=config_path;self.nodes_by_role={};self.ips={}
         self.env.update({'TF_VAR_project_id':self.session['project_id'],
                          'TF_VAR_subnet_id':self.session['subnet_id'],
@@ -90,6 +91,8 @@ class Controller(paired.Controller):
             ip=pod.get('status',{}).get('podIP')
             if ip:
                 ipaddress.ip_address(ip)
+                failed=self.call(self.k+['-n',tp4.NS,'exec',role,'-c','engines','--','cat','/results/engine-failure.json'],role+'-failure-check',25,check=False)
+                if failed.returncode==0:raise RuntimeError('Engine startup failed: '+failed.stdout)
                 ports=[8100,8200,8300] if role=='local' else [8200,8300]
                 code='import urllib.request;'+ ';'.join(f'urllib.request.urlopen("http://127.0.0.1:{p}/'+('evidence' if p==8300 else 'v1/models')+'",timeout=5).read()' for p in ports)
                 result=self.call(self.k+['-n',tp4.NS,'exec',role,'-c','engines','--','python3','-c',code],role+'-ready',25,check=False)
@@ -141,9 +144,9 @@ class Controller(paired.Controller):
 def main():
     parser=pilot.parser();parser.add_argument('--config',type=Path,required=True);parser.add_argument('--suite',type=Path,required=True)
     parser.add_argument('--preflight-record',type=Path,required=True);args=parser.parse_args()
-    if args.profile!=PROFILE:raise ValueError('Wrong profile')
+    if args.profile not in PROFILES:raise ValueError('Wrong profile')
     proof=json.loads(args.preflight_record.read_text())
-    if not all(proof.get(k) is True for k in ('full_http_rehearsal_passed','manifests_server_validated','request_configmap_roundtrip','staged_controller_rehearsed')):
+    if not all(proof.get(k) is True for k in ('native_vllm_parser_passed','full_http_rehearsal_passed','manifests_server_validated','request_configmap_roundtrip','staged_controller_rehearsed')):
         raise ValueError('Full TP4 preflight required before admission')
     for path in [args.config,args.suite,*[HERE/name for name in CODE]]:
         if proof['sha256'].get(path.name)!=hashlib.sha256(path.read_bytes()).hexdigest():
