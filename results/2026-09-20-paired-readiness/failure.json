@@ -1,0 +1,8 @@
+{
+  "session_id": "20260921T013601Z-088321f6",
+  "error": "TimeoutExpired(['kubectl', '--context', 'router-topology', '--request-timeout=20s', '-n', 'router-paired', 'exec', 'deadline-guard', '--', 'cat', '/results/guard-ready.json'], 20)",
+  "source": "91161c2",
+  "phase": "CPU guard readiness",
+  "gpu_nodes_allocated": 0,
+  "inference_requests": 0
+}

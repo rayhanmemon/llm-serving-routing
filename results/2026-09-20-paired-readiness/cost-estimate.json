@@ -1,0 +1,10 @@
+{
+  "session_id": "20260921T013601Z-088321f6",
+  "estimate_usd_pretax": "0.04122492328414003044140030441",
+  "cpu_start": "2026-09-21T01:40:12.731812Z",
+  "cpu_end": "2026-09-21T01:46:14.358049Z",
+  "cpu_cost_usd": "0.039859247456",
+  "disk_cost_usd": "0.001365675828140030441400304414",
+  "gpu_cost_usd": "0",
+  "method": "Conservative CPU create-start through delete-finish at $0.3968/hour; 64 GiB disk for full session. Before tax; not invoice."
+}
