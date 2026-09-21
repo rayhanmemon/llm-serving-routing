@@ -16,7 +16,7 @@ def module(name):
 paired=module('run-paired-hosts');tp4=module('tp4-config');pilot=paired.pilot
 paired.NS=tp4.NS
 PROFILE='tp4-h200-staged'
-PROFILES=(PROFILE,'tp4-h200-staged-retry')
+PROFILES=(PROFILE,'tp4-h200-staged-retry','tp4-h200-health-retry')
 CODE=('tp4-config.py','tp4-engines.py','tp4-client.py','tp4-evidence.py','validate-tp4-args.py','run-tp4-staged.py','run-paired-hosts.py','pilot-session.py','cloud-deadline-guard.py')
 
 

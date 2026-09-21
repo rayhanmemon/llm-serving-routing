@@ -98,5 +98,30 @@ class TP4FlowTests(unittest.TestCase):
             with patch.object(s.pilot,'apply_plan',return_value=0):controller.allocate('local')
             self.assertEqual(controller.nodes_by_role,{'local':'node-a'})
 
+    def test_startup_health_flag_can_clear_without_deploying_unhealthy_node(self):
+        self.check_health_sequence(recover=True)
+
+    def test_persistent_health_flag_still_blocks_deployment(self):
+        self.check_health_sequence(recover=False)
+
+    def check_health_sequence(self,recover):
+        with tempfile.TemporaryDirectory() as folder:
+            controller=object.__new__(s.Controller);controller.out=Path(folder)
+            controller.session={'cleanup_start_deadline_unix':10000};controller.k=['kubectl']
+            now=[100.0];calls=[]
+            def call(*args,**kwargs):
+                calls.append(now[0]);bad=not recover or len(calls)==1
+                node={'metadata':{'name':'node','labels':{'nebius.com/node-group-id':'g','kubernetes.io/hostname':'node'}},
+                      'status':{'allocatable':{'nvidia.com/gpu':'8'},'conditions':[
+                          {'type':'Ready','status':'True'}, {'type':'NebiusGPUError','status':'False'},
+                          {'type':'NebiusContainerRuntimeError','status':'True' if bad else 'False'}]}}
+                return subprocess.CompletedProcess([],0,json.dumps({'items':[node]}),'')
+            controller.call=call;controller.sleep=lambda _:now.__setitem__(0,now[0]+30)
+            with patch.object(s.paired.time,'time',side_effect=lambda:now[0]):
+                if recover:self.assertEqual(controller.nodes({'remote':'g'}),{'remote':'node'})
+                else:
+                    with self.assertRaisesRegex(ValueError,'120 seconds'):controller.nodes({'remote':'g'})
+            self.assertGreater(len(calls),1)
+
 
 if __name__=='__main__':unittest.main()

@@ -116,13 +116,20 @@ class Controller(single.Controller):
         return self.call(self.k+['apply','--server-side','-f','-'],name,60,json.dumps(doc))
     def nodes(self,groups):
         deadline=min(time.time()+600,self.session['cleanup_start_deadline_unix']-600)
+        unhealthy_since={}
         while time.time()<deadline:
             items=json.loads(self.call(self.k+['get','nodes','-o','json'],'nodes').stdout)['items'];found={}
             for role,group in groups.items():
                 matches=[x for x in items if x['metadata']['labels'].get('nebius.com/node-group-id')==group]
                 if len(matches)!=1:continue
                 n=matches[0];conditions={x['type']:x for x in n['status']['conditions']}
-                if any(conditions.get(t,{}).get('status')=='True' for t in ('NebiusGPUError','NebiusContainerRuntimeError')):raise ValueError('Provider node health failure')
+                bad=[conditions[t] for t in ('NebiusGPUError','NebiusContainerRuntimeError') if conditions.get(t,{}).get('status')=='True']
+                if bad:
+                    first=unhealthy_since.setdefault(group,time.time())
+                    pilot.write_json(self.out/(role+'-unhealthy-node.json'),{'first_observed_unix':first,'observed_unix':time.time(),'node':n['metadata']['name'],'conditions':bad})
+                    if time.time()-first>=120:raise ValueError('Provider node health failure persisted for 120 seconds')
+                    continue
+                unhealthy_since.pop(group,None)
                 if conditions.get('Ready',{}).get('status')!='True' or n.get('spec',{}).get('unschedulable'):continue
                 if role!='cpu' and (int(n['status'].get('allocatable',{}).get('nvidia.com/gpu',0))!=8 or conditions.get('NebiusGPUError',{}).get('status')!='False'):continue
                 found[role]=n['metadata']['labels']['kubernetes.io/hostname']
