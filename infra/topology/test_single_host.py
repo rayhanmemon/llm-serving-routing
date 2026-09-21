@@ -38,7 +38,7 @@ class SingleHostTest(unittest.TestCase):
         self.assertFalse(worker.ipc_read_tables('Available cuda_ipc/cuda lanes'))
         self.assertFalse(worker.ipc_read_tables(header+'| 1..inf | zero-copy | rc_mlx5/mlx5_0 |\nAvailable cuda_ipc/cuda'))
 
-    def replay(self, failure=False, missing_gpu_once=False, unhealthy=False):
+    def replay(self, failure=False, missing_gpu_once=False, unhealthy=False, eof_once=False):
         with tempfile.TemporaryDirectory() as directory:
             run=Path(directory)
             (run/'session.json').write_text(json.dumps({'profile':'nvlink-h200-local',
@@ -59,6 +59,8 @@ class SingleHostTest(unittest.TestCase):
                     text=json.dumps({'cluster_id':{'value':'cluster'},'node_group_ids':{'value':{'local':'group','cpu':None,'remote':None}}})
                 elif 'get' in cmd and 'nodes' in cmd:
                     node_calls+=1
+                    if eof_once and node_calls == 1:
+                        return subprocess.CompletedProcess(cmd,1,'','unexpected EOF')
                     text=json.dumps({'items':[{'metadata':{'labels':{'nebius.com/node-group-id':'group','kubernetes.io/hostname':'node'}},'status':{'conditions':[{'type':'Ready','status':'True'},{'type':'NebiusGPUError','status':'True' if unhealthy else 'False'}],'allocatable':{'nvidia.com/gpu':'0' if missing_gpu_once and node_calls==1 else '8'}}}]})
                 elif 'tar' in cmd:
                     return subprocess.CompletedProcess(cmd,0,data.getvalue(),b'')
@@ -84,8 +86,9 @@ class SingleHostTest(unittest.TestCase):
             self.assertTrue(result['requires_nvlink_counter_review'])
             self.assertTrue((c.out/'evidence'/name).is_file())
             self.assertTrue(any('logs' in cmd for cmd in calls))
-            if missing_gpu_once:self.assertEqual(node_calls,2)
+            if missing_gpu_once or eof_once:self.assertEqual(node_calls,2)
 
+    def test_transient_status_read_retried(self):self.replay(eof_once=True)
     def test_unhealthy_node_rejected_before_deployment(self):self.replay(unhealthy=True)
     def test_success_collects_before_review(self):self.replay()
     def test_failure_also_preserves_evidence(self):self.replay(failure=True)

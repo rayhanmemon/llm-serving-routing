@@ -52,13 +52,14 @@ def manifest(node):
 
 
 class Controller:
-    def __init__(self, run, rpc=subprocess.run, sleeper=time.sleep):
+    def __init__(self, run, rpc=subprocess.run, sleeper=time.sleep, resume=False):
         self.run = run
         self.session = json.loads((run/'session.json').read_text())
         if self.session['profile'] != 'nvlink-h200-local':
             raise ValueError('Requires the admitted single-host profile')
         self.out = run/'single-host'
-        self.out.mkdir(exist_ok=False)
+        self.out.mkdir(exist_ok=resume)
+        self.resume = resume
         self.rpc, self.sleep = rpc, sleeper
         self.env = {**os.environ,'KUBECONFIG':str(run/'kubeconfig'),
                     'KUBECTL_REMOTE_COMMAND_WEBSOCKETS':'false'}
@@ -68,8 +69,16 @@ class Controller:
         left = self.session['cleanup_start_deadline_unix']-time.time()-120
         if left <= 0 or (self.run/'manual-stop-requested.json').exists():
             raise TimeoutError('Collection reserve or manual stop reached')
-        result = self.rpc(cmd,input=data,capture_output=True,text=not binary,env=self.env,
-                          timeout=min(timeout,left))
+        for attempt in range(3):
+            result = self.rpc(cmd,input=data,capture_output=True,text=not binary,env=self.env,
+                              timeout=min(timeout,left))
+            transient = any(message in str(result.stderr).lower() for message in
+                            ('unexpected eof', 'connection reset', 'context deadline exceeded'))
+            if not (check and result.returncode and not binary and
+                    ('get' in cmd or 'logs' in cmd) and transient and attempt < 2):
+                break
+            (self.out/(name+f'.retry{attempt+1}.stderr')).write_text(result.stderr)
+            self.sleep(attempt+1)
         if binary:
             (self.out/(name+'.tar.gz')).write_bytes(result.stdout)
             (self.out/(name+'.stderr')).write_bytes(result.stderr)
@@ -81,6 +90,12 @@ class Controller:
         return result
 
     def execute(self):
+        if self.resume:
+            saved = json.loads((self.out/'manifest.json').read_text())
+            node = saved['items'][-1]['spec']['nodeSelector']['kubernetes.io/hostname']
+            if saved != manifest(node):
+                raise RuntimeError('Resume rejected: deployed worker manifest differs from current source')
+            return self.monitor()
         while not (self.run/'apply-result.json').exists():
             if time.time()+180 >= self.session['cleanup_start_deadline_unix']:
                 raise TimeoutError('Provisioning exhausted work window')
@@ -113,6 +128,9 @@ class Controller:
         rendered=manifest(node['metadata']['labels']['kubernetes.io/hostname'])
         (self.out/'manifest.json').write_text(json.dumps(rendered,indent=2))
         self.call(self.k+['apply','-f','-'],'apply-pod',45,json.dumps(rendered))
+        return self.monitor()
+
+    def monitor(self):
         previous=None
         while True:
             result=self.call(self.k+['-n',NS,'exec','local-check','-c','engines','--',
@@ -152,11 +170,12 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument('--run-dir',type=Path,required=True)
     p.add_argument('--execute',action='store_true')
+    p.add_argument('--resume',action='store_true',help='Reconnect to the unchanged existing Pod; no apply')
     a=p.parse_args()
     if not a.execute:
         print('Preview: one GPU host, two processes sharing two GPUs; no cloud create.')
         return
-    controller=Controller(a.run_dir)
+    controller=Controller(a.run_dir,resume=a.resume)
     try:
         controller.execute()
     except Exception as e:
