@@ -1,0 +1,200 @@
+{
+  "node_conditions": [
+    {
+      "lastHeartbeatTime": "2026-09-21T00:16:55Z",
+      "lastTransitionTime": "2026-09-21T00:16:40Z",
+      "message": "XFS has not shutdown",
+      "reason": "XfsHasNotShutDown",
+      "status": "False",
+      "type": "XfsShutdown"
+    },
+    {
+      "lastHeartbeatTime": "2026-09-21T00:16:55Z",
+      "lastTransitionTime": "2026-09-21T00:16:40Z",
+      "message": "UEFI CPER has no fatal error",
+      "reason": "CperHardwareHasNoFatalError",
+      "status": "False",
+      "type": "CperHardwareErrorFatal"
+    },
+    {
+      "lastHeartbeatTime": "2026-09-21T00:16:55Z",
+      "lastTransitionTime": "2026-09-21T00:16:40Z",
+      "message": "No disk I/O error detected for vda disk",
+      "reason": "NoBootDiskIOError",
+      "status": "False",
+      "type": "NebiusBootDiskIOError"
+    },
+    {
+      "lastHeartbeatTime": "2026-09-21T00:16:55Z",
+      "lastTransitionTime": "2026-09-21T00:16:55Z",
+      "message": "{\"health_checker_run_id\":\"103becad-4e6b-43ef-b1ed-c6665b03f691\",\"compute_instance_id\":\"computeinstance-u00d5tezdmjf0wne5q\",\"details\":{\"errors\":[{\"module.module_loaded\":\"module rdma_cm not loaded: stat /sys/module/rdma_cm/refcnt: no such file or directory\"},{\"nvidia_smi.persistence\":\"GPU persistance mode disabled. HELP: Check that the nvidia-persistenced service is running\"}]}}",
+      "reason": "GPUHealthCheckFailedMK8S",
+      "status": "True",
+      "type": "NebiusGPUError"
+    },
+    {
+      "lastHeartbeatTime": "2026-09-21T00:16:55Z",
+      "lastTransitionTime": "2026-09-21T00:16:40Z",
+      "message": "kernel has no deadlock",
+      "reason": "KernelHasNoDeadlock",
+      "status": "False",
+      "type": "KernelDeadlock"
+    },
+    {
+      "lastHeartbeatTime": "2026-09-21T00:16:36Z",
+      "lastTransitionTime": "2026-09-21T00:16:36Z",
+      "message": "Cilium is running on this node",
+      "reason": "CiliumIsUp",
+      "status": "False",
+      "type": "NetworkUnavailable"
+    },
+    {
+      "lastHeartbeatTime": "2026-09-21T00:18:44Z",
+      "lastTransitionTime": "2026-09-21T00:18:44Z",
+      "message": "Found processes in D-state: runc",
+      "reason": "ContainerRuntimeUnhealthy",
+      "status": "True",
+      "type": "NebiusContainerRuntimeError"
+    },
+    {
+      "lastHeartbeatTime": "2026-09-21T00:17:07Z",
+      "lastTransitionTime": "2026-09-21T00:16:05Z",
+      "message": "kubelet has sufficient memory available",
+      "reason": "KubeletHasSufficientMemory",
+      "status": "False",
+      "type": "MemoryPressure"
+    },
+    {
+      "lastHeartbeatTime": "2026-09-21T00:17:07Z",
+      "lastTransitionTime": "2026-09-21T00:16:05Z",
+      "message": "kubelet has no disk pressure",
+      "reason": "KubeletHasNoDiskPressure",
+      "status": "False",
+      "type": "DiskPressure"
+    },
+    {
+      "lastHeartbeatTime": "2026-09-21T00:17:07Z",
+      "lastTransitionTime": "2026-09-21T00:16:05Z",
+      "message": "kubelet has sufficient PID available",
+      "reason": "KubeletHasSufficientPID",
+      "status": "False",
+      "type": "PIDPressure"
+    },
+    {
+      "lastHeartbeatTime": "2026-09-21T00:17:07Z",
+      "lastTransitionTime": "2026-09-21T00:16:30Z",
+      "message": "kubelet is posting ready status",
+      "reason": "KubeletReady",
+      "status": "True",
+      "type": "Ready"
+    }
+  ],
+  "node_spec": {
+    "podCIDR": "10.100.43.0/24",
+    "podCIDRs": [
+      "10.100.43.0/24"
+    ],
+    "providerID": "nebius://computeinstance-u00d5tezdmjf0wne5q",
+    "taints": [
+      {
+        "effect": "NoSchedule",
+        "key": "node.kubernetes.io/unschedulable",
+        "timeAdded": "2026-09-21T00:17:26Z"
+      }
+    ],
+    "unschedulable": true
+  },
+  "group_events": [
+    {
+      "first_occurred_at": "2026-09-21T00:10:55Z",
+      "last_occurrence": {
+        "occurred_at": "2026-09-21T00:10:55Z",
+        "level": "WARN",
+        "code": "ComputeInstanceStopped",
+        "message": "Compute instance is stopped for node mk8snodegroup-u00w3v5pjs30fdmvgg-57559-zqw89"
+      },
+      "occurrence_count": "1"
+    },
+    {
+      "first_occurred_at": "2026-09-21T00:11:55Z",
+      "last_occurrence": {
+        "occurred_at": "2026-09-21T00:11:55Z",
+        "level": "WARN",
+        "code": "NodeProvisioning",
+        "message": "Waiting for a node with matching ProviderID to exist for node mk8snodegroup-u00w3v5pjs30fdmvgg-57559-zqw89"
+      },
+      "occurrence_count": "1"
+    },
+    {
+      "first_occurred_at": "2026-09-21T00:16:05Z",
+      "last_occurrence": {
+        "occurred_at": "2026-09-21T00:16:05Z",
+        "level": "WARN",
+        "code": "NodeConditionsFailed",
+        "message": "Node condition Ready is False for node mk8snodegroup-u00w3v5pjs30fdmvgg-57559-zqw89"
+      },
+      "occurrence_count": "1"
+    },
+    {
+      "first_occurred_at": "2026-09-21T00:17:26Z",
+      "last_occurrence": {
+        "occurred_at": "2026-09-21T00:17:26Z",
+        "level": "WARN",
+        "code": "UnhealthyNode",
+        "message": "Condition NebiusGPUError on node is reporting status True for more than 30s for node mk8snodegroup-u00w3v5pjs30fdmvgg-57559-zqw89"
+      },
+      "occurrence_count": "1"
+    }
+  ],
+  "pod_conditions": [
+    {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-09-21T00:17:26Z",
+      "message": "Eviction API: evicting",
+      "reason": "EvictionByEvictionAPI",
+      "status": "True",
+      "type": "DisruptionTarget"
+    },
+    {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-09-21T00:16:53Z",
+      "observedGeneration": 1,
+      "status": "False",
+      "type": "PodReadyToStartContainers"
+    },
+    {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-09-21T00:16:53Z",
+      "observedGeneration": 1,
+      "status": "True",
+      "type": "Initialized"
+    },
+    {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-09-21T00:16:53Z",
+      "message": "containers with unready status: [engines routing-proxy]",
+      "observedGeneration": 1,
+      "reason": "ContainersNotReady",
+      "status": "False",
+      "type": "Ready"
+    },
+    {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-09-21T00:16:53Z",
+      "message": "containers with unready status: [engines routing-proxy]",
+      "observedGeneration": 1,
+      "reason": "ContainersNotReady",
+      "status": "False",
+      "type": "ContainersReady"
+    },
+    {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-09-21T00:16:53Z",
+      "observedGeneration": 1,
+      "status": "True",
+      "type": "PodScheduled"
+    }
+  ],
+  "pod_deletion_time": "2026-09-21T00:17:56Z",
+  "test_started": false
+}
