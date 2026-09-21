@@ -1,0 +1,146 @@
+[
+  {
+    "input_tokens": 4096,
+    "total_concurrent_requests": 1,
+    "allocated_tokens_per_request": 4160,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 0.25390625,
+    "weights_plus_kv_gib_per_rank_approx": 15.509958744049072,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 4096,
+    "total_concurrent_requests": 2,
+    "allocated_tokens_per_request": 4160,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 0.5078125,
+    "weights_plus_kv_gib_per_rank_approx": 15.763864994049072,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 4096,
+    "total_concurrent_requests": 4,
+    "allocated_tokens_per_request": 4160,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 1.015625,
+    "weights_plus_kv_gib_per_rank_approx": 16.271677494049072,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 4096,
+    "total_concurrent_requests": 8,
+    "allocated_tokens_per_request": 4160,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 2.03125,
+    "weights_plus_kv_gib_per_rank_approx": 17.287302494049072,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 32768,
+    "total_concurrent_requests": 1,
+    "allocated_tokens_per_request": 32832,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 2.00390625,
+    "weights_plus_kv_gib_per_rank_approx": 17.259958744049072,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 32768,
+    "total_concurrent_requests": 2,
+    "allocated_tokens_per_request": 32832,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 4.0078125,
+    "weights_plus_kv_gib_per_rank_approx": 19.263864994049072,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 32768,
+    "total_concurrent_requests": 4,
+    "allocated_tokens_per_request": 32832,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 8.015625,
+    "weights_plus_kv_gib_per_rank_approx": 23.271677494049072,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 32768,
+    "total_concurrent_requests": 8,
+    "allocated_tokens_per_request": 32832,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 16.03125,
+    "weights_plus_kv_gib_per_rank_approx": 31.287302494049072,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 65536,
+    "total_concurrent_requests": 1,
+    "allocated_tokens_per_request": 65600,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 4.00390625,
+    "weights_plus_kv_gib_per_rank_approx": 19.259958744049072,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 65536,
+    "total_concurrent_requests": 2,
+    "allocated_tokens_per_request": 65600,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 8.0078125,
+    "weights_plus_kv_gib_per_rank_approx": 23.263864994049072,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 65536,
+    "total_concurrent_requests": 4,
+    "allocated_tokens_per_request": 65600,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 16.015625,
+    "weights_plus_kv_gib_per_rank_approx": 31.271677494049072,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 65536,
+    "total_concurrent_requests": 8,
+    "allocated_tokens_per_request": 65600,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 32.03125,
+    "weights_plus_kv_gib_per_rank_approx": 47.28730249404907,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 122880,
+    "total_concurrent_requests": 1,
+    "allocated_tokens_per_request": 122944,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 7.50390625,
+    "weights_plus_kv_gib_per_rank_approx": 22.759958744049072,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 122880,
+    "total_concurrent_requests": 2,
+    "allocated_tokens_per_request": 122944,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 15.0078125,
+    "weights_plus_kv_gib_per_rank_approx": 30.263864994049072,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 122880,
+    "total_concurrent_requests": 4,
+    "allocated_tokens_per_request": 122944,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 30.015625,
+    "weights_plus_kv_gib_per_rank_approx": 45.27167749404907,
+    "runtime_overhead_included": false
+  },
+  {
+    "input_tokens": 122880,
+    "total_concurrent_requests": 8,
+    "allocated_tokens_per_request": 122944,
+    "weights_gib_per_rank_approx": 15.256052494049072,
+    "kv_gib_per_rank": 60.03125,
+    "weights_plus_kv_gib_per_rank_approx": 75.28730249404907,
+    "runtime_overhead_included": false
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "real_kubernetes_api": true,
+  "server_side_configmap_roundtrip": true,
+  "engine_manifests_server_dry_run": true,
+  "gpu_pods_created": false,
+  "gpu_execution_validated": false,
+  "config_sha256": "3730eaefb0e9b36119683b24bdf33527662167866376fcbb26f77270827b5dfa",
+  "source_sha256": {
+    "tp4-config.py": "c7668d727375833dfbe6178d9ec448df53e833e03a7067f0b053bad59f142429",
+    "tp4-engines.py": "eb247c36328d17b4e842e3c0eb317b02f6d7790f26b3de5aa89c783303194231"
+  },
+  "full_test_suite": {
+    "tests": 191,
+    "passed": true,
+    "python_environment": "llm-d-benchmark virtual environment"
+  },
+  "temporary_kind_cluster_deleted": true,
+  "existing_user_cluster_untouched": true,
+  "cloud_spend_usd": 0,
+  "cloud_session_ready": false
+}

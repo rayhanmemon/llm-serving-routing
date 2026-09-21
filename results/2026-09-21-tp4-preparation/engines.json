@@ -1,0 +1,291 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "name": "router-tp4"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "tp4-code",
+        "namespace": "router-tp4"
+      },
+      "data": {
+        "tp4-config.py": "#!/usr/bin/env python3\n\"\"\"Render and inspect the pinned TP4 configuration without creating resources.\"\"\"\nimport argparse\nimport copy\nimport hashlib\nimport importlib.util\nimport json\nfrom pathlib import Path\nimport re\n\nHERE = Path(__file__).resolve().parent\nDEFAULT = HERE.parent.parent / 'workloads/tp4-locality/config.json'\nNS = 'router-tp4'\n\n\ndef load_config(path=DEFAULT):\n    config = json.loads(path.read_text())\n    raw = path.with_name('model-config.json').read_bytes()\n    if hashlib.sha256(raw).hexdigest() != config['model_config_sha256']:\n        raise ValueError('Model architecture digest changed')\n    architecture = json.loads(raw)\n    validate(config, architecture)\n    return config, architecture\n\n\ndef validate(config, architecture):\n    if config['model'] != 'Qwen/Qwen3-32B' or not re.fullmatch(r'[a-f0-9]{40}', config['revision']):\n        raise ValueError('Pinned Qwen3-32B revision required')\n    if config['tensor_parallel_size'] != 4:\n        raise ValueError('This deployment requires TP4')\n    if config['dtype'] != 'bfloat16' or config['kv_cache_dtype'] != 'auto':\n        raise ValueError('Memory calculations require BF16 weights and KV')\n    if architecture['num_key_value_heads'] % 4 or architecture['num_attention_heads'] % 4:\n        raise ValueError('Attention heads must shard evenly without KV replication')\n    if architecture.get('use_sliding_window') or architecture.get('sliding_window'):\n        raise ValueError('Memory formula requires full attention')\n    if config['rope_scaling'] != {'rope_type': 'yarn', 'factor': 4.0, 'original_max_position_embeddings': 32768}:\n        raise ValueError('All lengths require the same declared YaRN settings')\n    if config['max_model_len'] != 131072:\n        raise ValueError('Declared context limit is 131072')\n    if config['max_num_seqs'] != 8 or not 0 < config['gpu_memory_utilization'] < 1:\n        raise ValueError('Invalid sequence or memory limit')\n    if config['enable_prefix_caching'] or config['enforce_eager']:\n        raise ValueError('Screening uses unique uncached inputs and default graph execution')\n    if config['block_size'] != 64 or config['max_num_batched_tokens'] < config['max_num_seqs']:\n        raise ValueError('Invalid token budget or cache block size')\n    lengths = config['input_tokens']\n    if not lengths or lengths != sorted(set(lengths)):\n        raise ValueError('Prompt lengths must be unique and increasing')\n    output = config['screening_output_tokens']\n    if type(output) is not int or output < 1:\n        raise ValueError('Positive output token budget required')\n    for length in lengths:\n        if type(length) is not int or length < 1 or length + output > config['max_model_len']:\n            raise ValueError('Prompt plus output exceeds context capacity')\n    if config['concurrency_candidates'] != [1, 2, 4, 8]:\n        raise ValueError('Unreviewed concurrency sweep')\n    expected = {'local': {'prefill': [0, 1, 2, 3], 'decode': [4, 5, 6, 7]},\n                'remote': {'decode': [0, 1, 2, 3]}}\n    if config['placement'] != expected:\n        raise ValueError('Require disjoint TP4 groups on the local host and matched remote TP4')\n\n\ndef cache_bytes_per_rank(architecture, tokens):\n    return 2 * architecture['num_hidden_layers'] * (architecture['num_key_value_heads'] // 4) * architecture['head_dim'] * 2 * tokens\n\n\ndef sizing(config, architecture):\n    rows = []\n    weights = config['parameter_count'] * 2 / 4\n    for length in config['input_tokens']:\n        # Account for generated tokens and rounding to an allocated cache block.\n        total = length + config['screening_output_tokens']\n        allocated = ((total + config['block_size'] - 1) // config['block_size']) * config['block_size']\n        for count in config['concurrency_candidates']:\n            kv = cache_bytes_per_rank(architecture, allocated) * count\n            rows.append({'input_tokens': length, 'total_concurrent_requests': count,\n                         'allocated_tokens_per_request': allocated,\n                         'weights_gib_per_rank_approx': weights / 2**30,\n                         'kv_gib_per_rank': kv / 2**30,\n                         'weights_plus_kv_gib_per_rank_approx': (weights + kv) / 2**30,\n                         'runtime_overhead_included': False})\n    return rows\n\n\ndef engine_specs(config, host_role, pod_ip):\n    if host_role not in ('local', 'remote') or not pod_ip:\n        raise ValueError('Host role and Pod IP required')\n    specs = []\n    for role, devices in config['placement'][host_role].items():\n        port, side = (8100, 5600) if role == 'prefill' else (8200, 5700)\n        kv = {'kv_connector': 'NixlConnector', 'kv_role': config['kv_role'],\n              'kv_buffer_device': 'cuda', 'kv_load_failure_policy': 'fail',\n              'kv_connector_extra_config': {'backends': ['UCX']}}\n        args = ['vllm', 'serve', config['model'], '--revision', config['revision'],\n                '--tokenizer-revision', config['revision'], '--port', str(port),\n                '--tensor-parallel-size', '4', '--distributed-executor-backend', 'mp',\n                '--dtype', config['dtype'],\n                '--kv-cache-dtype', config['kv_cache_dtype'],\n                '--block-size', str(config['block_size']),\n                '--max-model-len', str(config['max_model_len']),\n                '--max-num-seqs', str(config['max_num_seqs']),\n                '--max-num-batched-tokens', str(config['max_num_batched_tokens']),\n                '--gpu-memory-utilization', str(config['gpu_memory_utilization']),\n                '--enable-chunked-prefill', '--no-enable-prefix-caching',\n                '--rope-scaling', json.dumps(config['rope_scaling'], sort_keys=True),\n                '--kv-transfer-config', json.dumps(kv, sort_keys=True)]\n        specs.append({'role': role, 'devices': devices, 'http_port': port, 'command': args,\n                      'env': {'CUDA_VISIBLE_DEVICES': ','.join(map(str, devices)),\n                              'HF_HOME': '/cache', 'VLLM_NIXL_SIDE_CHANNEL_HOST': pod_ip,\n                              'VLLM_NIXL_SIDE_CHANNEL_PORT': str(side),\n                              'UCX_PROTO_INFO': 'y', 'UCX_LOG_LEVEL': 'info',\n                              'UCX_LOG_FILE': f'/results/ucx-{role}.%p.log'},\n                      'log_path': f'/results/{role}.log'})\n    return specs\n\n\ndef render(config_path, nodes, work_seconds=7200):\n    \"\"\"Offline manifest; the explicit role list permits local-only qualification.\"\"\"\n    config, architecture = load_config(config_path)\n    if not nodes or not set(nodes) <= {'local', 'remote'} or 'local' not in nodes:\n        raise ValueError('Local host required; remote is optional')\n    if len(set(nodes.values())) != len(nodes) or not all(nodes.values()):\n        raise ValueError('Local and remote must be distinct named hosts')\n    if not 60 <= work_seconds <= 8100:\n        raise ValueError('Manifest lifetime must fit the bounded session')\n    spec = importlib.util.spec_from_file_location('single_manifest', HERE / 'run-single-host.py')\n    single = importlib.util.module_from_spec(spec)\n    spec.loader.exec_module(single)\n    data = {name: (HERE / name).read_text() for name in ('tp4-config.py', 'tp4-engines.py')}\n    data.update({'config.json': json.dumps(config),\n                 'model-config.json': config_path.with_name('model-config.json').read_text()})\n    items = [{'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': NS}},\n             {'apiVersion': 'v1', 'kind': 'ConfigMap',\n              'metadata': {'name': 'tp4-code', 'namespace': NS}, 'data': data}]\n    for host_role, node in nodes.items():\n        pod = copy.deepcopy(single.manifest(node)['items'][-1])\n        pod['metadata'] = {'name': host_role, 'namespace': NS}\n        pod_spec = pod['spec']\n        pod_spec['activeDeadlineSeconds'] = work_seconds\n        engine = pod_spec['containers'][0]\n        engine['command'] = ['python3', '-u', '/probe/tp4-engines.py', '--config', '/probe/config.json']\n        engine['env'] = [{'name': 'ENGINE_ROLE', 'value': host_role},\n                         {'name': 'POD_IP', 'valueFrom': {'fieldRef': {'fieldPath': 'status.podIP'}}}]\n        gpu_count = 8 if host_role == 'local' else 4\n        engine['resources'] = {\n            'requests': {'nvidia.com/gpu': str(gpu_count), 'cpu': str(gpu_count * 4), 'memory': f'{gpu_count * 16}Gi'},\n            'limits': {'nvidia.com/gpu': str(gpu_count), 'cpu': str(gpu_count * 8), 'memory': f'{gpu_count * 32}Gi'}}\n        for volume in pod_spec['volumes']:\n            if volume['name'] == 'code':\n                volume['configMap']['name'] = 'tp4-code'\n            elif volume['name'] == 'shm':\n                volume['emptyDir']['sizeLimit'] = '32Gi'\n            elif volume['name'] == 'cache':\n                volume['emptyDir']['sizeLimit'] = '100Gi'\n        items.append(pod)\n    return {'apiVersion': 'v1', 'kind': 'List', 'items': items}\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument('--config', type=Path, default=DEFAULT)\n    parser.add_argument('--local-node')\n    parser.add_argument('--remote-node')\n    parser.add_argument('--out', type=Path, required=True)\n    args = parser.parse_args()\n    config, architecture = load_config(args.config)\n    args.out.mkdir(parents=True, exist_ok=False)\n    (args.out / 'memory.json').write_text(json.dumps(sizing(config, architecture), indent=2) + '\\n')\n    commands = {role: engine_specs(config, role, 'POD_IP_AT_DEPLOYMENT') for role in ('local', 'remote')}\n    (args.out / 'engine-commands.json').write_text(json.dumps(commands, indent=2) + '\\n')\n    if args.remote_node and not args.local_node:\n        parser.error('--remote-node requires --local-node')\n    if args.local_node:\n        nodes = {'local': args.local_node}\n        if args.remote_node:\n            nodes['remote'] = args.remote_node\n        (args.out / 'engines.json').write_text(json.dumps(render(args.config, nodes), indent=2) + '\\n')\n    print(json.dumps({'rendered': str(args.out), 'cloud_actions': False, 'gpu_execution_validated': False}))\n\n\nif __name__ == '__main__':\n    main()\n",
+        "tp4-engines.py": "#!/usr/bin/env python3\n\"\"\"Run pinned TP4 engines inside a prepared GPU Pod and retain diagnostic logs.\"\"\"\nimport argparse\nimport importlib.util\nimport json\nimport os\nfrom pathlib import Path\nimport signal\nimport subprocess\nimport time\n\nHERE = Path(__file__).resolve().parent\nspec = importlib.util.spec_from_file_location('tp4_config', HERE / 'tp4-config.py')\nsettings = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(settings)\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument('--config', type=Path, required=True)\n    args = parser.parse_args()\n    config, _ = settings.load_config(args.config)\n    commands = settings.engine_specs(config, os.environ['ENGINE_ROLE'], os.environ['POD_IP'])\n    out = Path('/results')\n    out.mkdir(exist_ok=True)\n    # One download per Pod; both local instances share the same immutable cache.\n    from huggingface_hub import snapshot_download\n    snapshot_download(repo_id=config['model'], revision=config['revision'],\n                      cache_dir='/cache/hub', allow_patterns=['*.json', '*.safetensors', '*.jinja', '*.txt'])\n    identity = subprocess.run(['nvidia-smi', '--query-gpu=index,uuid,name,memory.total',\n                               '--format=csv,noheader'], capture_output=True, text=True, check=True)\n    (out / 'gpu-inventory.txt').write_text(identity.stdout)\n    (out / 'engine-commands.json').write_text(json.dumps(commands, indent=2) + '\\n')\n    children = []\n    stopping = False\n\n    def stop(*_):\n        nonlocal stopping\n        stopping = True\n        for child in children:\n            if child.poll() is None:\n                os.killpg(child.pid, signal.SIGTERM)\n\n    signal.signal(signal.SIGTERM, stop)\n    signal.signal(signal.SIGINT, stop)\n    try:\n        for command in commands:\n            env = {**os.environ, **command['env']}\n            env.pop('UCX_TLS', None)\n            env.pop('UCX_CUDA_IPC_GET_ZCOPY', None)\n            with Path(command['log_path']).open('w') as log:\n                child = subprocess.Popen(command['command'], stdout=log, stderr=subprocess.STDOUT,\n                                         env=env, start_new_session=True)\n            children.append(child)\n        (out / 'supervisor-pids.json').write_text(json.dumps({c['role']: p.pid for c, p in zip(commands, children)}) + '\\n')\n        while not stopping and all(p.poll() is None for p in children):\n            time.sleep(2)\n        if not stopping:\n            raise RuntimeError('A TP4 engine exited; inspect retained role logs')\n    finally:\n        stop()\n        deadline = time.monotonic() + 20\n        for child in children:\n            try:\n                child.wait(timeout=max(0.1, deadline - time.monotonic()))\n            except subprocess.TimeoutExpired:\n                os.killpg(child.pid, signal.SIGKILL)\n                child.wait()\n\n\nif __name__ == '__main__':\n    main()\n",
+        "config.json": "{\"schema_version\": 1, \"status\": \"preparation; not a qualified deployment\", \"model\": \"Qwen/Qwen3-32B\", \"revision\": \"9216db5781bf21249d130ec9da846c4624c16137\", \"model_config_sha256\": \"97e295b63283935788fac5e4f8860862a56d4089538cafc93f0431f2ebe483bb\", \"parameter_count\": 32762123264, \"tensor_parallel_size\": 4, \"dtype\": \"bfloat16\", \"kv_cache_dtype\": \"auto\", \"max_model_len\": 131072, \"rope_scaling\": {\"rope_type\": \"yarn\", \"factor\": 4.0, \"original_max_position_embeddings\": 32768}, \"block_size\": 64, \"max_num_seqs\": 8, \"max_num_batched_tokens\": 8192, \"gpu_memory_utilization\": 0.85, \"enforce_eager\": false, \"enable_prefix_caching\": false, \"input_tokens\": [4096, 32768, 65536, 122880], \"screening_output_tokens\": 32, \"concurrency_candidates\": [1, 2, 4, 8], \"kv_role\": \"kv_both\", \"placement\": {\"local\": {\"prefill\": [0, 1, 2, 3], \"decode\": [4, 5, 6, 7]}, \"remote\": {\"decode\": [0, 1, 2, 3]}}, \"notes\": [\"One fixed YaRN configuration for every route and length.\", \"Screening output32 tokens proposed to isolate TTFT; load-calibration output length remains separate.\", \"Concurrency candidates require startup KV-capacity and live checks, not just calculated weight-plus-cache sums.\", \"No EPP policy comparison is performed by transport qualification.\", \"GPU rental requires a separate admitted session and rank-aware preflight.\"]}",
+        "model-config.json": "{\n  \"architectures\": [\n    \"Qwen3ForCausalLM\"\n  ],\n  \"attention_bias\": false,\n  \"attention_dropout\": 0.0,\n  \"bos_token_id\": 151643,\n  \"eos_token_id\": 151645,\n  \"head_dim\": 128,\n  \"hidden_act\": \"silu\",\n  \"hidden_size\": 5120,\n  \"initializer_range\": 0.02,\n  \"intermediate_size\": 25600,\n  \"max_position_embeddings\": 40960,\n  \"max_window_layers\": 64,\n  \"model_type\": \"qwen3\",\n  \"num_attention_heads\": 64,\n  \"num_hidden_layers\": 64,\n  \"num_key_value_heads\": 8,\n  \"rms_norm_eps\": 1e-06,\n  \"rope_scaling\": null,\n  \"rope_theta\": 1000000,\n  \"sliding_window\": null,\n  \"tie_word_embeddings\": false,\n  \"torch_dtype\": \"bfloat16\",\n  \"transformers_version\": \"4.51.0\",\n  \"use_cache\": true,\n  \"use_sliding_window\": false,\n  \"vocab_size\": 151936\n}"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "local",
+        "namespace": "router-tp4"
+      },
+      "spec": {
+        "nodeSelector": {
+          "kubernetes.io/hostname": "tp4-local-placeholder"
+        },
+        "restartPolicy": "Never",
+        "activeDeadlineSeconds": 6900,
+        "automountServiceAccountToken": false,
+        "containers": [
+          {
+            "name": "engines",
+            "image": "docker.io/vllm/vllm-openai:v0.26.0@sha256:770fe65b2c73ee74a5c42165cf3433de4048cc2cd9c57a937ca4e35aba5aa87b",
+            "command": [
+              "python3",
+              "-u",
+              "/probe/tp4-engines.py",
+              "--config",
+              "/probe/config.json"
+            ],
+            "securityContext": {
+              "capabilities": {
+                "add": [
+                  "IPC_LOCK"
+                ]
+              }
+            },
+            "resources": {
+              "requests": {
+                "nvidia.com/gpu": "8",
+                "cpu": "32",
+                "memory": "128Gi"
+              },
+              "limits": {
+                "nvidia.com/gpu": "8",
+                "cpu": "64",
+                "memory": "256Gi"
+              }
+            },
+            "volumeMounts": [
+              {
+                "name": "code",
+                "mountPath": "/probe",
+                "readOnly": true
+              },
+              {
+                "name": "results",
+                "mountPath": "/results"
+              },
+              {
+                "name": "cache",
+                "mountPath": "/cache"
+              },
+              {
+                "name": "shm",
+                "mountPath": "/dev/shm"
+              }
+            ],
+            "env": [
+              {
+                "name": "ENGINE_ROLE",
+                "value": "local"
+              },
+              {
+                "name": "POD_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "fieldPath": "status.podIP"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "routing-proxy",
+            "image": "ghcr.io/llm-d/llm-d-router-disagg-sidecar:v0.10.0@sha256:1344adff65f96f76fc00c6003a1c63c1e9bb70f3628307f61f748a89a265b260",
+            "args": [
+              "--port=8000",
+              "--model-server-port=8200",
+              "--kv-connector=nixlv2",
+              "--secure-proxy=false",
+              "--zap-log-level=4"
+            ],
+            "securityContext": {
+              "allowPrivilegeEscalation": false,
+              "runAsNonRoot": true
+            },
+            "resources": {
+              "requests": {
+                "cpu": "250m",
+                "memory": "256Mi"
+              },
+              "limits": {
+                "memory": "1Gi"
+              }
+            }
+          }
+        ],
+        "volumes": [
+          {
+            "name": "code",
+            "configMap": {
+              "name": "tp4-code"
+            }
+          },
+          {
+            "name": "results",
+            "emptyDir": {
+              "sizeLimit": "8Gi"
+            }
+          },
+          {
+            "name": "cache",
+            "emptyDir": {
+              "sizeLimit": "100Gi"
+            }
+          },
+          {
+            "name": "shm",
+            "emptyDir": {
+              "medium": "Memory",
+              "sizeLimit": "32Gi"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "remote",
+        "namespace": "router-tp4"
+      },
+      "spec": {
+        "nodeSelector": {
+          "kubernetes.io/hostname": "tp4-remote-placeholder"
+        },
+        "restartPolicy": "Never",
+        "activeDeadlineSeconds": 6900,
+        "automountServiceAccountToken": false,
+        "containers": [
+          {
+            "name": "engines",
+            "image": "docker.io/vllm/vllm-openai:v0.26.0@sha256:770fe65b2c73ee74a5c42165cf3433de4048cc2cd9c57a937ca4e35aba5aa87b",
+            "command": [
+              "python3",
+              "-u",
+              "/probe/tp4-engines.py",
+              "--config",
+              "/probe/config.json"
+            ],
+            "securityContext": {
+              "capabilities": {
+                "add": [
+                  "IPC_LOCK"
+                ]
+              }
+            },
+            "resources": {
+              "requests": {
+                "nvidia.com/gpu": "4",
+                "cpu": "16",
+                "memory": "64Gi"
+              },
+              "limits": {
+                "nvidia.com/gpu": "4",
+                "cpu": "32",
+                "memory": "128Gi"
+              }
+            },
+            "volumeMounts": [
+              {
+                "name": "code",
+                "mountPath": "/probe",
+                "readOnly": true
+              },
+              {
+                "name": "results",
+                "mountPath": "/results"
+              },
+              {
+                "name": "cache",
+                "mountPath": "/cache"
+              },
+              {
+                "name": "shm",
+                "mountPath": "/dev/shm"
+              }
+            ],
+            "env": [
+              {
+                "name": "ENGINE_ROLE",
+                "value": "remote"
+              },
+              {
+                "name": "POD_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "fieldPath": "status.podIP"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "routing-proxy",
+            "image": "ghcr.io/llm-d/llm-d-router-disagg-sidecar:v0.10.0@sha256:1344adff65f96f76fc00c6003a1c63c1e9bb70f3628307f61f748a89a265b260",
+            "args": [
+              "--port=8000",
+              "--model-server-port=8200",
+              "--kv-connector=nixlv2",
+              "--secure-proxy=false",
+              "--zap-log-level=4"
+            ],
+            "securityContext": {
+              "allowPrivilegeEscalation": false,
+              "runAsNonRoot": true
+            },
+            "resources": {
+              "requests": {
+                "cpu": "250m",
+                "memory": "256Mi"
+              },
+              "limits": {
+                "memory": "1Gi"
+              }
+            }
+          }
+        ],
+        "volumes": [
+          {
+            "name": "code",
+            "configMap": {
+              "name": "tp4-code"
+            }
+          },
+          {
+            "name": "results",
+            "emptyDir": {
+              "sizeLimit": "8Gi"
+            }
+          },
+          {
+            "name": "cache",
+            "emptyDir": {
+              "sizeLimit": "100Gi"
+            }
+          },
+          {
+            "name": "shm",
+            "emptyDir": {
+              "medium": "Memory",
+              "sizeLimit": "32Gi"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
