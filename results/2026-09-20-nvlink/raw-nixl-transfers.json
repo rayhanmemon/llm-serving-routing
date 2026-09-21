@@ -1,0 +1,65 @@
+[
+  {
+    "bytes": 262144,
+    "repeat": 0,
+    "elapsed_seconds": 0.0009510809999824232,
+    "all_bytes_equal_73": true,
+    "checksum": 19136512
+  },
+  {
+    "bytes": 262144,
+    "repeat": 1,
+    "elapsed_seconds": 0.0011639690000038172,
+    "all_bytes_equal_73": true,
+    "checksum": 19136512
+  },
+  {
+    "bytes": 262144,
+    "repeat": 2,
+    "elapsed_seconds": 4.3340999980046035e-05,
+    "all_bytes_equal_73": true,
+    "checksum": 19136512
+  },
+  {
+    "bytes": 67108864,
+    "repeat": 0,
+    "elapsed_seconds": 0.0011391019999678065,
+    "all_bytes_equal_73": true,
+    "checksum": 4898947072
+  },
+  {
+    "bytes": 67108864,
+    "repeat": 1,
+    "elapsed_seconds": 0.0011487940000165509,
+    "all_bytes_equal_73": true,
+    "checksum": 4898947072
+  },
+  {
+    "bytes": 67108864,
+    "repeat": 2,
+    "elapsed_seconds": 0.0011629819999825486,
+    "all_bytes_equal_73": true,
+    "checksum": 4898947072
+  },
+  {
+    "bytes": 1073741824,
+    "repeat": 0,
+    "elapsed_seconds": 0.004624857000010252,
+    "all_bytes_equal_73": true,
+    "checksum": 78383153152
+  },
+  {
+    "bytes": 1073741824,
+    "repeat": 1,
+    "elapsed_seconds": 0.0047435330000098475,
+    "all_bytes_equal_73": true,
+    "checksum": 78383153152
+  },
+  {
+    "bytes": 1073741824,
+    "repeat": 2,
+    "elapsed_seconds": 0.004642327999988538,
+    "all_bytes_equal_73": true,
+    "checksum": 78383153152
+  }
+]

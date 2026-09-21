@@ -10,6 +10,8 @@ The [September 16 H100 run](results/2026-09-16-h100-transfer-qualification/RESUL
 
 The [September 16 H200 RDMA serving run](results/2026-09-16-h200-rdma-serving/RESULT.md) verified 32 requests, 8/8 direct/P/D parity and 16 real KV transfers over RDMA. Mixed mean connector time was 14.16 ms local and 14.43 ms remote; this RDMA-only fixture does not establish meaningful locality savings. Harness errors prevented the client-latency block. All resources were deleted; no policy gain is claimed.
 
+The [September 20 single-host run](results/2026-09-20-nvlink/RESULT.md) **verified actual P/D KV transfer over NVLink**: 16 calls, eight matching direct/P/D pairs, CUDA-IPC payload selection, and per-request hardware byte counters matching KV payloads while direct/idle controls stayed at zero. This uses Qwen3-0.6B and a shared two-GPU container. Remote client-TTFT and policy comparisons remain unfinished; cleanup is verified.
+
 ## Evaluation
 
 [Three-worker deployment draft](infra/topology/README.md): standalone infrastructure, routing policies and benchmark configuration, with local validation status and remaining checks.

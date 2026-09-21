@@ -1,0 +1,157 @@
+{
+  "nvlink_verified": true,
+  "requests": 16,
+  "matched_cases": 8,
+  "pd_transfers": 8,
+  "gold_matches": 8,
+  "physical_gpu_uuids": [
+    "GPU-7534f21f-b59f-fa7c-1e69-1e3fc3b07a65",
+    "GPU-00f9f68c-ebb7-6b5f-3ccb-2e23f388a64b"
+  ],
+  "protocol_tables": [
+    "[1789951372.405589] [local-check:1179 :0]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |\n[1789951372.405590] [local-check:1179 :0]   +--------------------------------+----------------------------------------------------------+---------------+\n[1789951372.405591] [local-check:1179 :0]   |                         0..inf | zero-copy                                                | cuda_ipc/cuda |\n[1789951372.405591] [local-check:1179 :0]   +--------------------------------+----------------------------------------------------------+---------------+\n[1789951372.411354] [local-check:1179 :0]   +--------------------------------+---------------------------------------------------------+\n[1789951372.411356] [local-check:1179 :0]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send*(egr) from host memory    |\n[1789951372.411356] [local-check:1179 :0]   +--------------------------------+----------------------------------------------+----------+\n[1789951372.411357] [local-check:1179 :0]   |                              0 | short                                        | tcp/eth0 |",
+    "[1789951373.331350] [local-check:1179 :2]   | ucp_context_0 intra-node cfg#1 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |\n[1789951373.331351] [local-check:1179 :2]   +--------------------------------+----------------------------------------------------------+---------------+\n[1789951373.331351] [local-check:1179 :2]   |                         0..inf | zero-copy                                                | cuda_ipc/cuda |\n[1789951373.331352] [local-check:1179 :2]   +--------------------------------+----------------------------------------------------------+---------------+\n[1789951373.331397] [local-check:1179 :3]   +--------------------------------+--------------------------------------------------------------------------+\n[1789951373.331402] [local-check:1179 (APIServer pid=231) INFO:     127.0.0.1:0 - \"POST /v1/completions HTTP/1.1\" 200 OK\n(APIServer pid=231) INFO:     127.0.0.1:45210 - \"GET /metrics HTTP/1.1\" 200 OK\n(APIServer pid=231) INFO:     127.0.0.1:45214 - \"GET /metrics HTTP/1.1\" 200 OK"
+  ],
+  "idle_delta": {
+    "GPU-7534f21f-b59f-fa7c-1e69-1e3fc3b07a65": {
+      "Tx": 0,
+      "Rx": 0
+    },
+    "GPU-00f9f68c-ebb7-6b5f-3ccb-2e23f388a64b": {
+      "Tx": 0,
+      "Rx": 0
+    }
+  },
+  "request_evidence": [
+    {
+      "case": "copy-512-1",
+      "route": "direct",
+      "prompt_tokens": 512,
+      "kv_bytes": 0.0,
+      "nvlink_prefill_tx_kib": 0,
+      "nvlink_decode_rx_kib": 0
+    },
+    {
+      "case": "copy-512-1",
+      "route": "pd",
+      "prompt_tokens": 512,
+      "kv_bytes": 58720256.0,
+      "nvlink_prefill_tx_kib": 57344,
+      "nvlink_decode_rx_kib": 57344
+    },
+    {
+      "case": "copy-512-2",
+      "route": "direct",
+      "prompt_tokens": 512,
+      "kv_bytes": 0.0,
+      "nvlink_prefill_tx_kib": 0,
+      "nvlink_decode_rx_kib": 0
+    },
+    {
+      "case": "copy-512-2",
+      "route": "pd",
+      "prompt_tokens": 512,
+      "kv_bytes": 58720256.0,
+      "nvlink_prefill_tx_kib": 57346,
+      "nvlink_decode_rx_kib": 57346
+    },
+    {
+      "case": "copy-8192-1",
+      "route": "direct",
+      "prompt_tokens": 8192,
+      "kv_bytes": 0.0,
+      "nvlink_prefill_tx_kib": 0,
+      "nvlink_decode_rx_kib": 0
+    },
+    {
+      "case": "copy-8192-1",
+      "route": "pd",
+      "prompt_tokens": 8192,
+      "kv_bytes": 939524096.0,
+      "nvlink_prefill_tx_kib": 917502,
+      "nvlink_decode_rx_kib": 917502
+    },
+    {
+      "case": "copy-8192-2",
+      "route": "direct",
+      "prompt_tokens": 8192,
+      "kv_bytes": 0.0,
+      "nvlink_prefill_tx_kib": 0,
+      "nvlink_decode_rx_kib": 0
+    },
+    {
+      "case": "copy-8192-2",
+      "route": "pd",
+      "prompt_tokens": 8192,
+      "kv_bytes": 939524096.0,
+      "nvlink_prefill_tx_kib": 917506,
+      "nvlink_decode_rx_kib": 917506
+    },
+    {
+      "case": "retrieval-512-1",
+      "route": "direct",
+      "prompt_tokens": 512,
+      "kv_bytes": 0.0,
+      "nvlink_prefill_tx_kib": 0,
+      "nvlink_decode_rx_kib": 0
+    },
+    {
+      "case": "retrieval-512-1",
+      "route": "pd",
+      "prompt_tokens": 512,
+      "kv_bytes": 58720256.0,
+      "nvlink_prefill_tx_kib": 57342,
+      "nvlink_decode_rx_kib": 57342
+    },
+    {
+      "case": "retrieval-512-2",
+      "route": "direct",
+      "prompt_tokens": 512,
+      "kv_bytes": 0.0,
+      "nvlink_prefill_tx_kib": 0,
+      "nvlink_decode_rx_kib": 0
+    },
+    {
+      "case": "retrieval-512-2",
+      "route": "pd",
+      "prompt_tokens": 512,
+      "kv_bytes": 58720256.0,
+      "nvlink_prefill_tx_kib": 57346,
+      "nvlink_decode_rx_kib": 57346
+    },
+    {
+      "case": "retrieval-8192-1",
+      "route": "direct",
+      "prompt_tokens": 8192,
+      "kv_bytes": 0.0,
+      "nvlink_prefill_tx_kib": 0,
+      "nvlink_decode_rx_kib": 0
+    },
+    {
+      "case": "retrieval-8192-1",
+      "route": "pd",
+      "prompt_tokens": 8192,
+      "kv_bytes": 939524096.0,
+      "nvlink_prefill_tx_kib": 917502,
+      "nvlink_decode_rx_kib": 917502
+    },
+    {
+      "case": "retrieval-8192-2",
+      "route": "direct",
+      "prompt_tokens": 8192,
+      "kv_bytes": 0.0,
+      "nvlink_prefill_tx_kib": 0,
+      "nvlink_decode_rx_kib": 0
+    },
+    {
+      "case": "retrieval-8192-2",
+      "route": "pd",
+      "prompt_tokens": 8192,
+      "kv_bytes": 939524096.0,
+      "nvlink_prefill_tx_kib": 917504,
+      "nvlink_decode_rx_kib": 917504
+    }
+  ],
+  "rounding_tolerance_kib": 18,
+  "scope": "Qwen3-0.6B eager, shared two-GPU container, pinned llm-d sidecar. No remote TTFT or router-policy gain."
+}

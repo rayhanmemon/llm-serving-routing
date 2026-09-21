@@ -1,0 +1,9 @@
+{
+  "session_id": "20260921T002805Z-5ec5c384",
+  "estimate_usd_pretax": "5.320884393540468797564687975",
+  "gpu_start": "2026-09-21T00:32:25.871441Z",
+  "gpu_end": "2026-09-21T00:48:41.360780Z",
+  "gpu_cost_usd": "5.310997512333333333333333333",
+  "disk_cost_usd": "0.009886881207135464231354642314",
+  "method": "Conservative create-start through delete-finish; storage for full session. Before tax, not invoice."
+}
