@@ -50,6 +50,11 @@ def protocol_tables(log,transport):
             and any('zero-copy' in row and transport in row for row in lines[i+1:i+8])]
 
 
+def rdma_read_tables(log):
+    return [table for transport in ('rc_mlx5','dc_mlx5','rc_verbs')
+            for table in protocol_tables(log,transport)]
+
+
 def check_transfer(before,after,route):
     chosen=route.removeprefix('pd-') if route.startswith('pd-') else None
     for role in before:
@@ -168,7 +173,7 @@ def run(config,suite,out,deadline):
         if len(set(texts[case['case_id']]))!=1:raise ValueError('Cross-route parity failed: '+case['case_id'])
     final=evidence(config)
     if not protocol_tables(final['local']['protocol'],'cuda_ipc'):raise ValueError('Local engine READ not CUDA IPC')
-    if not protocol_tables(final['remote']['protocol'],'rc_mlx5'):raise ValueError('Remote engine READ not RDMA')
+    if not rdma_read_tables(final['remote']['protocol']):raise ValueError('Remote engine READ not RDMA')
     w.write(out/'qualified.json',{'requests':32,'cases':8,'evidence':final,'baseline':baseline})
     print('Both transports and 8/8 four-route parity passed; starting warmups.',flush=True)
     timings=[]

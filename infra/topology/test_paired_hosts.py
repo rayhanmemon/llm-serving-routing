@@ -36,6 +36,10 @@ class PairedTests(unittest.TestCase):
   self.assertFalse(client.protocol_tables('Available cuda_ipc','cuda_ipc'))
   self.assertFalse(client.protocol_tables('remote memory read into host\nzero-copy rc_mlx5','rc_mlx5'))
   self.assertTrue(client.protocol_tables('remote memory read into cuda/GPU0\nzero-copy rc_mlx5/mlx5_0','rc_mlx5'))
+ def test_rdma_accepts_rc_or_dc_but_not_tcp(self):
+  for transport in ('rc_mlx5','dc_mlx5','rc_verbs'):
+   self.assertTrue(client.rdma_read_tables('remote memory read into cuda/GPU0\nzero-copy '+transport+'/mlx5_0'))
+  self.assertFalse(client.rdma_read_tables('remote memory read into cuda/GPU0\nzero-copy tcp/eth0'))
  def test_wrong_route_or_error_rejected(self):
   zero={m:0 for m in (client.COUNT,client.SIZE,*client.w.FAILURES)}
   before={r:dict(zero) for r in ('prefill','local','remote')};after=json.loads(json.dumps(before))

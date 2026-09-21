@@ -37,7 +37,7 @@ def summarize(folder,suite):
     require(all(len(x)==1 for x in texts.values()),'Cross-route parity failed')
     evidence=read('qualified.json')['evidence']
     require(c.protocol_tables(evidence['local']['protocol'],'cuda_ipc'),'Local transport unproven')
-    require(c.protocol_tables(evidence['remote']['protocol'],'rc_mlx5'),'Remote transport unproven')
+    require(c.rdma_read_tables(evidence['remote']['protocol']),'Remote transport unproven')
     rows=read('timings.json');lookup={p['id']:p for p in plan['pairs']};pairs={};seen=set();warmups=[]
     for row in rows:
         if row['warmup']:
