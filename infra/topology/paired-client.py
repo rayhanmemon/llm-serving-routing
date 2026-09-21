@@ -137,7 +137,7 @@ def run(config,suite,out,deadline):
     frozen={'suite_sha256':hashlib.sha256(raw).hexdigest(),'pairs':plan_pairs(plan['cases']),
             'ttft_definition':'HTTP request start to first nonempty generated text fragment',
             'scope':'Forced sidecar routes; no EPP policy comparison. Qwen3-0.6B eager.',
-            'load_method':'1 or 3 concurrent direct-local 4096-token requests; fresh cohort per foreground request; observed gauges retained.'}
+            'load_method':'1 or 3 concurrent direct-local 1024-token requests; fresh cohort per foreground request; observed gauges retained.'}
     w.write(out/'timing-plan.json',frozen)
     baseline=evidence(config);rows=[];texts={}
     local_ids=baseline['local']['selected_gpus'];remote_ids=baseline['remote']['selected_gpus']
@@ -190,7 +190,7 @@ def run(config,suite,out,deadline):
             with ThreadPoolExecutor(max_workers=3) as pool:
                 if pair['load']:
                     bg=dict(next(c['request_body'] for c in plan['cases'] if c['input_tokens']==512))
-                    bg.update(max_tokens=4096,stream=True,stream_options={'include_usage':True});bg.pop('logprobs',None);bg.pop('return_token_ids',None)
+                    bg.update(max_tokens=1024,stream=True,stream_options={'include_usage':True});bg.pop('logprobs',None);bg.pop('return_token_ids',None)
                     futures=[pool.submit(request,config,'direct-local',bg) for _ in range(pair['load'])]
                     for _ in range(100):
                         observed=snapshot(config)
