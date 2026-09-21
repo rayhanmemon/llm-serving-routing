@@ -1,0 +1,20 @@
+{
+  "session_id": "20260921T181041Z-99bbc0e1",
+  "estimate_usd_pretax": "2.684516308415683409436834095",
+  "components": {
+    "computeinstance-u00abreb5d18x3kp57": {
+      "start": "2026-09-21T18:16:03.264196Z",
+      "end": "2026-09-21T18:29:30.995650Z",
+      "rate": "0.3968",
+      "cost_usd": "0.08902995581866666666666666667"
+    },
+    "computeinstance-u00ynny4ba0vbmypxh": {
+      "start": "2026-09-21T18:19:34.071102Z",
+      "end": "2026-09-21T18:27:28.703316Z",
+      "rate": "19.6",
+      "cost_usd": "2.584108720666666666666666667"
+    }
+  },
+  "disk_cost_usd": "0.01137763193035007610350076103",
+  "method": "Conservative native create-start to delete-finish including failed GPU scheduling interval; all320GiB storage for full session. May overstate actual failed-allocation charge; not invoice."
+}

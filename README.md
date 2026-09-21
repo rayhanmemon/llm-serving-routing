@@ -4,6 +4,8 @@ Request-sensitive topology routing for llm-d: keep decode near the selected pref
 
 **Status: [draft PR #2870](https://github.com/llm-d/llm-d-router/pull/2870) is open with the single-allowance implementation.** Prompt-size-dependent configuration and real-model evaluation remain unfinished. No performance improvement or merge is claimed. See [plugin/](plugin/README.md) for the decision and prior work.
 
+**Latest measurements — September 21:** [Qwen3-32B at TP4](results/2026-09-21-tp4-locality/RESULT.md) completed 32 qualification calls and 96 timed requests through 120K input tokens. Local CUDA IPC and remote RDMA were verified on every receiving rank. Remote TTFT was lower on average, while local transfers were much faster with few memory descriptors. Submission cost dominated the many-descriptor local path. The next candidate test is the documented packed KV-block layout; routing-policy comparisons have not run. All rented resources are deleted.
+
 The September 15 [L40S](results/2026-09-15-topology-transfer/RESULT.md) and [H100](results/2026-09-15-h100-topology-transfer/RESULT.md) attempts both failed on multi-GPU placement. Cleanup was verified for each; neither produced inference measurements.
 
 The [September 16 H100 run](results/2026-09-16-h100-transfer-qualification/RESULT.md) provisioned successfully and passed real-model direct/local/remote P/D correctness. The fast local transfer path remains unqualified after an IPC handle-open failure in an isolated diagnostic. No routing-performance benchmark or improvement is claimed; cleanup was verified.

@@ -1,0 +1,14 @@
+{
+  "requests": 144,
+  "rank_transfers": 512.0,
+  "kv_bytes": 1889785610240.0,
+  "all_expected_pairs": true,
+  "configuration_sha256": "3730eaefb0e9b36119683b24bdf33527662167866376fcbb26f77270827b5dfa",
+  "run_id": "20260921T192617Z-5f57ed73",
+  "source_commit": "c41a728",
+  "attention_backend": "FLASH_ATTN",
+  "kv_layout": "HND",
+  "cross_layer_blocks_enabled": false,
+  "policy_test": false,
+  "concurrency_sweep": false
+}

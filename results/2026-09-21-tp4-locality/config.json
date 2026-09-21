@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "status": "preparation; not a qualified deployment",
+  "model": "Qwen/Qwen3-32B",
+  "revision": "9216db5781bf21249d130ec9da846c4624c16137",
+  "model_config_sha256": "97e295b63283935788fac5e4f8860862a56d4089538cafc93f0431f2ebe483bb",
+  "parameter_count": 32762123264,
+  "tensor_parallel_size": 4,
+  "dtype": "bfloat16",
+  "kv_cache_dtype": "auto",
+  "max_model_len": 131072,
+  "rope_scaling": {
+    "rope_type": "yarn",
+    "factor": 4.0,
+    "original_max_position_embeddings": 32768
+  },
+  "block_size": 64,
+  "max_num_seqs": 8,
+  "max_num_batched_tokens": 8192,
+  "gpu_memory_utilization": 0.85,
+  "enforce_eager": false,
+  "enable_prefix_caching": false,
+  "input_tokens": [
+    4096,
+    32768,
+    65536,
+    122880
+  ],
+  "screening_output_tokens": 32,
+  "concurrency_candidates": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "kv_role": "kv_both",
+  "placement": {
+    "local": {
+      "prefill": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "decode": [
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    "remote": {
+      "decode": [
+        0,
+        1,
+        2,
+        3
+      ]
+    }
+  },
+  "notes": [
+    "One fixed YaRN configuration for every route and length.",
+    "Screening output32 tokens proposed to isolate TTFT; load-calibration output length remains separate.",
+    "Concurrency candidates require startup KV-capacity and live checks, not just calculated weight-plus-cache sums.",
+    "No EPP policy comparison is performed by transport qualification.",
+    "GPU rental requires a separate admitted session and rank-aware preflight."
+  ]
+}

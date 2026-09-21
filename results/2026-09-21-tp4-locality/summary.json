@@ -1,0 +1,495 @@
+{
+  "suite_sha256": "49da6016193b5865f1977c534ea824c25dcc9da956080069ac39d761a453362f",
+  "qualification_requests": 32,
+  "matching_cases": 8,
+  "gold_matches": 28,
+  "complete": true,
+  "timed_requests": 96,
+  "complete_pairs": 48,
+  "warmups": 16,
+  "groups": [
+    {
+      "input_tokens": 4096,
+      "complete_pairs": 12,
+      "local_median_ms": 182.96073250007794,
+      "remote_median_ms": 175.01128599997173,
+      "paired_mean_remote_minus_local_ms": -5.465448999984801,
+      "local_faster_pairs": 3,
+      "by_first_route": {
+        "local": -2.2786216666948653,
+        "remote": -8.652276333274736
+      }
+    },
+    {
+      "input_tokens": 32768,
+      "complete_pairs": 12,
+      "local_median_ms": 1736.857546500005,
+      "remote_median_ms": 1657.4006144999203,
+      "paired_mean_remote_minus_local_ms": -60.57872608327367,
+      "local_faster_pairs": 2,
+      "by_first_route": {
+        "local": -44.158096833295225,
+        "remote": -76.99935533325213
+      }
+    },
+    {
+      "input_tokens": 65536,
+      "complete_pairs": 12,
+      "local_median_ms": 4441.453733499884,
+      "remote_median_ms": 4295.416650499874,
+      "paired_mean_remote_minus_local_ms": -95.4548246666036,
+      "local_faster_pairs": 3,
+      "by_first_route": {
+        "local": -48.379538666798304,
+        "remote": -142.5301106664089
+      }
+    },
+    {
+      "input_tokens": 122880,
+      "complete_pairs": 12,
+      "local_median_ms": 11598.291456499965,
+      "remote_median_ms": 11316.468815500002,
+      "paired_mean_remote_minus_local_ms": -200.50469041662686,
+      "local_faster_pairs": 2,
+      "by_first_route": {
+        "local": -150.01101083339563,
+        "remote": -250.99836999985806
+      }
+    }
+  ],
+  "pairs": [
+    {
+      "pair": "b0-65536-0",
+      "block": 0,
+      "input_tokens": 65536,
+      "first": "local",
+      "local_ms": 4221.40771300019,
+      "remote_ms": 4299.915467999654,
+      "remote_minus_local_ms": 78.50775499946394
+    },
+    {
+      "pair": "b0-65536-1",
+      "block": 0,
+      "input_tokens": 65536,
+      "first": "remote",
+      "local_ms": 4459.583000999828,
+      "remote_ms": 4290.555360000326,
+      "remote_minus_local_ms": -169.02764099950218
+    },
+    {
+      "pair": "b0-65536-2",
+      "block": 0,
+      "input_tokens": 65536,
+      "first": "local",
+      "local_ms": 4224.27931700031,
+      "remote_ms": 4296.041626999795,
+      "remote_minus_local_ms": 71.7623099994853
+    },
+    {
+      "pair": "b0-65536-3",
+      "block": 0,
+      "input_tokens": 65536,
+      "first": "remote",
+      "local_ms": 4448.140919999787,
+      "remote_ms": 4299.391706999813,
+      "remote_minus_local_ms": -148.74921299997368
+    },
+    {
+      "pair": "b0-4096-0",
+      "block": 0,
+      "input_tokens": 4096,
+      "first": "remote",
+      "local_ms": 183.5285159995692,
+      "remote_ms": 177.11462799979927,
+      "remote_minus_local_ms": -6.4138879997699405
+    },
+    {
+      "pair": "b0-4096-1",
+      "block": 0,
+      "input_tokens": 4096,
+      "first": "remote",
+      "local_ms": 186.0899260000224,
+      "remote_ms": 173.47400600010587,
+      "remote_minus_local_ms": -12.615919999916514
+    },
+    {
+      "pair": "b0-4096-2",
+      "block": 0,
+      "input_tokens": 4096,
+      "first": "local",
+      "local_ms": 169.45468300036737,
+      "remote_ms": 173.56386200026463,
+      "remote_minus_local_ms": 4.109178999897267
+    },
+    {
+      "pair": "b0-4096-3",
+      "block": 0,
+      "input_tokens": 4096,
+      "first": "local",
+      "local_ms": 182.3341670001355,
+      "remote_ms": 174.36956499977896,
+      "remote_minus_local_ms": -7.964602000356535
+    },
+    {
+      "pair": "b0-122880-0",
+      "block": 0,
+      "input_tokens": 122880,
+      "first": "local",
+      "local_ms": 11113.690372000292,
+      "remote_ms": 11278.22494799966,
+      "remote_minus_local_ms": 164.53457599936883
+    },
+    {
+      "pair": "b0-122880-1",
+      "block": 0,
+      "input_tokens": 122880,
+      "first": "remote",
+      "local_ms": 11622.905597999761,
+      "remote_ms": 11303.915280000183,
+      "remote_minus_local_ms": -318.9903179995781
+    },
+    {
+      "pair": "b0-122880-2",
+      "block": 0,
+      "input_tokens": 122880,
+      "first": "remote",
+      "local_ms": 11617.256610999902,
+      "remote_ms": 11396.19994099985,
+      "remote_minus_local_ms": -221.0566700000527
+    },
+    {
+      "pair": "b0-122880-3",
+      "block": 0,
+      "input_tokens": 122880,
+      "first": "local",
+      "local_ms": 11626.434683999832,
+      "remote_ms": 11329.022350999821,
+      "remote_minus_local_ms": -297.41233300001113
+    },
+    {
+      "pair": "b0-32768-0",
+      "block": 0,
+      "input_tokens": 32768,
+      "first": "local",
+      "local_ms": 1625.0905530000637,
+      "remote_ms": 1658.5864200001197,
+      "remote_minus_local_ms": 33.49586700005602
+    },
+    {
+      "pair": "b0-32768-1",
+      "block": 0,
+      "input_tokens": 32768,
+      "first": "remote",
+      "local_ms": 1728.2686429998648,
+      "remote_ms": 1661.2227850000636,
+      "remote_minus_local_ms": -67.04585799980123
+    },
+    {
+      "pair": "b0-32768-2",
+      "block": 0,
+      "input_tokens": 32768,
+      "first": "remote",
+      "local_ms": 1744.421135000266,
+      "remote_ms": 1656.9985710002584,
+      "remote_minus_local_ms": -87.4225640000077
+    },
+    {
+      "pair": "b0-32768-3",
+      "block": 0,
+      "input_tokens": 32768,
+      "first": "local",
+      "local_ms": 1738.3134960000461,
+      "remote_ms": 1664.7234609999941,
+      "remote_minus_local_ms": -73.59003500005201
+    },
+    {
+      "pair": "b1-65536-0",
+      "block": 1,
+      "input_tokens": 65536,
+      "first": "remote",
+      "local_ms": 4439.54237600019,
+      "remote_ms": 4327.842156000315,
+      "remote_minus_local_ms": -111.70021999987512
+    },
+    {
+      "pair": "b1-65536-1",
+      "block": 1,
+      "input_tokens": 65536,
+      "first": "local",
+      "local_ms": 4459.737035999751,
+      "remote_ms": 4294.791673999953,
+      "remote_minus_local_ms": -164.94536199979848
+    },
+    {
+      "pair": "b1-65536-2",
+      "block": 1,
+      "input_tokens": 65536,
+      "first": "remote",
+      "local_ms": 4442.190777999713,
+      "remote_ms": 4309.816267000315,
+      "remote_minus_local_ms": -132.3745109993979
+    },
+    {
+      "pair": "b1-65536-3",
+      "block": 1,
+      "input_tokens": 65536,
+      "first": "local",
+      "local_ms": 4460.960685999908,
+      "remote_ms": 4293.404337000084,
+      "remote_minus_local_ms": -167.55634899982397
+    },
+    {
+      "pair": "b1-122880-0",
+      "block": 1,
+      "input_tokens": 122880,
+      "first": "remote",
+      "local_ms": 11612.776414000109,
+      "remote_ms": 11360.278200000266,
+      "remote_minus_local_ms": -252.49821399984285
+    },
+    {
+      "pair": "b1-122880-1",
+      "block": 1,
+      "input_tokens": 122880,
+      "first": "remote",
+      "local_ms": 11575.507296000069,
+      "remote_ms": 11339.420222000172,
+      "remote_minus_local_ms": -236.08707399989726
+    },
+    {
+      "pair": "b1-122880-2",
+      "block": 1,
+      "input_tokens": 122880,
+      "first": "local",
+      "local_ms": 11176.060311999663,
+      "remote_ms": 11333.928422999634,
+      "remote_minus_local_ms": 157.86811099997067
+    },
+    {
+      "pair": "b1-122880-3",
+      "block": 1,
+      "input_tokens": 122880,
+      "first": "local",
+      "local_ms": 11598.860296000112,
+      "remote_ms": 11294.84019199981,
+      "remote_minus_local_ms": -304.0201040003012
+    },
+    {
+      "pair": "b1-32768-0",
+      "block": 1,
+      "input_tokens": 32768,
+      "first": "local",
+      "local_ms": 1626.1187439999958,
+      "remote_ms": 1657.4644789998274,
+      "remote_minus_local_ms": 31.34573499983162
+    },
+    {
+      "pair": "b1-32768-1",
+      "block": 1,
+      "input_tokens": 32768,
+      "first": "remote",
+      "local_ms": 1735.4015969999637,
+      "remote_ms": 1651.6351300001588,
+      "remote_minus_local_ms": -83.76646699980483
+    },
+    {
+      "pair": "b1-32768-2",
+      "block": 1,
+      "input_tokens": 32768,
+      "first": "remote",
+      "local_ms": 1731.6705369999,
+      "remote_ms": 1677.0280839996303,
+      "remote_minus_local_ms": -54.6424530002696
+    },
+    {
+      "pair": "b1-32768-3",
+      "block": 1,
+      "input_tokens": 32768,
+      "first": "local",
+      "local_ms": 1735.1883269998325,
+      "remote_ms": 1657.1217519999664,
+      "remote_minus_local_ms": -78.06657499986613
+    },
+    {
+      "pair": "b1-4096-0",
+      "block": 1,
+      "input_tokens": 4096,
+      "first": "local",
+      "local_ms": 172.713948999899,
+      "remote_ms": 176.38805100023092,
+      "remote_minus_local_ms": 3.6741020003319136
+    },
+    {
+      "pair": "b1-4096-1",
+      "block": 1,
+      "input_tokens": 4096,
+      "first": "local",
+      "local_ms": 183.97347699965394,
+      "remote_ms": 176.7410369998288,
+      "remote_minus_local_ms": -7.2324399998251465
+    },
+    {
+      "pair": "b1-4096-2",
+      "block": 1,
+      "input_tokens": 4096,
+      "first": "remote",
+      "local_ms": 183.68718200008516,
+      "remote_ms": 175.01975300001504,
+      "remote_minus_local_ms": -8.667429000070115
+    },
+    {
+      "pair": "b1-4096-3",
+      "block": 1,
+      "input_tokens": 4096,
+      "first": "remote",
+      "local_ms": 185.15328299963585,
+      "remote_ms": 175.00281899992842,
+      "remote_minus_local_ms": -10.150463999707426
+    },
+    {
+      "pair": "b2-32768-0",
+      "block": 2,
+      "input_tokens": 32768,
+      "first": "remote",
+      "local_ms": 1741.3295510000353,
+      "remote_ms": 1657.3367500000131,
+      "remote_minus_local_ms": -83.99280100002215
+    },
+    {
+      "pair": "b2-32768-1",
+      "block": 2,
+      "input_tokens": 32768,
+      "first": "local",
+      "local_ms": 1749.323133999951,
+      "remote_ms": 1654.438646000017,
+      "remote_minus_local_ms": -94.88448799993421
+    },
+    {
+      "pair": "b2-32768-2",
+      "block": 2,
+      "input_tokens": 32768,
+      "first": "remote",
+      "local_ms": 1746.0489139998572,
+      "remote_ms": 1660.92292500025,
+      "remote_minus_local_ms": -85.12598899960722
+    },
+    {
+      "pair": "b2-32768-3",
+      "block": 2,
+      "input_tokens": 32768,
+      "first": "local",
+      "local_ms": 1739.810572999886,
+      "remote_ms": 1656.5614880000794,
+      "remote_minus_local_ms": -83.24908499980666
+    },
+    {
+      "pair": "b2-65536-0",
+      "block": 2,
+      "input_tokens": 65536,
+      "first": "remote",
+      "local_ms": 4430.683692999992,
+      "remote_ms": 4319.647819000238,
+      "remote_minus_local_ms": -111.03587399975368
+    },
+    {
+      "pair": "b2-65536-1",
+      "block": 2,
+      "input_tokens": 65536,
+      "first": "local",
+      "local_ms": 4440.716689000055,
+      "remote_ms": 4270.182401000056,
+      "remote_minus_local_ms": -170.53428799999892
+    },
+    {
+      "pair": "b2-65536-2",
+      "block": 2,
+      "input_tokens": 65536,
+      "first": "local",
+      "local_ms": 4215.641115999915,
+      "remote_ms": 4278.1298179997975,
+      "remote_minus_local_ms": 62.48870199988232
+    },
+    {
+      "pair": "b2-65536-3",
+      "block": 2,
+      "input_tokens": 65536,
+      "first": "remote",
+      "local_ms": 4453.5416789999545,
+      "remote_ms": 4271.248474000004,
+      "remote_minus_local_ms": -182.29320499995083
+    },
+    {
+      "pair": "b2-122880-0",
+      "block": 2,
+      "input_tokens": 122880,
+      "first": "remote",
+      "local_ms": 11515.127615999972,
+      "remote_ms": 11299.845820999963,
+      "remote_minus_local_ms": -215.28179500000988
+    },
+    {
+      "pair": "b2-122880-1",
+      "block": 2,
+      "input_tokens": 122880,
+      "first": "local",
+      "local_ms": 11534.686419999616,
+      "remote_ms": 11268.974471000092,
+      "remote_minus_local_ms": -265.7119489995239
+    },
+    {
+      "pair": "b2-122880-2",
+      "block": 2,
+      "input_tokens": 122880,
+      "first": "remote",
+      "local_ms": 11597.722616999818,
+      "remote_ms": 11335.64646800005,
+      "remote_minus_local_ms": -262.0761489997676
+    },
+    {
+      "pair": "b2-122880-3",
+      "block": 2,
+      "input_tokens": 122880,
+      "first": "local",
+      "local_ms": 11611.603574000128,
+      "remote_ms": 11256.279208000251,
+      "remote_minus_local_ms": -355.32436599987705
+    },
+    {
+      "pair": "b2-4096-0",
+      "block": 2,
+      "input_tokens": 4096,
+      "first": "local",
+      "local_ms": 176.8800480003847,
+      "remote_ms": 177.11971100015944,
+      "remote_minus_local_ms": 0.23966299977473682
+    },
+    {
+      "pair": "b2-4096-1",
+      "block": 2,
+      "input_tokens": 4096,
+      "first": "local",
+      "local_ms": 181.39821000022494,
+      "remote_ms": 174.9005780002335,
+      "remote_minus_local_ms": -6.497631999991427
+    },
+    {
+      "pair": "b2-4096-2",
+      "block": 2,
+      "input_tokens": 4096,
+      "first": "remote",
+      "local_ms": 183.32607100001042,
+      "remote_ms": 173.69314799998392,
+      "remote_minus_local_ms": -9.632923000026494
+    },
+    {
+      "pair": "b2-4096-3",
+      "block": 2,
+      "input_tokens": 4096,
+      "first": "remote",
+      "local_ms": 182.59539400014546,
+      "remote_ms": 178.16235999998753,
+      "remote_minus_local_ms": -4.433034000157932
+    }
+  ],
+  "scope": "Forced-route idle screen; no load calibration or routing-policy performance claim."
+}

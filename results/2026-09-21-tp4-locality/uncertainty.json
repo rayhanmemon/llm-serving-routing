@@ -1,0 +1,54 @@
+[
+  {
+    "input_tokens": 4096,
+    "paired_bootstrap_95_ms": [
+      -8.199187583386447,
+      -2.3986656666465933
+    ],
+    "block_means_ms": {
+      "0": -5.721307750036431,
+      "1": -5.5940577498176935,
+      "2": -5.080981500100279
+    },
+    "interpretation": "Exploratory resampling of 12 repeated pairs in one deployment; not independent production replication."
+  },
+  {
+    "input_tokens": 32768,
+    "paired_bootstrap_95_ms": [
+      -81.93961041664959,
+      -34.06477841663976
+    ],
+    "block_means_ms": {
+      "0": -48.64064749995123,
+      "1": -46.282440000027236,
+      "2": -86.81309074984256
+    },
+    "interpretation": "Exploratory resampling of 12 repeated pairs in one deployment; not independent production replication."
+  },
+  {
+    "input_tokens": 65536,
+    "paired_bootstrap_95_ms": [
+      -146.38676558327765,
+      -37.02095525018952
+    ],
+    "block_means_ms": {
+      "0": -41.876697250131656,
+      "1": -144.14411049972387,
+      "2": -100.34366624995528
+    },
+    "interpretation": "Exploratory resampling of 12 repeated pairs in one deployment; not independent production replication."
+  },
+  {
+    "input_tokens": 122880,
+    "paired_bootstrap_95_ms": [
+      -282.29523291645364,
+      -93.8257892502179
+    ],
+    "block_means_ms": {
+      "0": -168.23118625006828,
+      "1": -158.68432025001766,
+      "2": -274.5985647497946
+    },
+    "interpretation": "Exploratory resampling of 12 repeated pairs in one deployment; not independent production replication."
+  }
+]
