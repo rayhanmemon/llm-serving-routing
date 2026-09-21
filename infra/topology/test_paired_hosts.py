@@ -23,6 +23,12 @@ class PairedTests(unittest.TestCase):
   self.assertEqual(guard.select_groups([{'id':'g','name':'router-local','parent_id':'c'}],'c'),{'router-local':'g'})
   for name,parent in [('unrelated','c'),('router-local','other')]:
    with self.assertRaises(ValueError):guard.select_groups([{'id':'g','name':name,'parent_id':parent}],'c')
+ def test_guard_uses_node_dns_and_requires_armed_json(self):
+  doc=controller.guard_manifest('node',{'project_id':'project','cleanup_start_deadline_unix':1},'cluster')
+  self.assertEqual(doc['items'][-1]['spec']['dnsPolicy'],'Default')
+  self.assertIsNone(controller.guard_acknowledgement('pip installing\nGuard retry: TimeoutError'))
+  self.assertIsNone(controller.guard_acknowledgement('{"armed": false}'))
+  self.assertEqual(controller.guard_acknowledgement('pip installed\n{"armed":true,"cluster":"c"}'),{'armed':True,'cluster':'c'})
  def test_balanced_frozen_pairs(self):
   cases=[{'input_tokens':n,'request_body':{'prompt':[1]*n}} for n in (512,8192)]
   pairs=client.plan_pairs(cases)
@@ -124,12 +130,12 @@ class ClientFlowReplay(unittest.TestCase):
 
 
 class ControllerReplay(unittest.TestCase):
- def replay(self,bad_guard=False):
+ def replay(self,bad_guard=False,guard_timeout=False):
   import subprocess,tarfile,time
   with tempfile.TemporaryDirectory() as tmp:
    run=Path(tmp);plan=run/'original.tfplan';plan.write_text('fixture');suite=run/'suite.json';suite.write_text('{}')
    session={'profile':controller.PROFILE,'project_id':'p','terraform_dir':'/no-real-tf','cleanup_start_deadline_unix':time.time()+2400,'terraform_plan_path':str(plan)}
-   (run/'session.json').write_text(json.dumps(session));c=controller.Controller(run);calls=[];gpu_applied=[]
+   (run/'session.json').write_text(json.dumps(session));c=controller.Controller(run);calls=[];gpu_applied=[];guard_reads=[]
    addresses=['nebius_compute_v1_gpu_cluster.local','nebius_mk8s_v1_node_group.local','nebius_mk8s_v1_node_group.remote[0]']
    tfplan={'resource_changes':[{'address':a,'change':{'actions':['create']}} for a in addresses],'variables':{},'configuration':{}}
    buf=io.BytesIO()
@@ -146,7 +152,9 @@ class ControllerReplay(unittest.TestCase):
     elif 'output' in cmd:text=json.dumps({'node_group_ids':{'value':{'cpu':'cpu','local':'local','remote':'remote'}}})
     elif 'nodes' in cmd:
      text=json.dumps({'items':[{'metadata':{'labels':{'nebius.com/node-group-id':r,'kubernetes.io/hostname':r}},'status':{'conditions':[{'type':'Ready','status':'True'},{'type':'NebiusGPUError','status':'False'}],'allocatable':{'nvidia.com/gpu':'8'}}} for r in ('cpu','local','remote')]})
-    elif '/results/guard-ready.json' in cmd:
+    elif 'logs' in cmd and 'deadline-guard' in cmd:
+     guard_reads.append(True)
+     if guard_timeout and len(guard_reads)==1:raise subprocess.TimeoutExpired(cmd,25)
      text=json.dumps({'armed':True,'cluster':'wrong' if bad_guard else 'c','deadline':session['cleanup_start_deadline_unix'],'gpu_groups_present_at_arm':[]})
     elif 'pods' in cmd:text=json.dumps({'items':[{'metadata':{'name':r},'status':{'podIP':ip}} for r,ip in [('local','10.0.0.1'),('remote','10.0.0.2')]]})
     return subprocess.CompletedProcess(cmd,0,text,'')
@@ -161,3 +169,4 @@ class ControllerReplay(unittest.TestCase):
      c.execute(suite);self.assertEqual(gpu_applied,[True]);self.assertTrue((c.out/'client/fixture.json').exists())
  def test_rehearsal_collects_all_artifacts(self):self.replay()
  def test_wrong_cloud_guard_prevents_gpu_allocation(self):self.replay(True)
+ def test_readiness_timeout_retries_before_gpu_allocation(self):self.replay(guard_timeout=True)

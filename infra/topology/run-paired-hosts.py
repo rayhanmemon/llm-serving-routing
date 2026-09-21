@@ -29,7 +29,7 @@ def listdoc(items):return {'apiVersion':'v1','kind':'List','items':items}
 def guard_manifest(node,session,cluster):
     return listdoc([namespace(),configmap('guard-code',{'guard.py':(HERE/'cloud-deadline-guard.py').read_text()}),
         {'apiVersion':'v1','kind':'Pod','metadata':{'name':'deadline-guard','namespace':NS},'spec':{
-         'nodeSelector':{'kubernetes.io/hostname':node},'hostNetwork':True,'dnsPolicy':'ClusterFirstWithHostNet',
+         'nodeSelector':{'kubernetes.io/hostname':node},'hostNetwork':True,'dnsPolicy':'Default',
          'automountServiceAccountToken':False,'restartPolicy':'Always',
          'containers':[{'name':'guard','image':'python:3.12-slim@sha256:44ff437bba879d4941b710a369a8f19266aea34b29002807f0c487fabc9eec9b',
           'command':['sh','-c','pip install --disable-pip-version-check nebius==0.6.11 && exec python -u /code/guard.py "$@"','guard',
@@ -37,6 +37,17 @@ def guard_manifest(node,session,cluster):
           'resources':{'requests':{'cpu':'100m','memory':'128Mi'},'limits':{'memory':'512Mi'}},
           'volumeMounts':[{'name':'code','mountPath':'/code','readOnly':True},{'name':'results','mountPath':'/results'}]}],
          'volumes':[{'name':'code','configMap':{'name':'guard-code'}},{'name':'results','emptyDir':{}}]}}])
+
+
+def guard_acknowledgement(log):
+    for line in reversed(log.splitlines()):
+        try:
+            value=json.loads(line)
+        except (ValueError,TypeError):
+            continue
+        if isinstance(value,dict) and value.get('armed') is True:
+            return value
+    return None
 
 
 def engine_manifest(nodes):
@@ -88,6 +99,18 @@ class Controller(single.Controller):
         self.env={**os.environ,'KUBECONFIG':str(run/'kubeconfig'),'KUBECTL_REMOTE_COMMAND_WEBSOCKETS':'false'}
         self.k=['kubectl','--context','router-topology','--request-timeout=20s']
         self.tf=['terraform','-chdir='+self.session['terraform_dir']]
+    def call(self,cmd,name,*args,**kwargs):
+        # Bootstrap/readiness RPC failures must not discard a healthy paid run.
+        # Only these known read-only commands may be replayed; never an apply.
+        retryable = cmd[0]=='kubectl' and (
+            'get' in cmd or 'logs' in cmd or name in
+            ('local-ready','remote-ready','client-done','local-evidence','remote-evidence','client-evidence'))
+        for attempt in range(3):
+            try:
+                return super().call(cmd,name,*args,**kwargs)
+            except subprocess.TimeoutExpired:
+                if not retryable or attempt==2:raise
+                self.sleep(2)
     def apply(self,doc,name):
         pilot.write_json(self.out/(name+'.json'),doc)
         return self.call(self.k+['apply','-f','-'],name,60,json.dumps(doc))
@@ -120,9 +143,13 @@ class Controller(single.Controller):
         self.apply(guard_manifest(node,self.session,cluster),'guard-manifest')
         until=time.time()+180
         while time.time()<until:
-            r=self.call(self.k+['-n',NS,'exec','deadline-guard','--','cat','/results/guard-ready.json'],'cloud-guard-readiness',20,check=False)
-            if r.returncode==0:
-                ready=json.loads(r.stdout)
+            try:
+                r=self.call(self.k+['-n',NS,'logs','deadline-guard','--tail=10'],'cloud-guard-readiness',25,check=False)
+            except subprocess.TimeoutExpired:
+                self.sleep(3)
+                continue
+            ready=guard_acknowledgement(r.stdout) if r.returncode==0 else None
+            if ready is not None:
                 if ready.get('armed') is not True or ready['cluster']!=cluster or ready['deadline']!=self.session['cleanup_start_deadline_unix'] or ready['gpu_groups_present_at_arm']:raise ValueError('Invalid cloud guard acknowledgement')
                 pilot.write_json(self.run/'cloud-guard-ready.json',ready);print('Cloud guard armed before GPU allocation.',flush=True);break
             self.sleep(3)
