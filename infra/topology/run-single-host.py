@@ -99,8 +99,15 @@ class Controller:
             matches=[n for n in items if n['metadata']['labels'].get('nebius.com/node-group-id')==groups['local']]
             if len(matches)==1:
                 node=matches[0]
-                if int(node['status'].get('allocatable',{}).get('nvidia.com/gpu',0))==8 and any(
-                        c['type']=='Ready' and c['status']=='True' for c in node['status']['conditions']):
+                conditions = {c['type']: c for c in node['status']['conditions']}
+                health = conditions.get('NebiusGPUError', {})
+                bad = [c for c in conditions.values() if c['type'] in ('NebiusGPUError', 'NebiusContainerRuntimeError') and c.get('status') == 'True']
+                if bad:
+                    raise RuntimeError('Provider node health failed: ' + json.dumps(bad))
+                if (int(node['status'].get('allocatable',{}).get('nvidia.com/gpu',0)) == 8
+                        and conditions.get('Ready', {}).get('status') == 'True'
+                        and health.get('status') == 'False'
+                        and not node.get('spec', {}).get('unschedulable')):
                     break
             self.sleep(5)
         rendered=manifest(node['metadata']['labels']['kubernetes.io/hostname'])
@@ -120,6 +127,8 @@ class Controller:
             if done.returncode==0:
                 break
             pods=json.loads(self.call(self.k+['-n',NS,'get','pod','local-check','-o','json'],'pod').stdout)
+            if pods.get('metadata', {}).get('deletionTimestamp'):
+                raise RuntimeError('Test Pod was evicted or deleted before evidence collection')
             for item in pods.get('status',{}).get('containerStatuses',[]):
                 if (item.get('state',{}).get('terminated') or item.get('state',{}).get('waiting',{}).get('reason') in ('ImagePullBackOff','ErrImagePull','CreateContainerConfigError')):
                     raise RuntimeError('Container exited before collection')
