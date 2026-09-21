@@ -39,3 +39,9 @@ variable "ipc_diagnostic_only" {
   default     = false
   description = "Create only the eight-GPU local node for the bounded CUDA IPC diagnostic."
 }
+
+variable "cloud_guard" {
+  type        = bool
+  default     = false
+  description = "Attach a dedicated experiment-project cleanup identity to the CPU node."
+}

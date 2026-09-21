@@ -47,6 +47,22 @@ RTX_TOPOLOGY_CREATES = FULL_TOPOLOGY_CREATES - {"nebius_compute_v1_gpu_cluster.l
 RTX_PROJECT_ID = "project-e05tg6xqln007kjqm4t3rs"
 RTX_SUBNET_ID = "vpcsubnet-e05tskd8ywwvmzhed8"
 PROFILE_POLICIES = {
+    "nvlink-rdma-h200-paired": {
+        "placement_timeout_seconds": 20 * 60,
+        "cleanup_start_seconds": 50 * 60,
+        "deletion_target_seconds": 65 * 60,
+        "hourly_rate_usd_pretax": Decimal("39.7"),
+        "attempt_admission_usd_pretax": Decimal("46"),
+        "expected_creates": FULL_TOPOLOGY_CREATES | {
+            "nebius_iam_v1_service_account.guard[0]", "nebius_iam_v1_group.guard[0]",
+            "nebius_iam_v1_group_membership.guard[0]", "nebius_iam_v1_access_permit.guard[0]"},
+        "remote_gpu_preset": "8gpu-128vcpu-1600gb", "remote_on_fabric": True,
+        "gpu_platform": "H200", "terraform_gpu_platform": "gpu-h200-sxm",
+        "infiniband_fabric": "us-central1-a", "allowed_fabrics": ("us-central1-a",),
+        "diagnostic_only": False, "gpu_preemptible": True,
+        "purchase_type": "preemptible", "terraform_dir": RDMA_TERRAFORM_DIR,
+        "require_project_binding": True,
+    },
     "rdma-h200-serving-retry": {
         "placement_timeout_seconds": 20 * 60,
         "cleanup_start_seconds": 27 * 60,
@@ -493,6 +509,12 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
         if cpu_disk.get("type") != "NETWORK_SSD" or cpu_disk.get("size_gibibytes") != 64:
             raise SessionError("Terraform plan CPU node boot disk must be a 64 GiB NETWORK_SSD")
 
+    if profile == "nvlink-rdma-h200-paired":
+        if not plan_boolean(variables.get("cloud_guard", {}).get("value"), "cloud_guard"):
+            raise SessionError("Paired overnight run requires the cloud guard")
+        permit = next(x["change"]["after"] for x in changes if x["address"] == "nebius_iam_v1_access_permit.guard[0]")
+        if permit.get("role") != "editor" or permit.get("resource_id") != project_id:
+            raise SessionError("Cleanup identity must be scoped to the experiment project")
     return {"gpu_platform": gpu_platform, "infiniband_fabric": infiniband_fabric,
             "ipc_diagnostic_only": diagnostic_value, "gpu_preemptible": preemptible,
             "project_id": project_id, "subnet_id": subnet_id,
@@ -869,6 +891,7 @@ def run_teardown_once(
 ) -> int:
     policy = profile_policy(profile)
     environment = {key: value for key, value in os.environ.items() if key != "NEBIUS_IAM_TOKEN"}
+    environment["TF_VAR_cloud_guard"] = "true" if profile == "nvlink-rdma-h200-paired" else "false"
     environment["TF_VAR_gpu_platform"] = policy["gpu_platform"]
     fabric = infiniband_fabric or policy["infiniband_fabric"]
     if fabric not in policy["allowed_fabrics"]:
