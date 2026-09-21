@@ -213,6 +213,15 @@ PROFILE_POLICIES = {
 }
 
 
+PAIRED_PROFILES = ("nvlink-rdma-h200-paired", "nvlink-rdma-h200-paired-short")
+PROFILE_POLICIES[PAIRED_PROFILES[1]] = {
+    **PROFILE_POLICIES[PAIRED_PROFILES[0]],
+    "cleanup_start_seconds": 40 * 60,
+    "deletion_target_seconds": 55 * 60,
+    "attempt_admission_usd_pretax": Decimal("38"),
+}
+
+
 class SessionError(RuntimeError):
     pass
 
@@ -509,7 +518,7 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
         if cpu_disk.get("type") != "NETWORK_SSD" or cpu_disk.get("size_gibibytes") != 64:
             raise SessionError("Terraform plan CPU node boot disk must be a 64 GiB NETWORK_SSD")
 
-    if profile == "nvlink-rdma-h200-paired":
+    if profile in PAIRED_PROFILES:
         if not plan_boolean(variables.get("cloud_guard", {}).get("value"), "cloud_guard"):
             raise SessionError("Paired overnight run requires the cloud guard")
         permit = next(x["change"]["after"] for x in changes if x["address"] == "nebius_iam_v1_access_permit.guard[0]")
@@ -891,7 +900,7 @@ def run_teardown_once(
 ) -> int:
     policy = profile_policy(profile)
     environment = {key: value for key, value in os.environ.items() if key != "NEBIUS_IAM_TOKEN"}
-    environment["TF_VAR_cloud_guard"] = "true" if profile == "nvlink-rdma-h200-paired" else "false"
+    environment["TF_VAR_cloud_guard"] = "true" if profile in PAIRED_PROFILES else "false"
     environment["TF_VAR_gpu_platform"] = policy["gpu_platform"]
     fabric = infiniband_fabric or policy["infiniband_fabric"]
     if fabric not in policy["allowed_fabrics"]:

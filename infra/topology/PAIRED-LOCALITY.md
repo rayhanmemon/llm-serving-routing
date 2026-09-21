@@ -32,3 +32,9 @@ Low-load48 measured requests; loaded48; eight warmups;32 qualification calls. Ba
 Local tests exercise the actual client qualification-to-timing flow with saved output fixtures and substituted GPU/network operations; a controller replay runs actual rendering and archive extraction while replacing cloud/Kubernetes calls. Failure tests cover transport evidence, route counters, SSE completeness and guard acknowledgement. These do not prove live provider permissions, CUDA transport choice or future performance. Those remain live gates.
 
 References: [Nebius metadata](https://docs.nebius.com/compute/virtual-machines/instance-metadata), [permission scopes](https://docs.nebius.com/iam/authorization/groups/index), [SDK authentication](https://docs.nebius.com/sdk/python/install-auth).
+
+## Corrected shorter retry
+
+After the client-side ConfigMap annotation failure, the runner uses server-side apply. A fresh local kind API reproduced the262144-byte annotation failure and accepted/stored the exact634300-byte ConfigMap unchanged with server-side apply; all three manifests passed server validation. The complete client also passed32 qualification calls,8 warmups,96 foreground measurements and96 background requests over real local HTTP/SSE with simulated engines. The paid entry point now requires this preflight record and matching source/suite hashes. These are integration checks, not GPU measurements.
+
+The shorter profile reserves$38, begins cleanup at40minutes and targets deletion at55minutes, within the remaining$39.18. It retains the same fixture and cloud guard. No new budget or performance claim.

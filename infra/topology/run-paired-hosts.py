@@ -94,7 +94,7 @@ def validate_remaining(original,new):
 class Controller(single.Controller):
     def __init__(self,run):
         self.run=run;self.session=pilot.read_json(run/'session.json')
-        if self.session['profile']!=PROFILE:raise ValueError('Wrong admitted profile')
+        if self.session['profile'] not in pilot.PAIRED_PROFILES:raise ValueError('Wrong admitted profile')
         self.out=run/'paired';self.out.mkdir();self.rpc=subprocess.run;self.sleep=time.sleep
         self.env={**os.environ,'KUBECONFIG':str(run/'kubeconfig'),'KUBECTL_REMOTE_COMMAND_WEBSOCKETS':'false'}
         self.k=['kubectl','--context','router-topology','--request-timeout=20s']
@@ -113,7 +113,7 @@ class Controller(single.Controller):
                 self.sleep(2)
     def apply(self,doc,name):
         pilot.write_json(self.out/(name+'.json'),doc)
-        return self.call(self.k+['apply','-f','-'],name,60,json.dumps(doc))
+        return self.call(self.k+['apply','--server-side','-f','-'],name,60,json.dumps(doc))
     def nodes(self,groups):
         deadline=min(time.time()+600,self.session['cleanup_start_deadline_unix']-600)
         while time.time()<deadline:
@@ -205,9 +205,18 @@ class Controller(single.Controller):
 
 
 def main():
-    p=pilot.parser();p.add_argument('--suite',type=Path,required=True);a=p.parse_args()
-    if a.profile!=PROFILE:raise ValueError('This runner only accepts the paired profile')
+    p=pilot.parser();p.add_argument('--suite',type=Path,required=True);p.add_argument('--preflight-record',type=Path,required=True);a=p.parse_args()
+    if a.profile not in pilot.PAIRED_PROFILES:raise ValueError('This runner only accepts the paired profile')
+    preflight=json.loads(a.preflight_record.read_text())
+    if not all(preflight.get(k) is True for k in ('server_side_full_configmap_stored','data_unchanged','all_three_actual_manifests_pass_server_validation','full_http_workflow_passed')):
+        raise ValueError('Real API and full HTTP preflight required before rental')
+    if preflight.get('suite_sha256')!=hashlib.sha256(a.suite.read_bytes()).hexdigest():
+        raise ValueError('Preflight did not validate this frozen suite')
+    for name in CODE_FILES:
+        if preflight['code_sha256'].get(name)!=hashlib.sha256((HERE/name).read_bytes()).hexdigest():
+            raise ValueError('Preflight source changed: '+name)
     run,session=pilot.prepare_session(a)
+    pilot.write_json(run/'preflight.json',preflight)
     print('RUN_DIR='+str(run),flush=True)
     guard=pilot.spawn_guard(run);pilot.wait_guard_ready(run,guard)
     session['guard_pid']=guard.pid;pilot.write_json(run/'session.json',session)

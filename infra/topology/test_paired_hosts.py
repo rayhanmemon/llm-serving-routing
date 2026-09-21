@@ -143,6 +143,7 @@ class ControllerReplay(unittest.TestCase):
     data=b'{"fixture":true}';m=tarfile.TarInfo('fixture.json');m.size=len(data);t.addfile(m,io.BytesIO(data))
    def rpc(cmd,**kw):
     calls.append(cmd);text=''
+    if cmd[0]=='kubectl' and 'apply' in cmd:self.assertIn('--server-side',cmd)
     if 'tar' in cmd:return subprocess.CompletedProcess(cmd,0,buf.getvalue(),b'')
     if 'show' in cmd and str(plan) not in cmd and not any(x.endswith('gpu.tfplan') for x in cmd):
      text=json.dumps({'values':{'root_module':{'resources':[{'address':'nebius_mk8s_v1_cluster.topology','values':{'id':'c'}},{'address':'nebius_mk8s_v1_node_group.cpu[0]','values':{'id':'cpu'}}]}}})
