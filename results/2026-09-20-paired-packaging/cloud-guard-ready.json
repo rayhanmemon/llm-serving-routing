@@ -1,0 +1,8 @@
+{
+  "armed": true,
+  "cluster": "mk8scluster-u00ea3rz56yfnbt5c7",
+  "deadline": 1789958406.966336,
+  "gpu_groups_present_at_arm": [],
+  "project": "project-u00k8gmbpr0067akfrxdah",
+  "service_account": "serviceaccount-u00r7ehpt9bva59mg1"
+}

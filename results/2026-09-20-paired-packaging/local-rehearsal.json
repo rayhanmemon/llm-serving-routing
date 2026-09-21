@@ -1,0 +1,26 @@
+{
+  "client_side_limit_reproduced": true,
+  "server_side_full_configmap_stored": true,
+  "data_unchanged": true,
+  "annotation_limit": 262144,
+  "configmap_json_bytes": 634300,
+  "all_three_actual_manifests_pass_server_validation": true,
+  "scope": "Fresh local kind cluster; no cloud/GPU claim",
+  "full_http_workflow_passed": true,
+  "suite_sha256": "d50bdfaa9a4351f6cec743fbdb038f871397f556c62830d2b94421fa55740484",
+  "code_sha256": {
+    "paired-engines.py": "865f5da5f78b8b56a802d9d4ece99889981e024fd9add891d6fe1f06062b3cd0",
+    "paired-client.py": "1b8214b787b57663cd0399cff5927bf666e62201744899707415c16273b3a867",
+    "single-host-worker.py": "090c12a57e19facfab4a1c7b7666be5cf16c0a9ba343e969ba30e29ef60f6dab",
+    "raw-ipc.py": "6cfb2b51dd9ad7a18df580dd0445d069cd6484119cb4165e76c2bd53964a59d7",
+    "validate-single-host.py": "94eb522d5f938b30c849c1a837e97986dfad84735a9f86bb8364b7f14bf48675"
+  },
+  "http_rehearsal_counts": {
+    "qualification_calls": 32,
+    "warmups": 8,
+    "foreground_requests": 96,
+    "background_requests": 96,
+    "complete_pairs": 48,
+    "engines": "simulated"
+  }
+}

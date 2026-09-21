@@ -1,0 +1,7 @@
+{
+  "time": 1789956067.763393,
+  "source": "background cohorts reduced to1024 generated tokens before engine/client deployment; foreground remains32, no observation selected",
+  "reason": "Reduce unused post-foreground inference time; still reject any cohort ending before foreground completes.",
+  "client_source_commit": "1f84c32",
+  "engine_manifest_exists": false
+}

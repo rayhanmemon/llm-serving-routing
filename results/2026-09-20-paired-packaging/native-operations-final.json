@@ -1,0 +1,92 @@
+{
+  "computeinstance-u00j40014r4e4we4tr": {
+    "operations": [
+      {
+        "id": "computeoperation-u00a18hhjr6vpvg1wh",
+        "description": "Delete Instance",
+        "created_at": "2026-09-21T02:10:32.827128Z",
+        "finished_at": "2026-09-21T02:12:29.176150Z",
+        "resource_id": "computeinstance-u00j40014r4e4we4tr",
+        "status": {},
+        "progress_tracker": {
+          "description": "Deleting instance",
+          "started_at": "2026-09-21T02:10:32.827128Z",
+          "finished_at": "2026-09-21T02:12:29.176150Z"
+        }
+      },
+      {
+        "id": "computeoperation-u00dym6ty2k0b3z28c",
+        "description": "Create Instance",
+        "created_at": "2026-09-21T01:58:00.550836Z",
+        "finished_at": "2026-09-21T01:59:04.835526Z",
+        "resource_id": "computeinstance-u00j40014r4e4we4tr",
+        "status": {},
+        "progress_tracker": {
+          "description": "Starting instance",
+          "started_at": "2026-09-21T01:58:00.550836Z",
+          "finished_at": "2026-09-21T01:59:04.835526Z"
+        }
+      }
+    ]
+  },
+  "computeinstance-u00parwfm4zvwdycwb": {
+    "operations": [
+      {
+        "id": "computeoperation-u00hdtgfr24b6pxwag",
+        "description": "Delete Instance",
+        "created_at": "2026-09-21T02:10:32.806855Z",
+        "finished_at": "2026-09-21T02:12:29.365841Z",
+        "resource_id": "computeinstance-u00parwfm4zvwdycwb",
+        "status": {},
+        "progress_tracker": {
+          "description": "Deleting instance",
+          "started_at": "2026-09-21T02:10:32.806855Z",
+          "finished_at": "2026-09-21T02:12:29.365841Z"
+        }
+      },
+      {
+        "id": "computeoperation-u00x0q81abdn92bt2y",
+        "description": "Create Instance",
+        "created_at": "2026-09-21T01:57:59.599215Z",
+        "finished_at": "2026-09-21T01:59:02.883489Z",
+        "resource_id": "computeinstance-u00parwfm4zvwdycwb",
+        "status": {},
+        "progress_tracker": {
+          "description": "Starting instance",
+          "started_at": "2026-09-21T01:57:59.599215Z",
+          "finished_at": "2026-09-21T01:59:02.883489Z"
+        }
+      }
+    ]
+  },
+  "computeinstance-u00bkaxe8gf4vjza84": {
+    "operations": [
+      {
+        "id": "computeoperation-u00spzkc0vmwwhmbsb",
+        "description": "Delete Instance",
+        "created_at": "2026-09-21T02:10:34.006936Z",
+        "finished_at": "2026-09-21T02:12:16.589852Z",
+        "resource_id": "computeinstance-u00bkaxe8gf4vjza84",
+        "status": {},
+        "progress_tracker": {
+          "description": "Deleting instance",
+          "started_at": "2026-09-21T02:10:34.006936Z",
+          "finished_at": "2026-09-21T02:12:16.589852Z"
+        }
+      },
+      {
+        "id": "computeoperation-u00qsawb4fqmxac4zt",
+        "description": "Create Instance",
+        "created_at": "2026-09-21T01:54:26.228934Z",
+        "finished_at": "2026-09-21T01:55:12.217962Z",
+        "resource_id": "computeinstance-u00bkaxe8gf4vjza84",
+        "status": {},
+        "progress_tracker": {
+          "description": "Starting instance",
+          "started_at": "2026-09-21T01:54:26.228934Z",
+          "finished_at": "2026-09-21T01:55:12.217962Z"
+        }
+      }
+    ]
+  }
+}

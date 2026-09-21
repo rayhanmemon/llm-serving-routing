@@ -1,0 +1,26 @@
+{
+  "session_id": "20260921T015006Z-24310838",
+  "estimate_usd_pretax": "9.606270049645175038051750381",
+  "components": {
+    "computeinstance-u00j40014r4e4we4tr": {
+      "start": "2026-09-21T01:58:00.550836Z",
+      "end": "2026-09-21T02:12:29.176150Z",
+      "rate": "19.6",
+      "estimate_usd": "4.729182265111111111111111111"
+    },
+    "computeinstance-u00parwfm4zvwdycwb": {
+      "start": "2026-09-21T01:57:59.599215Z",
+      "end": "2026-09-21T02:12:29.365841Z",
+      "rate": "19.6",
+      "estimate_usd": "4.735396074888888888888888889"
+    },
+    "computeinstance-u00bkaxe8gf4vjza84": {
+      "start": "2026-09-21T01:54:26.228934Z",
+      "end": "2026-09-21T02:12:16.589852Z",
+      "rate": "0.3968",
+      "estimate_usd": "0.1179775589617777777777777778"
+    }
+  },
+  "disk_cost_usd": "0.02371415068339726027397260274",
+  "method": "Conservative native create-start to delete-finish; all576GiB SSD for full session. Before tax; not invoice."
+}
