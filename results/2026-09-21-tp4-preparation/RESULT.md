@@ -8,8 +8,8 @@ The renderer checks immutable model revision shape, architecture digest, head sh
 
 ## Verification
 
-- Nine new configuration checks passed.
-- The full existing utility suite plus these checks passed: **191 tests**, using the benchmark Python virtual environment. An initial system-Python run failed because that interpreter lacked the existing Prometheus/YAML dependencies; no code change was needed for those failures.
+- Nine new configuration checks and nine rank-evidence checks passed. Saved real TP1 logs exercise UCX parsing, not TP4 execution. The parser separates UCX threads, ignores host-memory tables and distinguishes tiny-message protocols from bulk KV protocols.
+- The full existing utility suite plus these checks passed: **200 tests**, using the benchmark Python virtual environment. An initial system-Python run failed because that interpreter lacked the existing Prometheus/YAML dependencies; no code change was needed for those failures.
 - A new isolated local Kind cluster accepted the exact ConfigMap through server-side apply; stored data matched byte-for-byte.
 - The real Kubernetes API accepted both GPU Pod manifests using server dry-run. No GPU Pods were created, and no image, model or GPU execution is established by this check.
 - The temporary cluster was deleted; the user's existing cluster was untouched.
@@ -18,6 +18,6 @@ The renderer checks immutable model revision shape, architecture digest, head sh
 
 ## Still required before rental
 
-Prepare the frozen long-document request suite and timed client; qualify every receiving rank's actual KV READ transport; adapt transfer-count/byte/timing checks; rehearse the full client against synthetic streaming responses; and implement local-first cloud provisioning with validated guards and budget admission. Existing TP1 transfer checks cannot certify TP4. The prior paired launcher provisions both GPU hosts together and must not be used to claim local-first allocation.
+Prepare the frozen long-document request suite and timed client; connect the tested rank/transfer validator to live collection and qualify every receiving rank's actual KV READ transport; rehearse the full client against synthetic streaming responses; and implement local-first cloud provisioning with validated guards and budget admission. Existing TP1 transfer checks cannot certify TP4. The prior paired launcher provisions both GPU hosts together and must not be used to claim local-first allocation.
 
 These files perform offline rendering and in-Pod engine execution only. There is no new admitted cloud session or ready TP4 rental controller.

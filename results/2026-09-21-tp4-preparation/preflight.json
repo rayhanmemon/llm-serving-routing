@@ -10,12 +10,14 @@
     "tp4-engines.py": "eb247c36328d17b4e842e3c0eb317b02f6d7790f26b3de5aa89c783303194231"
   },
   "full_test_suite": {
-    "tests": 191,
+    "tests": 200,
     "passed": true,
     "python_environment": "llm-d-benchmark virtual environment"
   },
   "temporary_kind_cluster_deleted": true,
   "existing_user_cluster_untouched": true,
   "cloud_spend_usd": 0,
-  "cloud_session_ready": false
+  "cloud_session_ready": false,
+  "rank_validator_unit_and_saved_log_checks": true,
+  "rank_validator_sha256": "226e5e6a310f35b5bd267080369c88ad8368621f7a823cb8591c33939c65926f"
 }
