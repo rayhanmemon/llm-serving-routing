@@ -1,0 +1,26 @@
+{
+  "compute": [
+    {
+      "cost_usd": "9.822944560333333333333333333",
+      "create_started": "2026-09-22T01:31:53.187600Z",
+      "delete_finished": "2026-09-22T02:01:57.401907Z",
+      "hourly_rate_usd": "19.6",
+      "id": "computeinstance-u00x1ad50jh95xy0w0",
+      "role": "local",
+      "seconds": "1804.214307"
+    },
+    {
+      "cost_usd": "0.2198503945031111111111111111",
+      "create_started": "2026-09-22T01:28:41.476508Z",
+      "delete_finished": "2026-09-22T02:01:56.086942Z",
+      "hourly_rate_usd": "0.3968",
+      "id": "computeinstance-u00zmtykebk0rkc33m",
+      "role": "cpu",
+      "seconds": "1994.610434"
+    }
+  ],
+  "disk_usd": "0.02148452418021308980213089801",
+  "estimate_usd_pretax": "10.06427947901665753424657534",
+  "method": "Native VM create-start through delete-finish; full-session 320GiB SSD at .071/GiB-month /730h; estimates before tax, not invoice-reconciled.",
+  "session_id": "20260922T012359Z-559cdded"
+}

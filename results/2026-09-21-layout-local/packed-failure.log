@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/probe/layout-client.py", line 101, in <module>
+    a=p.parse_args();run(a.local,a.config,a.suite,a.out,a.epoch,a.deadline)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/probe/layout-client.py", line 38, in run
+    raise ValueError('No positive cross-layer allocation evidence for every '+role+' rank')
+ValueError: No positive cross-layer allocation evidence for every prefill rank
