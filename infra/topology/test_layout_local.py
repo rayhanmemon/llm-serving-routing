@@ -15,6 +15,13 @@ def module(name):
 s=module('run-layout-local');l=module('layout-client');fixtures=module('test_pilot_session')
 
 class LayoutTests(unittest.TestCase):
+    def test_identity_access_probe_fails_before_infrastructure(self):
+        with self.assertRaisesRegex(ValueError,'no infrastructure'):
+            s.verify_cleanup_identity(lambda *a,**k:subprocess.CompletedProcess([],1,'','denied'))
+        record=s.verify_cleanup_identity(lambda *a,**k:subprocess.CompletedProcess([],0,'{}',''))
+        self.assertTrue(record['cleanup_identity_access_verified'])
+        self.assertEqual(record['service_account_id'],s.pilot.LAYOUT_GUARD_ID)
+
     def plan(self):
         p=fixtures.PilotSessionTest().plan_json(profile=s.pilot.LAYOUT_PROFILE)
         p['variables'].update(cloud_guard={'value':True},single_gpu_host={'value':True},existing_guard_service_account_id={'value':s.pilot.LAYOUT_GUARD_ID})

@@ -13,7 +13,7 @@ Validation: 219 tests passed, including one-host admission and the actual contro
 - Both engines restart between layouts while retaining downloaded weights and compilation cache in the same container. Verify old CUDA processes have exited. Packed execution requires positive allocation logs from all ranks, correctness parity, unchanged transfer bytes and all-rank CUDA-IPC evidence. Save installed package versions and source hashes.
 - Report complete sequence latency, descriptor/posting/transfer metrics, direct controls and return-to-default behavior. Runtime cache capacity and actual registered layout must be inspected from retained logs. No packing or router gain is inferred from configuration alone.
 
-**Prediction, recorded by the agent before execution:** packing should reduce the many-descriptor 120K case from roughly 122,880 descriptors/rank toward at most 1,920 before further merging, lowering submission overhead. Memory reuse order may prevent the original slow state from recurring in this one-decoder sequence. Attention-stride changes may affect compute latency. These are hypotheses to test, not Rayhan's quoted predictions or measured outcomes.
+**Expected mechanism, recorded before execution:** packing should reduce the many-descriptor 120K case from roughly 122,880 descriptors/rank toward at most 1,920 before further merging, lowering submission overhead. Memory reuse order may prevent the original slow state from recurring in this one-decoder sequence. Attention-stride changes may affect compute latency. These are hypotheses to test, not measured outcomes.
 
 ## Budget and stop behavior
 

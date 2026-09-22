@@ -1,0 +1,20 @@
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mresource creation failed[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  with nebius_mk8s_v1_node_group.cpu[0],
+[31m│[0m [0m  on main.tf line 63, in resource "nebius_mk8s_v1_node_group" "cpu":
+[31m│[0m [0m  63: resource "nebius_mk8s_v1_node_group" "cpu" [4m{[0m[0m
+[31m│[0m [0m
+[31m│[0m [0mresource creation failed: service create: rpc error: code =
+[31m│[0m [0mPermissionDenied desc = permission
+[31m│[0m [0m"resource.serviceaccount.issueAccessToken" denied to resource
+[31m│[0m [0m"project-u00k8gmbpr0067akfrxdah/serviceaccount-u00z5fq630hbbrd7ck"
+[31m│[0m [0mrequest = 070dccd3-e3d9-443c-8a8d-a9bd2b38871e
+[31m│[0m [0mcaused by service error:
+[31m│[0m [0m  Permission denied PermissionDenied: service mk8s, resource ID: project-u00k8gmbpr0067akfrxdah/serviceaccount-u00z5fq630hbbrd7ck
+[31m│[0m [0m
+[31m│[0m [0mThis issue may be linked to the API request call. The following information
+[31m│[0m [0mmay be helpful while debugging the issue:
+[31m│[0m [0mRequest ID: 070dccd3-e3d9-443c-8a8d-a9bd2b38871e
+[31m│[0m [0mTrace ID: 874920366b24fc429149f385b0dcbd6d
+[31m╵[0m[0m

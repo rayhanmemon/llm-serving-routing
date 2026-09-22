@@ -1,0 +1,5 @@
+{
+  "estimate_usd_pretax": "0",
+  "method": "CPU node-group create rejected at authorization before VM allocation. Only free control plane created; no GPU/CPU VM or disk created. Independent cleanup lists empty. Not an invoice.",
+  "session_id": "20260922T010348Z-decb451a"
+}

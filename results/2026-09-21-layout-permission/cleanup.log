@@ -1,0 +1,103 @@
+cleanup attempt 1 started at 1790039347.9869561
+Removing experiment-cluster drain blockers: cilium-operator, coredns, coredns-autoscaler, hubble-relay, hubble-ui
+poddisruptionbudget.policy "cilium-operator" deleted from kube-system namespace
+poddisruptionbudget.policy "coredns" deleted from kube-system namespace
+poddisruptionbudget.policy "coredns-autoscaler" deleted from kube-system namespace
+poddisruptionbudget.policy "hubble-relay" deleted from kube-system namespace
+poddisruptionbudget.policy "hubble-ui" deleted from kube-system namespace
+[0m[1mnebius_mk8s_v1_cluster.topology: Refreshing state... [id=mk8scluster-u00xdxgnjqsd0p1hqs][0m
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [31m-[0m destroy[0m
+
+Terraform will perform the following actions:
+
+[1m  # nebius_mk8s_v1_cluster.topology[0m will be [1m[31mdestroyed[0m
+[0m  [31m-[0m[0m resource "nebius_mk8s_v1_cluster" "topology" {
+      [31m-[0m[0m control_plane    = {
+          [31m-[0m[0m endpoints = {
+              [31m-[0m[0m public_endpoint = {} [90m-> null[0m[0m
+            } [90m-> null[0m[0m
+          [31m-[0m[0m subnet_id = "vpcsubnet-u00fjg7m2r4s10h9sb" [90m-> null[0m[0m
+          [31m-[0m[0m version   = "1.35" [90m-> null[0m[0m
+        } [90m-> null[0m[0m
+      [31m-[0m[0m created_at       = "2026-09-22T01:03:49Z" [90m-> null[0m[0m
+      [31m-[0m[0m id               = "mk8scluster-u00xdxgnjqsd0p1hqs" [90m-> null[0m[0m
+      [31m-[0m[0m labels_all       = {} [90m-> null[0m[0m
+      [31m-[0m[0m metadata         = {} [90m-> null[0m[0m
+      [31m-[0m[0m name             = "router-topology" [90m-> null[0m[0m
+      [31m-[0m[0m parent_id        = "project-u00k8gmbpr0067akfrxdah" [90m-> null[0m[0m
+      [31m-[0m[0m resource_version = 1 [90m-> null[0m[0m
+      [31m-[0m[0m status           = {
+          [31m-[0m[0m control_plane = {
+              [31m-[0m[0m auth              = {
+                  [31m-[0m[0m cluster_ca_certificate = <<-EOT
+                        -----BEGIN CERTIFICATE-----
+                        MIIC6jCCAdKgAwIBAgIBADANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwprdWJl
+                        cm5ldGVzMB4XDTI2MDkyMjAxMDAzNFoXDTM2MDkxOTAxMDUzNFowFTETMBEGA1UE
+                        AxMKa3ViZXJuZXRlczCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANUw
+                        W6Wrx6pRDYqfCXdsdNoSBgcN/6TuIXxfa6wWOITGX5aorkwSPQr2Rv78z/ERpc65
+                        1CCx+HVJtwSwHZVndxSXMXWd1p6creFQdI7ZNzBCofXVRn+ru1xW8BFRF45gK1jf
+                        Tz1LeEYkN1bVdTrydYRN+ei3ccTn23QHCBus5MrltOxmVpGU7RDOLzjouTuTGspq
+                        qZgk5LY04o+3OWmWz42cM/oZyHrubkaJ8Aryq/f0IwA0Woy89lL7+rifIDvFqURw
+                        Ig2dRuc49qFbhfnHlkLl/Q1e9W9R3kx0ggu0DbGi8uzpe+n6wulEdYon/v4XRrd3
+                        /YaQsWznbnQoqMHuev0CAwEAAaNFMEMwDgYDVR0PAQH/BAQDAgKkMBIGA1UdEwEB
+                        /wQIMAYBAf8CAQAwHQYDVR0OBBYEFHinbAJXtXRO+7MyJgmmh1PoeAnDMA0GCSqG
+                        SIb3DQEBCwUAA4IBAQAt9WoDweH3mvVValDGPGw+UVUZf3VCXkTWwthCpSsMILCs
+                        2EMAwRDRSpxaG/lH+OrrPwE9sxURyYkS2i0qyzSVxqoSKEMtD4KdVy1xCLEzy+S9
+                        UM0O0Q6inebCetnKujYeq70Fzmd9pIFjTQ9x5F554pDByYznAJuEbBDv1RERdm7N
+                        woazTc+3XqeMvIyZ1QjhdK+0bTK2PVl3gZVJDmujLHM8mn/yiPbJCM7jQS+RJEl4
+                        fzV73AHbkWagITb9FAibsx778ggAXpiad3mCcj6V7kfY1tFkd02lYK3J0dxv03lp
+                        MQol1sgQDg/fiuuG50RtB9GS5LBS3odRSCV3s7RP
+                        -----END CERTIFICATE-----
+                    EOT [90m-> null[0m[0m
+                } [90m-> null[0m[0m
+              [31m-[0m[0m endpoints         = {
+                  [31m-[0m[0m private_endpoint = "https://pr.mk8scluster-u00xdxgnjqsd0p1hqs.mk8s.us-central1.nebius.cloud:443" [90m-> null[0m[0m
+                  [31m-[0m[0m public_endpoint  = "https://pu.mk8scluster-u00xdxgnjqsd0p1hqs.mk8s.us-central1.nebius.cloud:443" [90m-> null[0m[0m
+                } [90m-> null[0m[0m
+              [31m-[0m[0m etcd_cluster_size = 1 [90m-> null[0m[0m
+              [31m-[0m[0m version           = "1.35" [90m-> null[0m[0m
+            } [90m-> null[0m[0m
+          [31m-[0m[0m state         = "RUNNING" [90m-> null[0m[0m
+        } [90m-> null[0m[0m
+      [31m-[0m[0m updated_at       = "2026-09-22T01:03:49Z" [90m-> null[0m[0m
+    }
+
+[1mPlan:[0m [0m0 to add, 0 to change, 1 to destroy.
+
+Changes to Outputs:
+  [31m-[0m[0m cluster_id = "mk8scluster-u00xdxgnjqsd0p1hqs" [90m-> null[0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 00m10s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 00m20s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 00m30s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 00m40s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 00m50s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 01m00s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 01m10s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 01m20s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 01m30s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 01m40s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 01m50s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 02m00s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 02m10s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 02m20s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00xdxgnjqsd0p1hqs, 02m30s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Destruction complete after 2m36s[0m
+[0m[1m[32m
+Destroy complete! Resources: 1 destroyed.[0m
+== independent teardown verification (project: project-u00k8gmbpr0067akfrxdah) ==
+--- nebius compute instance list
+    count: 0
+--- nebius mk8s cluster list
+    count: 0
+--- nebius compute disk list
+    count: 0
+--- nebius compute filesystem list
+    count: 0
+--- nebius compute gpu-cluster list
+    count: 0
+PASS — instances, Kubernetes clusters, disks, filesystems and GPU clusters are empty in this project.
+Other resource types and other projects were not checked.

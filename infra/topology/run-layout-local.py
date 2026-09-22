@@ -6,6 +6,7 @@ import importlib.util
 import json
 from pathlib import Path
 import shlex
+import subprocess
 import tarfile
 import time
 
@@ -15,6 +16,21 @@ s=importlib.util.module_from_spec(sp);sp.loader.exec_module(s)
 pilot=s.pilot
 s.PROFILES=(*s.PROFILES,pilot.LAYOUT_PROFILE)
 CODE=(*s.CODE,'layout-client.py','layout-engines.py','run-layout-local.py')
+
+
+def verify_cleanup_identity(runner=subprocess.run):
+    """Verify token issuance and project access before creating any infrastructure."""
+    policy=pilot.PROFILE_POLICIES[pilot.LAYOUT_PROFILE]
+    cmd=[str(Path.home()/'.nebius/bin/nebius'),'compute','instance','list',
+         '--parent-id',policy['project_id'],'--impersonate-service-account-id',pilot.LAYOUT_GUARD_ID,
+         '--format','json','--no-check-update','--no-browser','--timeout','25s']
+    result=runner(cmd,capture_output=True,text=True,timeout=35)
+    if result.returncode!=0:
+        raise ValueError('Cleanup identity token issuance/project access is not authorized; no infrastructure created')
+    data=json.loads(result.stdout)
+    if data!={} and not isinstance(data.get('items'),list):raise ValueError('Invalid cleanup identity access probe')
+    return {'cleanup_identity_access_verified':True,'service_account_id':pilot.LAYOUT_GUARD_ID,
+            'project_id':policy['project_id'],'checked_unix':time.time()}
 
 
 def manifest(config,nodes):
@@ -103,7 +119,9 @@ def main():
         if proof.get(field) is not True:raise ValueError('Missing preflight '+field)
     for path in [a.config,a.suite,*[HERE/name for name in CODE],*sorted((HERE/'terraform-rdma').glob('*.tf'))]:
         if proof['sha256'].get(path.name)!=hashlib.sha256(path.read_bytes()).hexdigest():raise ValueError('Changed preflight source '+path.name)
+    identity=verify_cleanup_identity()
     run,session=pilot.prepare_session(a);pilot.write_json(run/'layout-preflight.json',proof)
+    pilot.write_json(run/'cleanup-identity-access.json',identity)
     print('RUN_DIR='+str(run),flush=True)
     guard=pilot.spawn_guard(run);pilot.wait_guard_ready(run,guard)
     session['guard_pid']=guard.pid;pilot.write_json(run/'session.json',session)
