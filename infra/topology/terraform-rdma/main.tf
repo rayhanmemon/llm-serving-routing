@@ -68,7 +68,7 @@ resource "nebius_mk8s_v1_node_group" "cpu" {
   fixed_node_count = 1
   strategy         = var.cloud_guard ? { drain_timeout = "60s" } : null
   template = {
-    service_account_id = try(nebius_iam_v1_service_account.guard[0].id, null)
+    service_account_id = var.existing_guard_service_account_id != "" ? var.existing_guard_service_account_id : try(nebius_iam_v1_service_account.guard[0].id, null)
     resources          = { platform = "cpu-d3", preset = "16vcpu-64gb" }
     boot_disk          = { type = "NETWORK_SSD", size_gibibytes = 64 }
     network_interfaces = [{ subnet_id = var.subnet_id }]
@@ -77,7 +77,7 @@ resource "nebius_mk8s_v1_node_group" "cpu" {
 }
 
 resource "nebius_mk8s_v1_node_group" "remote" {
-  count            = var.ipc_diagnostic_only ? 0 : 1
+  count            = var.ipc_diagnostic_only || var.single_gpu_host ? 0 : 1
   parent_id        = nebius_mk8s_v1_cluster.topology.id
   name             = "router-remote"
   fixed_node_count = 1
@@ -108,23 +108,23 @@ output "node_group_ids" {
 }
 
 resource "nebius_iam_v1_service_account" "guard" {
-  count       = var.cloud_guard ? 1 : 0
+  count       = var.cloud_guard && var.existing_guard_service_account_id == "" ? 1 : 0
   parent_id   = var.project_id
   name        = "router-session-cleanup"
   description = "Temporary identity for bounded experiment cleanup; removed with session."
 }
 resource "nebius_iam_v1_group" "guard" {
-  count     = var.cloud_guard ? 1 : 0
+  count     = var.cloud_guard && var.existing_guard_service_account_id == "" ? 1 : 0
   parent_id = var.project_id
   name      = "router-session-cleanup"
 }
 resource "nebius_iam_v1_group_membership" "guard" {
-  count     = var.cloud_guard ? 1 : 0
+  count     = var.cloud_guard && var.existing_guard_service_account_id == "" ? 1 : 0
   parent_id = nebius_iam_v1_group.guard[0].id
   member_id = nebius_iam_v1_service_account.guard[0].id
 }
 resource "nebius_iam_v1_access_permit" "guard" {
-  count       = var.cloud_guard ? 1 : 0
+  count       = var.cloud_guard && var.existing_guard_service_account_id == "" ? 1 : 0
   parent_id   = nebius_iam_v1_group.guard[0].id
   resource_id = var.project_id
   role        = "editor"

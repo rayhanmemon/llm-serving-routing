@@ -1,0 +1,13 @@
+namespace/router-tp4 serverside-applied
+configmap/tp4-code serverside-applied
+configmap/tp4-requests serverside-applied
+namespace/router-tp4 serverside-applied (server dry run)
+configmap/tp4-code serverside-applied (server dry run)
+pod/local serverside-applied (server dry run)
+configmap/tp4-requests serverside-applied (server dry run)
+pod/client serverside-applied (server dry run)
+namespace/router-tp4 serverside-applied (server dry run)
+configmap/guard-code serverside-applied (server dry run)
+pod/deadline-guard serverside-applied (server dry run)
+{'gpu_platform': 'H200', 'infiniband_fabric': 'us-central1-a', 'ipc_diagnostic_only': False, 'gpu_preemptible': True, 'project_id': 'project-u00k8gmbpr0067akfrxdah', 'subnet_id': 'vpcsubnet-u00fjg7m2r4s10h9sb', 'terraform_dir': '/Users/rayhanmemon/disagg-boundary/infra/topology/terraform-rdma'}
+PASS layout preflight; no cloud resources created

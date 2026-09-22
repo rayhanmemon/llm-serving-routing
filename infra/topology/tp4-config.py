@@ -42,6 +42,8 @@ def validate(config, architecture):
         raise ValueError('Invalid sequence or memory limit')
     if config['enable_prefix_caching'] or config['enforce_eager']:
         raise ValueError('Screening uses unique uncached inputs and default graph execution')
+    if type(config.get('enable_cross_layers_blocks', False)) is not bool:
+        raise ValueError('Cross-layer option must be Boolean')
     if config['block_size'] != 64 or config['max_num_batched_tokens'] < config['max_num_seqs']:
         raise ValueError('Invalid token budget or cache block size')
     lengths = config['input_tokens']
@@ -92,6 +94,8 @@ def engine_specs(config, host_role, pod_ip):
         kv = {'kv_connector': 'NixlConnector', 'kv_role': config['kv_role'],
               'kv_buffer_device': 'cuda', 'kv_load_failure_policy': 'fail',
               'kv_connector_extra_config': {'backends': ['UCX']}}
+        if config.get('enable_cross_layers_blocks', False):
+            kv['kv_connector_extra_config']['enable_cross_layers_blocks'] = True
         args = ['vllm', 'serve', config['model'], '--revision', config['revision'],
                 '--tokenizer-revision', config['revision'], '--port', str(port),
                 '--tensor-parallel-size', '4', '--distributed-executor-backend', 'mp',

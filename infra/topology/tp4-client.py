@@ -58,6 +58,7 @@ def idle(hosts,deadline):
 def request(hosts,route,body,deadline):
     if time.time()+180>=deadline:raise TimeoutError('Collection reserve reached')
     role=route.split('-')[-1];port=8000 if route.startswith('pd-') else 8200
+    if route == 'prefill-local':port=8100
     headers={'Content-Type':'application/json'}
     if port==8000:headers['x-prefiller-host-port']=hosts['local']+':8100'
     req=urllib.request.Request(f'http://{hosts[role]}:{port}/v1/completions',data=json.dumps(body).encode(),headers=headers)

@@ -27,6 +27,10 @@ def validate(config_path):
                 raise ValueError('Parsed model/revision differs from pinned settings')
             if args.tensor_parallel_size!=4 or args.max_model_len!=131072:
                 raise ValueError('Parsed TP/context differs from selected setup')
+            kv=args.kv_transfer_config
+            extra=kv['kv_connector_extra_config'] if isinstance(kv,dict) else kv.kv_connector_extra_config
+            if extra.get('enable_cross_layers_blocks',False) is not config.get('enable_cross_layers_blocks',False):
+                raise ValueError('Packed-layout option did not survive native parsing')
             if args.hf_overrides!={'rope_scaling':config['rope_scaling']}:
                 raise ValueError('YaRN override did not survive native parsing')
     return {'native_vllm_parser_passed':True,'version':vllm.__version__,'engine_commands':3,'model_loaded':False}

@@ -1,0 +1,122 @@
+#!/usr/bin/env python3
+"""Bounded one-host default/packed/default experiment with reusable cleanup identity."""
+import argparse
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import shlex
+import tarfile
+import time
+
+HERE=Path(__file__).resolve().parent
+sp=importlib.util.spec_from_file_location('staged',HERE/'run-tp4-staged.py')
+s=importlib.util.module_from_spec(sp);sp.loader.exec_module(s)
+pilot=s.pilot
+s.PROFILES=(*s.PROFILES,pilot.LAYOUT_PROFILE)
+CODE=(*s.CODE,'layout-client.py','layout-engines.py','run-layout-local.py')
+
+
+def manifest(config,nodes):
+    doc=s.tp4.render(config,nodes,6600)
+    doc['items'][1]['data'].update({name:(HERE/name).read_text() for name in ('layout-engines.py','layout-client.py')})
+    pod=next(x for x in doc['items'] if x['kind']=='Pod')
+    pod['spec']['containers'][0]['command']=['python3','-u','/probe/layout-engines.py','--config','/probe/config.json']
+    return doc
+
+
+class Controller(s.Controller):
+    def __init__(self,run,config):
+        super().__init__(run,config)
+        if self.session['profile']!=pilot.LAYOUT_PROFILE:raise ValueError('Requires single-host layout admission')
+        self.env.update(TF_VAR_single_gpu_host='true',TF_VAR_existing_guard_service_account_id=pilot.LAYOUT_GUARD_ID)
+
+    def ready(self,epoch):
+        until=min(time.time()+1800,self.session['cleanup_start_deadline_unix']-600)
+        while time.time()<until:
+            pod=json.loads(self.call(self.k+['-n',s.tp4.NS,'get','pod','local','-o','json'],'local-pod').stdout)
+            if pod.get('metadata',{}).get('deletionTimestamp') or pod.get('status',{}).get('phase') in ('Failed','Succeeded'):
+                raise RuntimeError('Local engine Pod failed')
+            ip=pod.get('status',{}).get('podIP')
+            if ip:
+                code=('import json,pathlib,urllib.request; p=pathlib.Path("/results");'
+                      'assert not (p/"layout-failure.json").exists();'
+                      f'assert not (p/"{epoch}"/"engine-failure.json").exists();'
+                      f'assert json.loads((p/"current-epoch.json").read_text())["epoch"]=={epoch!r};'+
+                      ';'.join(f'urllib.request.urlopen("http://127.0.0.1:{port}/{path}",timeout=5).read()'
+                               for port,path in [(8100,'v1/models'),(8200,'v1/models'),(8300,'evidence')]))
+                result=self.call(self.k+['-n',s.tp4.NS,'exec','local','-c','engines','--','python3','-c',code],epoch+'-ready',25,check=False)
+                if result.returncode==0:self.ips['local']=ip;print(epoch+' engines ready.',flush=True);return
+                fail=self.call(self.k+['-n',s.tp4.NS,'exec','local','-c','engines','--','sh','-c',
+                    f'cat /results/layout-failure.json /results/{epoch}/engine-failure.json 2>/dev/null'],epoch+'-failure-check',25,check=False)
+                if fail.stdout.strip():raise RuntimeError('Engine failure: '+fail.stdout)
+            self.sleep(5)
+        raise TimeoutError('Layout engine readiness deadline')
+
+    def epoch(self,name):
+        args=['python3','-u','/probe/layout-client.py','--config','/probe/config.json','--suite','/data/suite.json.gz',
+              '--local',self.ips['local'],'--epoch',name,'--deadline',str(self.session['cleanup_start_deadline_unix'])]
+        script=shlex.join(args)+f'; result=$?; echo "$result" > /results/{name}.exit; exit "$result"'
+        launch=f'nohup sh -c {shlex.quote(script)} > /results/{name}.log 2>&1 < /dev/null &'
+        self.call(self.k+['-n',s.tp4.NS,'exec','client','--','sh','-c',launch],name+'-start',25)
+        while time.time()+180<self.session['cleanup_start_deadline_unix']:
+            result=self.call(self.k+['-n',s.tp4.NS,'exec','client','--','cat',f'/results/{name}.exit'],name+'-exit',25,check=False)
+            if result.returncode==0:
+                if result.stdout.strip()!='0':raise RuntimeError(name+' client failed')
+                marker=json.loads(self.call(self.k+['-n',s.tp4.NS,'exec','client','--','cat',f'/results/{name}/complete.json'],name+'-complete').stdout)
+                pilot.write_json(self.run/(name+'-complete.json'),marker)
+                return marker
+            self.sleep(5)
+        raise TimeoutError('Client reached collection reserve')
+
+    def collect(self):
+        for pod,container in [('local','engines'),('client','client')]:
+            result=self.call(self.k+['-n',s.tp4.NS,'exec',pod,'-c',container,'--','tar','czf','-','-C','/results','.'],pod+'-evidence',120,check=False,binary=True)
+            if result.returncode==0:
+                with tarfile.open(self.out/(pod+'-evidence.tar.gz')) as archive:
+                    archive.extractall(self.out/pod,filter='data')
+            self.call(self.k+['-n',s.tp4.NS,'logs',pod,'-c',container],pod+'-log',30,check=False)
+
+    def execute(self,suite):
+        s.paired.Controller.bootstrap(self,allocate_gpus=False)
+        self.allocate('local')
+        self.apply(manifest(self.config_path,self.nodes_by_role),'layout-engine-manifest')
+        self.apply(s.client_manifest(self.cpu_node,suite),'layout-client-manifest')
+        self.call(self.k+['-n',s.tp4.NS,'wait','--for=condition=Ready','pod/client','--timeout=180s'],'client-ready',190)
+        for epoch in ('default-a','packed','default-b'):
+            self.ready(epoch); result=self.epoch(epoch);self.collect()
+            if epoch=='default-a' and not result['default_slow_reproduced']:
+                pilot.write_json(self.run/'inconclusive.json',{'reason':'Default slow-transfer state not reproduced; no packed restart'})
+                return
+            if epoch=='default-b':return
+            if time.time()+1200>self.session['cleanup_start_deadline_unix']:
+                raise TimeoutError('Insufficient reserved time for another restart and collection')
+            self.call(self.k+['-n',s.tp4.NS,'exec','local','-c','engines','--','touch','/results/'+epoch+'.advance'],epoch+'-advance',25)
+
+
+def main():
+    p=pilot.parser();p.add_argument('--config',type=Path,required=True);p.add_argument('--suite',type=Path,required=True)
+    p.add_argument('--preflight-record',type=Path,required=True);a=p.parse_args()
+    if a.profile!=pilot.LAYOUT_PROFILE:raise ValueError('Wrong profile')
+    proof=json.loads(a.preflight_record.read_text())
+    for field in ('native_vllm_parser_passed','full_http_rehearsal_passed','manifests_server_validated','layout_controller_rehearsed','restart_lifecycle_passed'):
+        if proof.get(field) is not True:raise ValueError('Missing preflight '+field)
+    for path in [a.config,a.suite,*[HERE/name for name in CODE],*sorted((HERE/'terraform-rdma').glob('*.tf'))]:
+        if proof['sha256'].get(path.name)!=hashlib.sha256(path.read_bytes()).hexdigest():raise ValueError('Changed preflight source '+path.name)
+    run,session=pilot.prepare_session(a);pilot.write_json(run/'layout-preflight.json',proof)
+    print('RUN_DIR='+str(run),flush=True)
+    guard=pilot.spawn_guard(run);pilot.wait_guard_ready(run,guard)
+    session['guard_pid']=guard.pid;pilot.write_json(run/'session.json',session)
+    controller=None
+    try:
+        controller=Controller(run,a.config);controller.execute(a.suite)
+    except Exception as error:
+        pilot.write_json(run/'failure.json',{'error':repr(error)})
+        if controller:
+            try:controller.collect()
+            except Exception:pass
+        raise
+    finally:pilot.cleanup_until_target(run)
+
+
+if __name__=='__main__':main()

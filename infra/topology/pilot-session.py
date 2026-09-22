@@ -240,6 +240,23 @@ PROFILE_POLICIES[PAIRED_PROFILES[4]] = {
 }
 
 
+LAYOUT_PROFILE = "tp4-h200-layout-local"
+LAYOUT_GUARD_ID = "serviceaccount-u00z5fq630hbbrd7ck"
+PROFILE_POLICIES[LAYOUT_PROFILE] = {
+    **PROFILE_POLICIES[PAIRED_PROFILES[0]],
+    "cleanup_start_seconds": 90 * 60,
+    "deletion_target_seconds": 110 * 60,
+    "hourly_rate_usd_pretax": Decimal("20.05"),
+    "attempt_admission_usd_pretax": Decimal("40"),
+    "expected_creates": FULL_TOPOLOGY_CREATES - {"nebius_mk8s_v1_node_group.remote[0]"},
+    "single_gpu_host": True,
+    "existing_guard_service_account_id": LAYOUT_GUARD_ID,
+    "project_id": "project-u00k8gmbpr0067akfrxdah",
+    "subnet_id": "vpcsubnet-u00fjg7m2r4s10h9sb",
+}
+GUARDED_PROFILES = (*PAIRED_PROFILES, LAYOUT_PROFILE)
+
+
 class SessionError(RuntimeError):
     pass
 
@@ -475,7 +492,7 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
     if boot_disk.get("type") != "NETWORK_SSD" or boot_disk.get("size_gibibytes") != 256:
         raise SessionError("Terraform plan local node boot disk must be a 256 GiB NETWORK_SSD")
 
-    if not policy["diagnostic_only"]:
+    if not policy["diagnostic_only"] and not policy.get("single_gpu_host"):
         remote_change = next(
             change
             for change in material
@@ -518,6 +535,7 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
         if remote_disk.get("type") != "NETWORK_SSD" or remote_disk.get("size_gibibytes") != 256:
             raise SessionError("Terraform plan remote node boot disk must be a 256 GiB NETWORK_SSD")
 
+    if not policy["diagnostic_only"]:
         cpu_change = next(
             change
             for change in material
@@ -536,12 +554,20 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
         if cpu_disk.get("type") != "NETWORK_SSD" or cpu_disk.get("size_gibibytes") != 64:
             raise SessionError("Terraform plan CPU node boot disk must be a 64 GiB NETWORK_SSD")
 
-    if profile in PAIRED_PROFILES:
+    if profile in GUARDED_PROFILES:
         if not plan_boolean(variables.get("cloud_guard", {}).get("value"), "cloud_guard"):
             raise SessionError("Paired overnight run requires the cloud guard")
-        permit = next(x["change"]["after"] for x in changes if x["address"] == "nebius_iam_v1_access_permit.guard[0]")
-        if permit.get("role") != "editor" or permit.get("resource_id") != project_id:
-            raise SessionError("Cleanup identity must be scoped to the experiment project")
+        if policy.get("existing_guard_service_account_id"):
+            if variables.get("existing_guard_service_account_id", {}).get("value") != policy["existing_guard_service_account_id"]:
+                raise SessionError("Wrong reusable cleanup identity")
+            if cpu_template.get("service_account_id") != policy["existing_guard_service_account_id"]:
+                raise SessionError("CPU guard must use the reviewed cleanup identity")
+            if not plan_boolean(variables.get("single_gpu_host", {}).get("value"), "single_gpu_host"):
+                raise SessionError("Layout diagnostic must omit the remote GPU host")
+        else:
+            permit = next(x["change"]["after"] for x in changes if x["address"] == "nebius_iam_v1_access_permit.guard[0]")
+            if permit.get("role") != "editor" or permit.get("resource_id") != project_id:
+                raise SessionError("Cleanup identity must be scoped to the experiment project")
     return {"gpu_platform": gpu_platform, "infiniband_fabric": infiniband_fabric,
             "ipc_diagnostic_only": diagnostic_value, "gpu_preemptible": preemptible,
             "project_id": project_id, "subnet_id": subnet_id,
@@ -918,7 +944,9 @@ def run_teardown_once(
 ) -> int:
     policy = profile_policy(profile)
     environment = {key: value for key, value in os.environ.items() if key != "NEBIUS_IAM_TOKEN"}
-    environment["TF_VAR_cloud_guard"] = "true" if profile in PAIRED_PROFILES else "false"
+    environment["TF_VAR_cloud_guard"] = "true" if profile in GUARDED_PROFILES else "false"
+    environment["TF_VAR_single_gpu_host"] = "true" if policy.get("single_gpu_host") else "false"
+    environment["TF_VAR_existing_guard_service_account_id"] = policy.get("existing_guard_service_account_id", "")
     environment["TF_VAR_gpu_platform"] = policy["gpu_platform"]
     fabric = infiniband_fabric or policy["infiniband_fabric"]
     if fabric not in policy["allowed_fabrics"]:

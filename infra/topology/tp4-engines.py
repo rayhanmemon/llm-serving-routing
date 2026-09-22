@@ -23,8 +23,11 @@ def main():
     args = parser.parse_args()
     config, _ = settings.load_config(args.config)
     commands = settings.engine_specs(config, os.environ['ENGINE_ROLE'], os.environ['POD_IP'])
-    out = Path('/results')
-    out.mkdir(exist_ok=True)
+    out = Path(os.environ.get('TP4_RESULTS_DIR', '/results'))
+    out.mkdir(parents=True, exist_ok=True)
+    for command in commands:
+        command["log_path"] = str(out / (command["role"] + ".log"))
+        command["env"]["UCX_LOG_FILE"] = str(out / ("ucx-" + command["role"] + ".%p.log"))
     # Use the installed parser before incurring a large model download.
     subprocess.run(['python3',str(HERE/'validate-tp4-args.py'),'--config',str(args.config)],check=True)
     # One download per Pod; both local instances share the same immutable cache.
@@ -115,7 +118,7 @@ if __name__ == '__main__':
         main()
     except BaseException as error:
         import traceback
-        out=Path('/results');out.mkdir(exist_ok=True)
+        out=Path(os.environ.get('TP4_RESULTS_DIR', '/results'));out.mkdir(parents=True,exist_ok=True)
         (out/'engine-failure.json').write_text(json.dumps({'error':repr(error)})+'\n')
         traceback.print_exc()
         for path in out.glob('*.log'):

@@ -45,3 +45,14 @@ variable "cloud_guard" {
   default     = false
   description = "Attach a dedicated experiment-project cleanup identity to the CPU node."
 }
+
+variable "single_gpu_host" {
+  type        = bool
+  default     = false
+  description = "Keep the CPU cleanup/client node, but omit the remote GPU node."
+}
+variable "existing_guard_service_account_id" {
+  type        = string
+  default     = ""
+  description = "Pre-authorized project cleanup identity; no session IAM resources when supplied."
+}

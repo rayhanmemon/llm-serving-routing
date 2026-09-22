@@ -1,0 +1,7 @@
+{
+  "requests": 78,
+  "epochs": 3,
+  "full_http_rehearsal_passed": true,
+  "gpu_execution": false,
+  "scope": "Loopback synthetic HTTP/SSE and counters; not performance evidence"
+}

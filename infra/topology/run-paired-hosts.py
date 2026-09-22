@@ -94,7 +94,7 @@ def validate_remaining(original,new):
 class Controller(single.Controller):
     def __init__(self,run):
         self.run=run;self.session=pilot.read_json(run/'session.json')
-        if self.session['profile'] not in pilot.PAIRED_PROFILES:raise ValueError('Wrong admitted profile')
+        if self.session['profile'] not in pilot.GUARDED_PROFILES:raise ValueError('Wrong admitted profile')
         self.out=run/'paired';self.out.mkdir();self.rpc=subprocess.run;self.sleep=time.sleep
         self.env={**os.environ,'KUBECONFIG':str(run/'kubeconfig'),'KUBECTL_REMOTE_COMMAND_WEBSOCKETS':'false'}
         self.k=['kubectl','--context','router-topology','--request-timeout=20s']

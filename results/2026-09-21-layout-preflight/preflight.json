@@ -1,0 +1,27 @@
+{
+  "native_vllm_parser_passed": true,
+  "full_http_rehearsal_passed": true,
+  "manifests_server_validated": true,
+  "layout_controller_rehearsed": true,
+  "restart_lifecycle_passed": true,
+  "cloud_actions": false,
+  "sha256": {
+    "config.json": "3730eaefb0e9b36119683b24bdf33527662167866376fcbb26f77270827b5dfa",
+    "suite.json.gz": "548b39c99db7cbad801fd274f84a7b317bca2b16ed9e8228ab624cbe598258ee",
+    "tp4-config.py": "b4bc52ed48415f7a975804d504a089d0cea3b41a4ecf668888c7f0f8cbd4ee68",
+    "tp4-engines.py": "96ff694e9b771ea09537c2c5b5bb36a38e25bc382176627459b4b11efdfe678d",
+    "tp4-client.py": "29d36d1fcc729d7f5308467ccc11ab81b604e5df76ebdf6bfb14d141fdee510f",
+    "tp4-evidence.py": "226e5e6a310f35b5bd267080369c88ad8368621f7a823cb8591c33939c65926f",
+    "validate-tp4-args.py": "7def1a942cca43bf53b0e3bc0e6f69979e94e3bf4657bff7e4eb97da80ddde40",
+    "run-tp4-staged.py": "4f52e1a8495ea24a7c4485c014819e866b47042796a1614670e905c4ac807861",
+    "run-paired-hosts.py": "1dc2121246c720c6f8a5e58a51a2e46b74b553e8d62d12ac9b25fc563cfc2579",
+    "pilot-session.py": "c17c95bac4f7f70a5c996cece063be3843541d45feb82ed219d9ec8a7ca9c921",
+    "cloud-deadline-guard.py": "afa22eb04418d7351de9573e0af427fa8d396b30de95b53ecd4f0b0b5d9c7dba",
+    "layout-client.py": "391748647721b2973be529e08a148f5098af0e1d923b10e8227ac91548546ac5",
+    "layout-engines.py": "4f43a23ff76146cd1d3756b4c20430a7b1ead5ebc4344b65759eb884aa469e52",
+    "run-layout-local.py": "cd7ebe9566213db856c1950da4a0adff8227d16769fa131b32b47315242fb240",
+    "main.tf": "c95ac1207fa1090442f5e1bc1b385786b8160536eb49f0c3ab1dd3d87d48dfb4",
+    "variables.tf": "17d7ad20d3394fa21a5b72ff91fb68660917a163bea0f5bdff71a6ec0fb4af01"
+  },
+  "tests_passed": 219
+}
