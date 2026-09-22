@@ -14,6 +14,11 @@ HERE = Path(__file__).resolve().parent
 EPOCHS = ('default-a', 'packed', 'default-b')
 
 
+def write_json(path,value):
+    temporary=path.with_suffix('.tmp')
+    temporary.write_text(json.dumps(value));temporary.replace(path)
+
+
 def epoch_processes(out, proc=Path('/proc')):
     """Only processes carrying this unique epoch's inherited environment marker."""
     marker = ('TP4_RESULTS_DIR=' + str(out)).encode()
@@ -53,12 +58,21 @@ def drain_epoch(out, timeout=50, kill_after=10, interval=1, gpu_query=None):
                 pass
         remaining_gpu = gpu_query()
         if not epoch_processes(out) and not remaining_gpu:
-            (out/'shutdown.json').write_text(json.dumps({'drained':True,'signals':events}))
+            write_json(out/'shutdown.json',{'drained':True,'signals':events})
             return
         time.sleep(interval)
-    (out/'shutdown.json').write_text(json.dumps({'drained':False,'signals':events,
-        'remaining_epoch_processes':epoch_processes(out),'gpu_processes':remaining_gpu}))
+    write_json(out/'shutdown.json',{'drained':False,'signals':events,
+        'remaining_epoch_processes':epoch_processes(out),'gpu_processes':remaining_gpu})
     raise RuntimeError('CUDA or epoch processes remain after bounded shutdown')
+
+
+def stop_epoch(child,out,timeout=45):
+    """A stuck supervisor must not prevent descendant and CUDA cleanup."""
+    if child.poll() is None:child.terminate()
+    try:child.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        child.kill();child.wait(timeout=5)
+    drain_epoch(out)
 
 
 def main():
@@ -76,7 +90,7 @@ def main():
                'v1/worker/utils.py','v1/core/kv_cache_utils.py')
     (root/'installed-software.json').write_text(json.dumps({'versions': versions,
         'source_sha256': {m: hashlib.sha256((vp/m).read_bytes()).hexdigest() for m in modules}}, indent=2))
-    child = None; stopping = False
+    child = None; out = None; stopping = False
     def stop(*_):
         nonlocal stopping
         stopping = True
@@ -97,31 +111,28 @@ def main():
             with (out/'supervisor.log').open('w') as log:
                 child = subprocess.Popen(['python3','-u',str(HERE/'tp4-engines.py'),'--config',str(config_path)],
                     env={**os.environ,'TP4_RESULTS_DIR':str(out)},stdout=log,stderr=subprocess.STDOUT)
-            (root/'current-epoch.json').write_text(json.dumps({'epoch':epoch,'pid':child.pid}))
+            write_json(root/'current-epoch.json',{'epoch':epoch,'pid':child.pid})
             while not stopping:
                 if child.poll() is not None: raise RuntimeError('Engine supervisor exited unexpectedly')
                 if (root/(epoch+'.advance')).exists(): break
                 time.sleep(1)
-            if child.poll() is None: child.terminate()
-            child.wait(timeout=45)
+            stop_epoch(child,out)
+            child=None
             if stopping: return
-            # No next process until all CUDA workers and the evidence server exited.
-            drain_epoch(out)
             time.sleep(2)
         (root/'all-epochs-stopped.json').write_text('{}')
         while not stopping: time.sleep(2)
     finally:
         stop()
         if child is not None:
-            try: child.wait(timeout=45)
-            except subprocess.TimeoutExpired: child.kill(); child.wait()
+            stop_epoch(child,out)
 
 
 if __name__ == '__main__':
     try: main()
     except BaseException as error:
         import traceback
-        Path('/results/layout-failure.json').write_text(json.dumps({'error':repr(error)}))
+        write_json(Path('/results/layout-failure.json'),{'error':repr(error)})
         traceback.print_exc()
         signal.signal(signal.SIGTERM,signal.SIG_DFL)
         while True: time.sleep(5)

@@ -1,0 +1,61 @@
+PASS: collection saved to /var/folders/87/6_d5qltx6y31wctm89tjzl7r0000gn/T/tmpbusdmqxh/collection
+Collection success does not establish request success, correct pins or improved performance.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+packed-doc engines ready.
+packed engines ready.
+default-b engines ready.
+Cloud guard armed before GPU allocation.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Both transports and 8/8 four-route parity passed; starting warmups.
+Completed load0-512-0
+Completed load0-8192-0
+Cloud guard armed before GPU allocation.
+Engines ready; qualification client started.
+Cloud guard armed before GPU allocation.
+Engines ready; qualification client started.
+PASS RDMA and functional parity; starting timings
+PASS RDMA and functional parity; starting timings
+PASS RDMA and functional parity; starting timings
+failed-evidence-ready
+{"saved_off_box": true, "archive_sha256": "80f6dfa9151bd26d005bf1b09f6a11b0dae597730229f62535678b7bd3849d61", "worker_succeeded": false, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+evidence-ready
+{"saved_off_box": true, "archive_sha256": "6620c88becba0ad04029a7ee11e0255d26f8ae1db3bea78b74c24ef1bccec1d3", "worker_succeeded": true, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+evidence-ready
+{"saved_off_box": true, "archive_sha256": "6620c88becba0ad04029a7ee11e0255d26f8ae1db3bea78b74c24ef1bccec1d3", "worker_succeeded": true, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+evidence-ready
+{"saved_off_box": true, "archive_sha256": "6620c88becba0ad04029a7ee11e0255d26f8ae1db3bea78b74c24ef1bccec1d3", "worker_succeeded": true, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+Healthy local GPU host allocated.
+....sss............../opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 503: 'Service Unavailable'>
+  _warnings.warn(self.warn_message, ResourceWarning)
+........................................................................................................................................................................................................................
+----------------------------------------------------------------------
+Ran 237 tests in 17.971s
+
+OK (skipped=3)

@@ -19,6 +19,8 @@ def main():
  a.out.mkdir(parents=True,exist_ok=False);r=module('run-layout-local');rehearsal=module('rehearse-layout-client')
  tests=subprocess.run([sys.executable,'-m','unittest','discover','-s',str(HERE),'-p','test_*.py'],capture_output=True,text=True)
  (a.out/'tests.log').write_text(tests.stdout+tests.stderr);tests.check_returncode()
+ replay=subprocess.run([sys.executable,str(HERE/'test_layout_workflow.py')],capture_output=True,text=True,timeout=90)
+ (a.out/'controller-failures.log').write_text(replay.stdout+replay.stderr);replay.check_returncode()
  native=['docker','run','--rm','--network','none','--entrypoint','python3','-e','PYTHONPATH=/probe','-v',str(HERE)+':/probe:ro','-v',str(a.config.parent.resolve())+':/settings:ro',CPU_IMAGE]
  commands=[('native-parser',['/probe/validate-tp4-args.py','--config','/settings/'+a.config.name]),
            ('native-layout',['/probe/native-v029-layout-check.py']),('native-worker',['/probe/native-v029-worker-check.py']),
@@ -28,8 +30,12 @@ def main():
   (a.out/(name+'.log')).write_text(result.stdout+result.stderr);result.check_returncode()
  result=rehearsal.rehearsal(a.suite,a.config,a.out/'http')
  if result['requests']!=104:raise ValueError('Four-epoch HTTP rehearsal incomplete')
+ qualification=rehearsal.rehearsal(a.suite,a.config,a.out/'qualification-http','qualification')
+ if qualification['requests']!=16:raise ValueError('Short qualification HTTP rehearsal incomplete')
  life=json.loads(a.lifecycle_record.read_text())
- if not life.get('restart_lifecycle_passed') or life['epochs']!=4:raise ValueError('Four-epoch lifecycle proof required')
+ if not life.get('restart_lifecycle_passed') or life['epochs']!=4 or not life.get('both_supervisors_real'):raise ValueError('Both real supervisors must pass four-epoch lifecycle proof')
+ for name in ('layout-engines.py','tp4-engines.py','rehearse-layout-lifecycle.py'):
+  if life['sha256'].get(name)!=hashlib.sha256((HERE/name).read_bytes()).hexdigest():raise ValueError('Stale lifecycle proof: '+name)
  (a.out/'lifecycle.json').write_text(json.dumps(life,indent=2)+'\n')
  engine=r.manifest(a.config,{'local':'v029-local-placeholder'});client=r.s.client_manifest('v029-cpu-placeholder',a.suite)
  guard=r.s.paired.guard_manifest('v029-cpu-placeholder',{'project_id':'project-u00k8gmbpr0067akfrxdah','cleanup_start_deadline_unix':9999999999},'placeholder-cluster')
@@ -42,7 +48,7 @@ def main():
  data=json.loads(subprocess.check_output(k+['-n',r.s.tp4.NS,'get','configmap','tp4-requests','-o','json']))
  if base64.b64decode(data['binaryData']['suite.json.gz'])!=a.suite.read_bytes():raise ValueError('Requests differ')
  files=[a.config,a.suite,*[HERE/n for n in r.CODE],*sorted((HERE/'terraform-rdma').glob('*.tf'))]
- proof={key:True for key in ('native_vllm_parser_passed','native_v2_layout_resolution_passed','native_cpu_allocation_passed','full_http_rehearsal_passed','manifests_server_validated','layout_controller_rehearsed','restart_lifecycle_passed')}
+ proof={key:True for key in ('native_vllm_parser_passed','native_v2_layout_resolution_passed','native_cpu_allocation_passed','full_http_rehearsal_passed','qualification_http_rehearsal_passed','manifests_server_validated','layout_controller_rehearsed','restart_lifecycle_passed','controller_failure_replay_passed')}
  proof.update(gpu_execution=False,cloud_actions=False,tests_passed=int(re.search(r'Ran (\d+) tests',tests.stderr).group(1)),sha256={f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in files})
  (a.out/'preflight.json').write_text(json.dumps(proof,indent=2)+'\n');print('PASS v0.29 local preparation; no GPU result')
 

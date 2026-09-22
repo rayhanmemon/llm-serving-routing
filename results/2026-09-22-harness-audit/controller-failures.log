@@ -1,0 +1,40 @@
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+packed-doc engines ready.
+packed engines ready.
+default-b engines ready.
+Cloud guard armed before GPU allocation.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 503: 'Service Unavailable'>
+  _warnings.warn(self.warn_message, ResourceWarning)
+..
+----------------------------------------------------------------------
+Ran 2 tests in 1.798s
+
+OK

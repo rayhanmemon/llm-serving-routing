@@ -9,6 +9,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 
 HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location('layout_engines', HERE/'layout-engines.py')
@@ -17,6 +18,26 @@ layout = importlib.util.module_from_spec(spec); spec.loader.exec_module(layout)
 
 @unittest.skipUnless(sys.platform == 'linux', 'Requires real Linux /proc')
 class ShutdownTests(unittest.TestCase):
+    def test_stuck_supervisor_is_killed_then_drained(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out=Path(directory)
+            child=subprocess.Popen([sys.executable,'-c',
+                'import signal,time,pathlib;signal.signal(signal.SIGTERM,signal.SIG_IGN);'
+                f'pathlib.Path({str(out/"ready")!r}).touch();time.sleep(60)'],
+                env={**os.environ,'TP4_RESULTS_DIR':str(out)})
+            try:
+                until=time.monotonic()+5
+                while not (out/'ready').exists() and time.monotonic()<until:time.sleep(.01)
+                self.assertTrue((out/'ready').exists())
+                real_drain=layout.drain_epoch
+                with patch.object(layout,'drain_epoch',side_effect=lambda path:real_drain(path,gpu_query=lambda:'')):
+                    layout.stop_epoch(child,out,timeout=.1)
+                self.assertEqual(child.returncode,-signal.SIGKILL)
+                self.assertTrue(json.loads((out/'shutdown.json').read_text())['drained'])
+            finally:
+                if child.poll() is None:child.kill()
+                child.wait()
+
     def test_detached_worker_survives_parent_but_is_drained_without_other_epoch(self):
         with tempfile.TemporaryDirectory() as directory:
             out = Path(directory)

@@ -16,7 +16,7 @@ HERE=Path(__file__).resolve().parent
 sp=importlib.util.spec_from_file_location('layout',HERE/'layout-client.py');l=importlib.util.module_from_spec(sp);sp.loader.exec_module(l)
 c=l.c
 
-def rehearsal(suite_path,config_path,out):
+def rehearsal(suite_path,config_path,out,mode='comparison',fault=None):
     suite=json.loads(gzip.decompress(suite_path.read_bytes()));config,arch=c.settings.load_config(config_path)
     names=(c.e.COUNT,c.e.BYTES,c.e.TIME_COUNT,c.e.TIME_SUM,*c.e.FAILURES,c.RUNNING,c.WAITING,
            *[m+suffix for m in l.METRICS for suffix in ('_sum','_count')])
@@ -47,6 +47,7 @@ def rehearsal(suite_path,config_path,out):
             case=next((x for x in suite['cases'] if x['request_body']['prompt']==body['prompt']),None)
             if case is None:self.send_error(400);return
             calls[0]+=1
+            if fault=='http-error':self.send_error(503);return
             if port=='8000':
                 if self.headers.get('x-prefiller-host-port')!='fixture:8100':self.send_error(400);return
                 n=len(body['prompt']);desc=n//64 if epoch[0]=='packed' else n
@@ -58,6 +59,7 @@ def rehearsal(suite_path,config_path,out):
             completion=body['max_tokens'] if body.get('ignore_eos') else min(8,body['max_tokens'])
             events=[{'choices':[{'text':case['gold_path']}]},{'choices':[],'usage':{'prompt_tokens':len(body['prompt']),'completion_tokens':completion}}]
             raw=b''.join(b'data: '+json.dumps(e).encode()+b'\n\n' for e in events)+b'data: [DONE]\n\n'
+            if fault=='incomplete-stream':raw=raw.removesuffix(b'data: [DONE]\n\n')
             self.send_response(200);self.send_header('Content-Type','text/event-stream');self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw)
         def log_message(self,*_):pass
     server=ThreadingHTTPServer(('127.0.0.1',0),Handler);threading.Thread(target=server.serve_forever,daemon=True).start()
@@ -72,12 +74,13 @@ def rehearsal(suite_path,config_path,out):
             for name in (('default-a','packed-doc','packed','default-b') if config.get('vllm_version')=='0.29.0' else ('default-a','packed','default-b')):
                 epoch[0]=name
                 for metrics in state.values():metrics.update(dict.fromkeys(names,0))
-                l.run('fixture',config_path,suite_path,out,name,time.time()+600)
+                l.run('fixture',config_path,suite_path,out,name,time.time()+600,mode)
                 result=json.loads((out/name/'complete.json').read_text())
-                assert result['default_slow_reproduced']==(name!='packed')
-                assert result['requests']==26 and result['timed_requests']==12
-        assert calls[0]==(104 if config.get('vllm_version')=='0.29.0' else 78)
-        return {'full_http_rehearsal_passed':True,'requests':calls[0],'gpu_execution':False}
+                if mode=='comparison':assert result['default_slow_reproduced']==(name!='packed')
+                assert result['requests']==(4 if mode=='qualification' else 26)
+                assert result['timed_requests']==(0 if mode=='qualification' else 12)
+        assert calls[0]==(4 if config.get('vllm_version')=='0.29.0' else 3)*(4 if mode=='qualification' else 26)
+        return {'full_http_rehearsal_passed':True,'mode':mode,'requests':calls[0],'gpu_execution':False}
     finally:server.shutdown();server.server_close()
 
 if __name__=='__main__':

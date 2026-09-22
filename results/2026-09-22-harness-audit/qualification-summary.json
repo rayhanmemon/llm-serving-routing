@@ -1,0 +1,103 @@
+{
+  "epochs": {
+    "default-a": {
+      "complete": true,
+      "mode": "qualification",
+      "requests": 4,
+      "timed_requests": 0,
+      "requests_sha256": "6230f2983c848dbf113cb563344cd33e9a7a7424b78cd6bd796d9e13c4438378",
+      "direct_controls": [
+        {
+          "case": "code-4096-0",
+          "input_tokens": 4096,
+          "output_tokens": 8,
+          "ttft_ms": 0.9337500086985528
+        },
+        {
+          "case": "code-122880-0",
+          "input_tokens": 122880,
+          "output_tokens": 8,
+          "ttft_ms": 10.270999977365136
+        }
+      ]
+    },
+    "packed-doc": {
+      "complete": true,
+      "mode": "qualification",
+      "requests": 4,
+      "timed_requests": 0,
+      "requests_sha256": "96c345c335b5461d18ee3f65f207182313433f6e24d8903a31c23bf7219ee1cc",
+      "direct_controls": [
+        {
+          "case": "code-4096-0",
+          "input_tokens": 4096,
+          "output_tokens": 8,
+          "ttft_ms": 0.8689159876666963
+        },
+        {
+          "case": "code-122880-0",
+          "input_tokens": 122880,
+          "output_tokens": 8,
+          "ttft_ms": 9.674541011918336
+        }
+      ]
+    },
+    "packed": {
+      "complete": true,
+      "mode": "qualification",
+      "requests": 4,
+      "timed_requests": 0,
+      "requests_sha256": "a25d9b20d804b85f09c4b0adfd11247eeebecc5fdc9ba3779f62086e91e9273a",
+      "direct_controls": [
+        {
+          "case": "code-4096-0",
+          "input_tokens": 4096,
+          "output_tokens": 8,
+          "ttft_ms": 1.0647500166669488
+        },
+        {
+          "case": "code-122880-0",
+          "input_tokens": 122880,
+          "output_tokens": 8,
+          "ttft_ms": 10.14749996829778
+        }
+      ]
+    },
+    "default-b": {
+      "complete": true,
+      "mode": "qualification",
+      "requests": 4,
+      "timed_requests": 0,
+      "requests_sha256": "d31cdea665e39b42ca3b0169149f7079fe4e8711c356d2a460621e699b209fe1",
+      "direct_controls": [
+        {
+          "case": "code-4096-0",
+          "input_tokens": 4096,
+          "output_tokens": 8,
+          "ttft_ms": 0.8389169815927744
+        },
+        {
+          "case": "code-122880-0",
+          "input_tokens": 122880,
+          "output_tokens": 8,
+          "ttft_ms": 9.61687503149733
+        }
+      ]
+    }
+  },
+  "planned_epochs": [
+    "default-a",
+    "packed-doc",
+    "packed",
+    "default-b"
+  ],
+  "complete_layout_comparison": false,
+  "complete_three_epoch_comparison": false,
+  "complete_restart_qualification": true,
+  "cautions": [
+    "One local GPU host; no remote path or router policy comparison.",
+    "Transfer includes posting; per-rank averages are not TP-group critical-path times.",
+    "Fixed repeated prompt and request history, not production traffic or broad replication.",
+    "Direct controls have few observations; inspect computation and correctness before attributing all TTFT changes to transfer."
+  ]
+}

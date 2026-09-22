@@ -25,7 +25,8 @@ def metric_delta(row):
     return result
 
 
-def run(host,config_path,suite_path,out,epoch,deadline):
+def run(host,config_path,suite_path,out,epoch,deadline,mode='comparison'):
+    if mode not in ('qualification','comparison'):raise ValueError('Unknown execution mode')
     config,arch=c.settings.load_config(config_path)
     suite=json.loads(gzip.decompress(suite_path.read_bytes()))
     if suite['config_sha256']!=hashlib.sha256(config_path.read_bytes()).hexdigest():
@@ -50,9 +51,10 @@ def run(host,config_path,suite_path,out,epoch,deadline):
         for role,log in base['local']['engine_logs'].items():
             if log.count('Allocating a cross layer KV cache of shape')<4:
                 raise ValueError('No positive cross-layer allocation evidence for every '+role+' rank')
-    c.write(out/'plan.json',{'epoch':epoch,'suite_sha256':hashlib.sha256(suite_path.read_bytes()).hexdigest(),
+    c.write(out/'plan.json',{'epoch':epoch,'mode':mode,'suite_sha256':hashlib.sha256(suite_path.read_bytes()).hexdigest(),
         'planned_epochs':['default-a','packed-doc','packed','default-b'] if config.get('vllm_version')=='0.29.0' else ['default-a','packed','default-b'],
-        'sequence':'4K/120K two-case direct/P-D qualification; two short warmups; eight repeated120K; four P-only/P-D pairs',
+        'sequence':('One direct/P-D pair at each of 4K and120K; no timing block' if mode=='qualification' else
+                    '4K/120K two-case direct/P-D qualification; two short warmups; eight repeated120K; four P-only/P-D pairs'),
         'counterfactual_note':'P-only churn changes producer history; it is not a simulated remote performance result'})
     def measure(case,route,stage,body=None):
         body=dict(case['request_body'] if body is None else body)
@@ -79,6 +81,8 @@ def run(host,config_path,suite_path,out,epoch,deadline):
         finally:c.write(out/'requests.json',rows)
     try:
         selected=[x for x in suite['cases'] if x['input_tokens'] in (4096,122880)]
+        if mode=='qualification':
+            selected=[next(x for x in selected if x['input_tokens']==size) for size in (4096,122880)]
         parity=[]
         for case in selected:
             body=dict(case['request_body'],ignore_eos=False)
@@ -87,6 +91,12 @@ def run(host,config_path,suite_path,out,epoch,deadline):
             ok=direct['response']['text'].strip()==pd['response']['text'].strip()
             parity.append({'case':case['id'],'matches':ok,'gold_matches':pd['response']['text'].strip()==case['gold_path']})
             if not ok:raise ValueError('Direct/P-D correctness mismatch')
+        if mode=='qualification':
+            final=c.evidence(hosts);c.write(out/'final-evidence.json',final);c.stable(base,final)
+            minimum=4194304 if config.get('vllm_version')=='0.29.0' and epoch=='packed' else 32768
+            result={'mode':mode,'requests':len(rows),'timed_requests':0,'parity':parity,
+                    'transport':c.qualify_evidence(final,'local',minimum_descriptor_bytes=minimum)}
+            c.write(out/'complete.json',result);print(json.dumps(result),flush=True);return
         short=selected[0];long=next(x for x in selected if x['input_tokens']==122880)
         for _ in range(2):measure(short,'pd-local','warmup')
         for _ in range(8):measure(long,'pd-local','repeated')
@@ -100,7 +110,7 @@ def run(host,config_path,suite_path,out,epoch,deadline):
         transport=c.qualify_evidence(final,'local',minimum_descriptor_bytes=minimum)
         timed=[r for r in rows if r['stage'] in ('repeated','churn-timed')]
         high=[r for r in timed if r['components'][METRICS[0]]>=60000 and r['components'][METRICS[1]]>=.1]
-        result={'requests':len(rows),'timed_requests':len(timed),'parity':parity,'transport':transport,
+        result={'mode':mode,'requests':len(rows),'timed_requests':len(timed),'parity':parity,'transport':transport,
                 'default_slow_reproduced':len(high)>=2,'slow_requests':len(high),
                 'mean_ttft_seconds':statistics.mean(r['response']['ttft_seconds'] for r in timed),
                 'mean_descriptors_per_rank':statistics.mean(r['components'][METRICS[0]] for r in timed),
@@ -114,4 +124,5 @@ if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--local',required=True);p.add_argument('--config',type=Path,required=True)
     p.add_argument('--suite',type=Path,required=True);p.add_argument('--out',type=Path,default=Path('/results'))
     p.add_argument('--epoch',choices=['default-a','packed-doc','packed','default-b'],required=True);p.add_argument('--deadline',type=float,required=True)
-    a=p.parse_args();run(a.local,a.config,a.suite,a.out,a.epoch,a.deadline)
+    p.add_argument('--mode',choices=['qualification','comparison'],default='qualification')
+    a=p.parse_args();run(a.local,a.config,a.suite,a.out,a.epoch,a.deadline,a.mode)

@@ -15,8 +15,10 @@ def summarize(folder):
         if not (path/'requests.json').exists():continue
         rows=json.loads((path/'requests.json').read_text())
         completed=(path/'complete.json').exists()
+        mode=json.loads((path/'plan.json').read_text()).get('mode','comparison') if (path/'plan.json').exists() else 'comparison'
         timed=[r for r in rows if r['stage'] in ('repeated','churn-timed') and 'components' in r]
-        if completed and (len(rows)!=26 or len(timed)!=12):raise ValueError('Wrong complete-epoch request count')
+        expected=(4,0) if mode=='qualification' else (26,12)
+        if completed and (len(rows),len(timed))!=expected:raise ValueError('Wrong complete-epoch request count')
         for row in timed:
             for metric in METRICS:
                 a=row['before']['local']['values'];b=row['after']['local']['values']
@@ -27,7 +29,7 @@ def summarize(folder):
             if row['response']['usage']!={'prompt_tokens':122880,'completion_tokens':32,'total_tokens':122912}:
                 # Some vLLM releases add detailed usage fields; check core counts only.
                 if any(row['response']['usage'].get(k)!=v for k,v in {'prompt_tokens':122880,'completion_tokens':32}.items()):raise ValueError('Unexpected input/output')
-        result={'complete':completed,'requests':len(rows),'timed_requests':len(timed),
+        result={'complete':completed,'mode':mode,'requests':len(rows),'timed_requests':len(timed),
                 'requests_sha256':hashlib.sha256((path/'requests.json').read_bytes()).hexdigest()}
         if timed:
             result.update(mean_ttft_ms=statistics.mean(r['response']['ttft_seconds']*1000 for r in timed),
@@ -43,7 +45,9 @@ def summarize(folder):
         epochs[name]=result
     plan_path=folder/'default-a/plan.json'
     planned=json.loads(plan_path.read_text()).get('planned_epochs',['default-a','packed','default-b']) if plan_path.exists() else ['default-a','packed','default-b']
-    return {'epochs':epochs,'planned_epochs':planned,'complete_layout_comparison':set(epochs)==set(planned) and all(x['complete'] for x in epochs.values()),'complete_three_epoch_comparison':len(epochs)==3 and all(x['complete'] for x in epochs.values()),
+    compared=bool(epochs) and all(x['complete'] and x['mode']=='comparison' for x in epochs.values())
+    return {'epochs':epochs,'planned_epochs':planned,'complete_layout_comparison':set(epochs)==set(planned) and compared,'complete_three_epoch_comparison':len(epochs)==3 and compared,
+            'complete_restart_qualification':set(epochs)==set(planned) and all(x['complete'] and x['mode']=='qualification' for x in epochs.values()),
             'cautions':['One local GPU host; no remote path or router policy comparison.',
                         'Transfer includes posting; per-rank averages are not TP-group critical-path times.',
                         'Fixed repeated prompt and request history, not production traffic or broad replication.',

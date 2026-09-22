@@ -70,11 +70,12 @@ class LayoutTests(unittest.TestCase):
             obj.call=lambda cmd,*a,**k:events.append('advance' if 'touch' in cmd else 'wait') or subprocess.CompletedProcess(cmd,0,'','')
             obj.ready=lambda name:events.append('ready-'+name)
             obj.epoch=lambda name:events.append(name) or {'default_slow_reproduced':reproduced}
-            obj.collect=lambda:events.append('collect')
+            obj.collect=lambda **kw:events.append('collect')
+            obj.mode='comparison';obj.advance=lambda name:events.append('advance')
             with patch.object(s.s.paired.Controller,'bootstrap',side_effect=lambda *a,**k:events.append('guard')):
                 obj.execute(HERE.parent.parent/'workloads/tp4-locality/code-suite/suite.json.gz')
             self.assertNotIn('allocate-remote',events)
-            self.assertEqual(events.count('advance'),2 if reproduced else 0)
+            self.assertEqual(events.count('advance'),3 if reproduced else 0)
             self.assertEqual('default-b' in events,reproduced)
     def test_no_packed_restart_without_slow_baseline(self):self.check_sequence(False)
     def test_all_epochs_follow_guard_and_one_host(self):self.check_sequence(True)

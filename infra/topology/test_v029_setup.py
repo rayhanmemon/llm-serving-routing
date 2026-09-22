@@ -29,11 +29,12 @@ class V029Tests(unittest.TestCase):
    obj.call=lambda cmd,*a,**k:events.append('advance' if 'touch' in cmd else 'wait') or subprocess.CompletedProcess(cmd,0,'','')
    obj.ready=lambda name:events.append('ready-'+name)
    obj.epoch=lambda name:events.append(name) or {'default_slow_reproduced':True}
-   obj.collect=lambda:events.append('collect')
+   obj.collect=lambda **kw:events.append('collect')
+   obj.mode='comparison';obj.advance=lambda name:events.append('advance')
    with patch.object(controller.s.paired.Controller,'bootstrap',side_effect=lambda *a,**k:events.append('guard')):
     obj.execute(CFG.with_name('suite.json.gz'))
    self.assertEqual([x for x in events if x in ('default-a','packed-doc','packed','default-b')],['default-a','packed-doc','packed','default-b'])
-   self.assertEqual(events.count('advance'),3);self.assertNotIn('allocate-remote',events)
+   self.assertEqual(events.count('advance'),4);self.assertNotIn('allocate-remote',events)
  def test_explicit_runner_layout_image_and_probe_are_rendered(self):
   config,arch=p.load_config(CFG);config['kv_cache_layout']='BHLNC'
   for role in ('local','remote'):

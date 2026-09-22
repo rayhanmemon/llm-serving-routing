@@ -1,0 +1,12 @@
+{
+  "restart_lifecycle_passed": true,
+  "epochs": 4,
+  "both_supervisors_real": true,
+  "gpu_execution": false,
+  "scope": "Actual layout and TP4 supervisors; real detached TERM-ignoring Linux children. Model/download/parser/CUDA inventory substituted; native parser checked separately.",
+  "sha256": {
+    "layout-engines.py": "d50aac887b4a2e97ea764b6de74a1c2f03706260b586e5b473b7822da67bcdae",
+    "tp4-engines.py": "ba2f3307691e0e12cbb33d719804e0589fc0236c52bf2c18a294f457810f08cc",
+    "rehearse-layout-lifecycle.py": "edc2f2396b10b3f0730886b05ae59e52f2e7741a393d1e371d9648a6c7bd78de"
+  }
+}
