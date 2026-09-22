@@ -1,0 +1,365 @@
+cleanup attempt 1 started at 1790050129.423018
+[0m[1mnebius_compute_v1_gpu_cluster.local: Refreshing state... [id=computegpucluster-u00m3w87xqqh2e3pks][0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Refreshing state... [id=mk8scluster-u00nx4zttrgrjk93wc][0m
+[0m[1mnebius_mk8s_v1_node_group.local: Refreshing state... [id=mk8snodegroup-u00fcz6tqetxw7a6z7][0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Refreshing state... [id=mk8snodegroup-u00e2pxsg4yw6tyafg][0m
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [31m-[0m destroy[0m
+
+Terraform will perform the following actions:
+
+[1m  # nebius_compute_v1_gpu_cluster.local[0m will be [1m[31mdestroyed[0m
+[0m  [31m-[0m[0m resource "nebius_compute_v1_gpu_cluster" "local" {
+      [31m-[0m[0m created_at        = "2026-09-22T03:59:56.790245Z" [90m-> null[0m[0m
+      [31m-[0m[0m id                = "computegpucluster-u00m3w87xqqh2e3pks" [90m-> null[0m[0m
+      [31m-[0m[0m infiniband_fabric = "us-central1-a" [90m-> null[0m[0m
+      [31m-[0m[0m labels_all        = {} [90m-> null[0m[0m
+      [31m-[0m[0m metadata          = {} [90m-> null[0m[0m
+      [31m-[0m[0m name              = "router-local-h200" [90m-> null[0m[0m
+      [31m-[0m[0m parent_id         = "project-u00k8gmbpr0067akfrxdah" [90m-> null[0m[0m
+      [31m-[0m[0m resource_version  = 1 [90m-> null[0m[0m
+      [31m-[0m[0m status            = {
+          [31m-[0m[0m instances = [
+              [31m-[0m[0m "computeinstance-u00pw58803b7syf6eg",
+            ] [90m-> null[0m[0m
+        } [90m-> null[0m[0m
+    }
+
+[1m  # nebius_mk8s_v1_cluster.topology[0m will be [1m[31mdestroyed[0m
+[0m  [31m-[0m[0m resource "nebius_mk8s_v1_cluster" "topology" {
+      [31m-[0m[0m control_plane    = {
+          [31m-[0m[0m endpoints = {
+              [31m-[0m[0m public_endpoint = {} [90m-> null[0m[0m
+            } [90m-> null[0m[0m
+          [31m-[0m[0m subnet_id = "vpcsubnet-u00fjg7m2r4s10h9sb" [90m-> null[0m[0m
+          [31m-[0m[0m version   = "1.35" [90m-> null[0m[0m
+        } [90m-> null[0m[0m
+      [31m-[0m[0m created_at       = "2026-09-22T03:51:48Z" [90m-> null[0m[0m
+      [31m-[0m[0m id               = "mk8scluster-u00nx4zttrgrjk93wc" [90m-> null[0m[0m
+      [31m-[0m[0m labels_all       = {} [90m-> null[0m[0m
+      [31m-[0m[0m metadata         = {} [90m-> null[0m[0m
+      [31m-[0m[0m name             = "router-topology" [90m-> null[0m[0m
+      [31m-[0m[0m parent_id        = "project-u00k8gmbpr0067akfrxdah" [90m-> null[0m[0m
+      [31m-[0m[0m resource_version = 2 [90m-> null[0m[0m
+      [31m-[0m[0m status           = {
+          [31m-[0m[0m control_plane = {
+              [31m-[0m[0m auth              = {
+                  [31m-[0m[0m cluster_ca_certificate = <<-EOT
+                        -----BEGIN CERTIFICATE-----
+                        MIIC6jCCAdKgAwIBAgIBADANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwprdWJl
+                        cm5ldGVzMB4XDTI2MDkyMjAzNDgwM1oXDTM2MDkxOTAzNTMwM1owFTETMBEGA1UE
+                        AxMKa3ViZXJuZXRlczCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMpa
+                        gzVGNI8h9heTzicd38+mzW+qMGqlMgBS0UHiqxCqQfazCA09A7njVXJApg/KJXuf
+                        kfQWlwUl9XqR4kLOs0ZpzVesZ+c8t2g6C6kDCA3fNOiCA9iiJItZJJ7YLYFovOtY
+                        PMrRYYgHv80P+/koyP9NTG3cZo23QdfIzzP3BCkWHw3U+Uq3su6yqzqK3Ie+c1Vk
+                        kwSnAuzP6uBoutOlgaiwgQCoVGKVJGSfhJOaMye0WIM5apsJ4/EU9/10sKVAC7Se
+                        tdFtweP8j20lMy/r6O8GP+v/RszjvVwLK8gHVEw9YwL+c/bV6m8FELJ5xt5hldeG
+                        iaCdNcRjI5wuHXDRO3kCAwEAAaNFMEMwDgYDVR0PAQH/BAQDAgKkMBIGA1UdEwEB
+                        /wQIMAYBAf8CAQAwHQYDVR0OBBYEFK9m9wr8u+k+neWclJ3iNOvPXn/WMA0GCSqG
+                        SIb3DQEBCwUAA4IBAQCaR6Rb2ehBOqp3GEAHg6gR1tBrtbisT0/xIiRU3Jn0mVy/
+                        lpVm09HOH2EV1m/+qxN1uFsQG34UkUe5TCJ93h7Ht6N5aPVUwwgeBUme5/41tkao
+                        3J9R0g4tI0xW90DtXdzd/PXZMyDSuiQiOWZh1NPO1fiKLrresCTj9qMQkLD2G7uM
+                        aJ3cQ5fQ+1bZPIVmLSM4LmhXTr7NqROfc0E04RGMzHKzBWWQuuy6yd/XoXbtI3cI
+                        4CjHKTNFieKDU9kc7hYERV4qdzAQ0JcPArSvRqLdZu3YsN6jsfnX3cCJN4qbjmd1
+                        ubc3t/NZ3roLkwkyJDxN3KlTvNZAPNfnxYaE9sNR
+                        -----END CERTIFICATE-----
+                    EOT [90m-> null[0m[0m
+                } [90m-> null[0m[0m
+              [31m-[0m[0m endpoints         = {
+                  [31m-[0m[0m private_endpoint = "https://pr.mk8scluster-u00nx4zttrgrjk93wc.mk8s.us-central1.nebius.cloud:443" [90m-> null[0m[0m
+                  [31m-[0m[0m public_endpoint  = "https://pu.mk8scluster-u00nx4zttrgrjk93wc.mk8s.us-central1.nebius.cloud:443" [90m-> null[0m[0m
+                } [90m-> null[0m[0m
+              [31m-[0m[0m etcd_cluster_size = 3 [90m-> null[0m[0m
+              [31m-[0m[0m version           = "1.35" [90m-> null[0m[0m
+            } [90m-> null[0m[0m
+          [31m-[0m[0m events        = [
+              [31m-[0m[0m {
+                  [31m-[0m[0m first_occurred_at = "2026-09-22T04:06:43Z" [90m-> null[0m[0m
+                  [31m-[0m[0m last_occurrence   = {
+                      [31m-[0m[0m code        = "UnexpectedPublicHelmChartDiffForCilium" [90m-> null[0m[0m
+                      [31m-[0m[0m level       = "WARN" [90m-> null[0m[0m
+                      [31m-[0m[0m message     = <<-EOT
+                            Helm chart "cilium" has unexpected diff between desired and live state:
+                            kube-system, cilium-operator, PodDisruptionBudget (policy) has been removed:
+                            - apiVersion: policy/v1
+                            - kind: PodDisruptionBudget
+                            - metadata:
+                            -   labels:
+                            -     app.kubernetes.io/name: cilium-operator
+                            -     app.kubernetes.io/part-of: cilium
+                            -     io.cilium/app: operator
+                            -     name: cilium-operator
+                            -   name: cilium-operator
+                            -   namespace: kube-system
+                            - spec:
+                            -   maxUnavailable: 1
+                            -   selector:
+                            -     matchLabels:
+                            -       io.cilium/app: operator
+                            -       name: cilium-operator
+                            ...
+                            kube-system, hubble-relay, PodDisruptionBudget (policy) has been removed:
+                            - apiVersion: policy/v1
+                            - kind: PodDisruptionBudget
+                            - metadata:
+                            -   labels:
+                            -     app.kubernetes.io/name: hubble-relay
+                            -     app.kubernetes.io/part-of: cilium
+                            -     k8s-app: hubble-relay
+                            -   name: hubble-relay
+                            -   namespace: kube-system
+                            - spec:
+                            -   maxUnavailable: 1
+                            -   selector:
+                            -     matchLabels:
+                            -       k8s-app: hubble-relay
+                            ...
+                            kube-system, hubble-ui, PodDisruptionBudget (pol
+                            (diff truncated)
+                        EOT [90m-> null[0m[0m
+                      [31m-[0m[0m occurred_at = "2026-09-22T04:06:43Z" [90m-> null[0m[0m
+                    } [90m-> null[0m[0m
+                  [31m-[0m[0m occurrence_count  = 1 [90m-> null[0m[0m
+                },
+            ] [90m-> null[0m[0m
+          [31m-[0m[0m state         = "RUNNING" [90m-> null[0m[0m
+        } [90m-> null[0m[0m
+      [31m-[0m[0m updated_at       = "2026-09-22T04:00:07Z" [90m-> null[0m[0m
+    }
+
+[1m  # nebius_mk8s_v1_node_group.cpu[0][0m will be [1m[31mdestroyed[0m
+[0m  [31m-[0m[0m resource "nebius_mk8s_v1_node_group" "cpu" {
+      [31m-[0m[0m created_at       = "2026-09-22T03:56:39Z" [90m-> null[0m[0m
+      [31m-[0m[0m fixed_node_count = 1 [90m-> null[0m[0m
+      [31m-[0m[0m id               = "mk8snodegroup-u00e2pxsg4yw6tyafg" [90m-> null[0m[0m
+      [31m-[0m[0m labels_all       = {} [90m-> null[0m[0m
+      [31m-[0m[0m metadata         = {} [90m-> null[0m[0m
+      [31m-[0m[0m name             = "router-cpu" [90m-> null[0m[0m
+      [31m-[0m[0m parent_id        = "mk8scluster-u00nx4zttrgrjk93wc" [90m-> null[0m[0m
+      [31m-[0m[0m resource_version = 1 [90m-> null[0m[0m
+      [31m-[0m[0m status           = {
+          [31m-[0m[0m events            = [
+              [31m-[0m[0m {
+                  [31m-[0m[0m first_occurred_at = "2026-09-22T03:56:42Z" [90m-> null[0m[0m
+                  [31m-[0m[0m last_occurrence   = {
+                      [31m-[0m[0m code        = "ComputeInstanceStopped" [90m-> null[0m[0m
+                      [31m-[0m[0m level       = "WARN" [90m-> null[0m[0m
+                      [31m-[0m[0m message     = "Compute instance is stopped for node mk8snodegroup-u00e2pxsg4yw6tyafg-g5g5b-4tw4p" [90m-> null[0m[0m
+                      [31m-[0m[0m occurred_at = "2026-09-22T03:56:42Z" [90m-> null[0m[0m
+                    } [90m-> null[0m[0m
+                  [31m-[0m[0m occurrence_count  = 1 [90m-> null[0m[0m
+                },
+              [31m-[0m[0m {
+                  [31m-[0m[0m first_occurred_at = "2026-09-22T03:57:28Z" [90m-> null[0m[0m
+                  [31m-[0m[0m last_occurrence   = {
+                      [31m-[0m[0m code        = "NodeProvisioning" [90m-> null[0m[0m
+                      [31m-[0m[0m level       = "WARN" [90m-> null[0m[0m
+                      [31m-[0m[0m message     = "Waiting for a node with matching ProviderID to exist for node mk8snodegroup-u00e2pxsg4yw6tyafg-g5g5b-4tw4p" [90m-> null[0m[0m
+                      [31m-[0m[0m occurred_at = "2026-09-22T03:57:28Z" [90m-> null[0m[0m
+                    } [90m-> null[0m[0m
+                  [31m-[0m[0m occurrence_count  = 1 [90m-> null[0m[0m
+                },
+              [31m-[0m[0m {
+                  [31m-[0m[0m first_occurred_at = "2026-09-22T03:58:05Z" [90m-> null[0m[0m
+                  [31m-[0m[0m last_occurrence   = {
+                      [31m-[0m[0m code        = "NodeConditionsFailed" [90m-> null[0m[0m
+                      [31m-[0m[0m level       = "WARN" [90m-> null[0m[0m
+                      [31m-[0m[0m message     = "Node condition Ready is False for node mk8snodegroup-u00e2pxsg4yw6tyafg-g5g5b-4tw4p" [90m-> null[0m[0m
+                      [31m-[0m[0m occurred_at = "2026-09-22T03:58:05Z" [90m-> null[0m[0m
+                    } [90m-> null[0m[0m
+                  [31m-[0m[0m occurrence_count  = 1 [90m-> null[0m[0m
+                },
+            ] [90m-> null[0m[0m
+          [31m-[0m[0m node_count        = 1 [90m-> null[0m[0m
+          [31m-[0m[0m ready_node_count  = 1 [90m-> null[0m[0m
+          [31m-[0m[0m state             = "RUNNING" [90m-> null[0m[0m
+          [31m-[0m[0m strategy          = {
+              [31m-[0m[0m drain_timeout   = "1m" [90m-> null[0m[0m
+              [31m-[0m[0m max_surge       = {
+                  [31m-[0m[0m count = 0 [90m-> null[0m[0m
+                } [90m-> null[0m[0m
+              [31m-[0m[0m max_unavailable = {
+                  [31m-[0m[0m count = 1 [90m-> null[0m[0m
+                } [90m-> null[0m[0m
+            } [90m-> null[0m[0m
+          [31m-[0m[0m target_node_count = 1 [90m-> null[0m[0m
+          [31m-[0m[0m version           = "v1.35.7-nebius-node.74" [90m-> null[0m[0m
+        } [90m-> null[0m[0m
+      [31m-[0m[0m strategy         = {
+          [31m-[0m[0m drain_timeout = "60s" [90m-> null[0m[0m
+        } [90m-> null[0m[0m
+      [31m-[0m[0m template         = {
+          [31m-[0m[0m boot_disk          = {
+              [31m-[0m[0m block_size_bytes = 0 [90m-> null[0m[0m
+              [31m-[0m[0m size_gibibytes   = 64 [90m-> null[0m[0m
+              [31m-[0m[0m type             = "NETWORK_SSD" [90m-> null[0m[0m
+            } [90m-> null[0m[0m
+          [31m-[0m[0m network_interfaces = [
+              [31m-[0m[0m {
+                  [31m-[0m[0m security_groups = [] [90m-> null[0m[0m
+                  [31m-[0m[0m subnet_id       = "vpcsubnet-u00fjg7m2r4s10h9sb" [90m-> null[0m[0m
+                },
+            ] [90m-> null[0m[0m
+          [31m-[0m[0m resources          = {
+              [31m-[0m[0m platform = "cpu-d3" [90m-> null[0m[0m
+              [31m-[0m[0m preset   = "16vcpu-64gb" [90m-> null[0m[0m
+            } [90m-> null[0m[0m
+          [31m-[0m[0m service_account_id = "serviceaccount-u00z5fq630hbbrd7ck" [90m-> null[0m[0m
+        } [90m-> null[0m[0m
+      [31m-[0m[0m updated_at       = "2026-09-22T03:56:39Z" [90m-> null[0m[0m
+    }
+
+[1m  # nebius_mk8s_v1_node_group.local[0m will be [1m[31mdestroyed[0m
+[0m  [31m-[0m[0m resource "nebius_mk8s_v1_node_group" "local" {
+      [31m-[0m[0m created_at       = "2026-09-22T03:59:58Z" [90m-> null[0m[0m
+      [31m-[0m[0m fixed_node_count = 1 [90m-> null[0m[0m
+      [31m-[0m[0m id               = "mk8snodegroup-u00fcz6tqetxw7a6z7" [90m-> null[0m[0m
+      [31m-[0m[0m labels_all       = {} [90m-> null[0m[0m
+      [31m-[0m[0m metadata         = {} [90m-> null[0m[0m
+      [31m-[0m[0m name             = "router-local" [90m-> null[0m[0m
+      [31m-[0m[0m parent_id        = "mk8scluster-u00nx4zttrgrjk93wc" [90m-> null[0m[0m
+      [31m-[0m[0m resource_version = 1 [90m-> null[0m[0m
+      [31m-[0m[0m status           = {
+          [31m-[0m[0m events            = [
+              [31m-[0m[0m {
+                  [31m-[0m[0m first_occurred_at = "2026-09-22T04:06:03Z" [90m-> null[0m[0m
+                  [31m-[0m[0m last_occurrence   = {
+                      [31m-[0m[0m code        = "ComputeInstanceOperationFailed" [90m-> null[0m[0m
+                      [31m-[0m[0m level       = "ERROR" [90m-> null[0m[0m
+                      [31m-[0m[0m message     = "Operation computeoperation-u00fzybz2fkhnaczza \"Create Instance\" of compute instance is failed for node mk8snodegroup-u00fcz6tqetxw7a6z7-ttknb-xl5qn" [90m-> null[0m[0m
+                      [31m-[0m[0m occurred_at = "2026-09-22T04:06:03Z" [90m-> null[0m[0m
+                    } [90m-> null[0m[0m
+                  [31m-[0m[0m occurrence_count  = 1 [90m-> null[0m[0m
+                },
+              [31m-[0m[0m {
+                  [31m-[0m[0m first_occurred_at = "2026-09-22T04:00:00Z" [90m-> null[0m[0m
+                  [31m-[0m[0m last_occurrence   = {
+                      [31m-[0m[0m code        = "ComputeInstanceStopped" [90m-> null[0m[0m
+                      [31m-[0m[0m level       = "WARN" [90m-> null[0m[0m
+                      [31m-[0m[0m message     = "Compute instance is stopped for node mk8snodegroup-u00fcz6tqetxw7a6z7-ttknb-xl5qn" [90m-> null[0m[0m
+                      [31m-[0m[0m occurred_at = "2026-09-22T04:05:48Z" [90m-> null[0m[0m
+                    } [90m-> null[0m[0m
+                  [31m-[0m[0m occurrence_count  = 2 [90m-> null[0m[0m
+                },
+              [31m-[0m[0m {
+                  [31m-[0m[0m first_occurred_at = "2026-09-22T03:59:59Z" [90m-> null[0m[0m
+                  [31m-[0m[0m last_occurrence   = {
+                      [31m-[0m[0m code        = "WaitingForNodeRef" [90m-> null[0m[0m
+                      [31m-[0m[0m level       = "INFO" [90m-> null[0m[0m
+                      [31m-[0m[0m message     = "WaitingForNodeRef for node mk8snodegroup-u00fcz6tqetxw7a6z7-ttknb-xl5qn" [90m-> null[0m[0m
+                      [31m-[0m[0m occurred_at = "2026-09-22T03:59:59Z" [90m-> null[0m[0m
+                    } [90m-> null[0m[0m
+                  [31m-[0m[0m occurrence_count  = 1 [90m-> null[0m[0m
+                },
+            ] [90m-> null[0m[0m
+          [31m-[0m[0m node_count        = 1 [90m-> null[0m[0m
+          [31m-[0m[0m reconciling       = true [90m-> null[0m[0m
+          [31m-[0m[0m state             = "PROVISIONING" [90m-> null[0m[0m
+          [31m-[0m[0m strategy          = {
+              [31m-[0m[0m drain_timeout   = "1m" [90m-> null[0m[0m
+              [31m-[0m[0m max_surge       = {
+                  [31m-[0m[0m count = 0 [90m-> null[0m[0m
+                } [90m-> null[0m[0m
+              [31m-[0m[0m max_unavailable = {
+                  [31m-[0m[0m count = 1 [90m-> null[0m[0m
+                } [90m-> null[0m[0m
+            } [90m-> null[0m[0m
+          [31m-[0m[0m target_node_count = 1 [90m-> null[0m[0m
+        } [90m-> null[0m[0m
+      [31m-[0m[0m strategy         = {
+          [31m-[0m[0m drain_timeout = "1m" [90m-> null[0m[0m
+        } [90m-> null[0m[0m
+      [31m-[0m[0m template         = {
+          [31m-[0m[0m boot_disk          = {
+              [31m-[0m[0m block_size_bytes = 0 [90m-> null[0m[0m
+              [31m-[0m[0m size_gibibytes   = 256 [90m-> null[0m[0m
+              [31m-[0m[0m type             = "NETWORK_SSD" [90m-> null[0m[0m
+            } [90m-> null[0m[0m
+          [31m-[0m[0m gpu_cluster        = {
+              [31m-[0m[0m id = "computegpucluster-u00m3w87xqqh2e3pks" [90m-> null[0m[0m
+            } [90m-> null[0m[0m
+          [31m-[0m[0m gpu_settings       = {
+              [31m-[0m[0m drivers_preset = "cuda13.0" [90m-> null[0m[0m
+            } [90m-> null[0m[0m
+          [31m-[0m[0m network_interfaces = [
+              [31m-[0m[0m {
+                  [31m-[0m[0m security_groups = [] [90m-> null[0m[0m
+                  [31m-[0m[0m subnet_id       = "vpcsubnet-u00fjg7m2r4s10h9sb" [90m-> null[0m[0m
+                },
+            ] [90m-> null[0m[0m
+          [31m-[0m[0m preemptible        = {} [90m-> null[0m[0m
+          [31m-[0m[0m resources          = {
+              [31m-[0m[0m platform = "gpu-h200-sxm" [90m-> null[0m[0m
+              [31m-[0m[0m preset   = "8gpu-128vcpu-1600gb" [90m-> null[0m[0m
+            } [90m-> null[0m[0m
+        } [90m-> null[0m[0m
+      [31m-[0m[0m updated_at       = "2026-09-22T03:59:58Z" [90m-> null[0m[0m
+      [31m-[0m[0m version          = "1.35" [90m-> null[0m[0m
+    }
+
+[1mPlan:[0m [0m0 to add, 0 to change, 4 to destroy.
+
+Changes to Outputs:
+  [31m-[0m[0m cluster_id = "mk8scluster-u00nx4zttrgrjk93wc" [90m-> null[0m[0m
+[0m[1mnebius_mk8s_v1_node_group.local: Destroying... [id=mk8snodegroup-u00fcz6tqetxw7a6z7][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 00m10s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.local: Still destroying... [id=mk8snodegroup-u00fcz6tqetxw7a6z7, 00m10s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.local: Still destroying... [id=mk8snodegroup-u00fcz6tqetxw7a6z7, 00m20s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 00m20s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.local: Still destroying... [id=mk8snodegroup-u00fcz6tqetxw7a6z7, 00m30s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 00m30s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.local: Still destroying... [id=mk8snodegroup-u00fcz6tqetxw7a6z7, 00m40s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 00m40s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 00m50s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.local: Still destroying... [id=mk8snodegroup-u00fcz6tqetxw7a6z7, 00m50s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.local: Still destroying... [id=mk8snodegroup-u00fcz6tqetxw7a6z7, 01m00s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 01m00s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.local: Destruction complete after 1m1s[0m
+[0m[1mnebius_compute_v1_gpu_cluster.local: Destroying... [id=computegpucluster-u00m3w87xqqh2e3pks][0m[0m
+[0m[1mnebius_compute_v1_gpu_cluster.local: Destruction complete after 1s[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 01m10s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 01m20s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 01m30s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 01m40s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 01m50s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 02m00s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 02m10s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 02m20s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 02m30s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 02m40s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Still destroying... [id=mk8snodegroup-u00e2pxsg4yw6tyafg, 02m50s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_node_group.cpu[0]: Destruction complete after 2m51s[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Destroying... [id=mk8scluster-u00nx4zttrgrjk93wc][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 00m10s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 00m20s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 00m30s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 00m40s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 00m50s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 01m00s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 01m10s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 01m20s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 01m30s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 01m40s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 01m50s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 02m00s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 02m10s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Still destroying... [id=mk8scluster-u00nx4zttrgrjk93wc, 02m20s elapsed][0m[0m
+[0m[1mnebius_mk8s_v1_cluster.topology: Destruction complete after 2m30s[0m
+[0m[1m[32m
+Destroy complete! Resources: 4 destroyed.[0m
+== independent teardown verification (project: project-u00k8gmbpr0067akfrxdah) ==
+--- nebius compute instance list
+    count: 0
+--- nebius mk8s cluster list
+    count: 0
+--- nebius compute disk list
+    count: 0
+--- nebius compute filesystem list
+    count: 0
+--- nebius compute gpu-cluster list
+    count: 0
+PASS — instances, Kubernetes clusters, disks, filesystems and GPU clusters are empty in this project.
+Other resource types and other projects were not checked.

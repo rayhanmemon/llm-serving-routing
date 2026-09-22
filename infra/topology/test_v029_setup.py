@@ -10,6 +10,17 @@ CFG=HERE.parent.parent/'workloads/tp4-v029/config.json'
 controller=module('run-layout-local')
 
 class V029Tests(unittest.TestCase):
+ def capacity(self,available=1,state='DATA_STATE_FRESH',preset='8gpu-128vcpu-1600gb'):
+  return {'items':[{'spec':{'region':'us-central1','fabric':'us-central1-a','compute_instance':{'platform':'gpu-h200-sxm','preset':{'name':preset}}},'status':{'preemptible':{'data_state':state,'available':available,'effective_at':'2026-09-22T05:00:00Z'}}}]}
+ def test_capacity_distinguishes_one_eight_gpu_vm_from_single_gpu_count(self):
+  controller.select_capacity(self.capacity())
+  with self.assertRaises(ValueError):controller.select_capacity(self.capacity(8,preset='1gpu-16vcpu-200gb'))
+ def test_capacity_rejects_nonpositive_or_stale_advice(self):
+  for data in (self.capacity(0),self.capacity(8,state='DATA_STATE_STALE')):
+   with self.assertRaises(ValueError):controller.select_capacity(data)
+ def test_capacity_must_postdate_failed_placement(self):
+  with self.assertRaises(ValueError):controller.select_capacity(self.capacity(),newer_than='2026-09-22T05:01:00Z')
+  controller.select_capacity(self.capacity(),newer_than='2026-09-22T04:00:00Z')
  def test_v029_controller_runs_all_four_predeclared_epochs(self):
   with tempfile.TemporaryDirectory() as d:
    obj=object.__new__(controller.Controller);obj.run=Path(d);obj.k=['kubectl'];obj.cpu_node='cpu';obj.nodes_by_role={'local':'gpu'}

@@ -1,0 +1,9 @@
+{
+  "cpu_usd": "0.09662059245155555555555555554",
+  "disk_usd": "0.01165444062672754946727549467",
+  "estimate_usd_pretax": "0.1082750330782831050228310502",
+  "gpu_reason": "Native create failed with VM schedule timeout/NotEnoughResources; GPU VM never reached a successful create or ran a workload. Published pricing charges running compute.",
+  "gpu_usd": "0",
+  "method": "CPU create-start through delete-finish; conservative320GiB SSD for full session, including requested GPU disk. Before tax, not invoice reconciled.",
+  "session_id": "20260922T035147Z-d1d57f2b"
+}

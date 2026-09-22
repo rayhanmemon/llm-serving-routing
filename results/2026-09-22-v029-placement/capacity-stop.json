@@ -1,0 +1,5 @@
+{
+  "reason": "Native GPU Create Instance failed with NotEnoughResources at04:05:52UTC; interrupt only this run Terraform apply",
+  "apply_pid": 35336,
+  "observed_unix": 1790050129.22994
+}

@@ -9,6 +9,7 @@ import shlex
 import subprocess
 import tarfile
 import time
+from datetime import datetime, timezone
 
 HERE=Path(__file__).resolve().parent
 sp=importlib.util.spec_from_file_location('staged',HERE/'run-tp4-staged.py')
@@ -16,6 +17,37 @@ s=importlib.util.module_from_spec(sp);sp.loader.exec_module(s)
 pilot=s.pilot
 s.PROFILES=(*s.PROFILES,pilot.LAYOUT_PROFILE)
 CODE=(*s.CODE,'layout-client.py','layout-engines.py','run-layout-local.py','v029_worker_probe.py')
+
+
+def select_capacity(data, newer_than=None):
+    """Require positive advice for an eight-GPU VM, not eight single-GPU VMs."""
+    for item in data.get('items',[]):
+        spec=item.get('spec',{});machine=spec.get('compute_instance',{})
+        if (spec.get('region')!='us-central1' or spec.get('fabric')!='us-central1-a'
+                or machine.get('platform')!='gpu-h200-sxm'
+                or machine.get('preset',{}).get('name')!='8gpu-128vcpu-1600gb'):
+            continue
+        status=item.get('status',{}).get('preemptible',{})
+        if status.get('data_state')!='DATA_STATE_FRESH' or int(status.get('available',0))<1:
+            continue
+        effective=datetime.fromisoformat(status['effective_at'].replace('Z','+00:00'))
+        if newer_than and effective<=datetime.fromisoformat(newer_than.replace('Z','+00:00')):
+            continue
+        return item
+    raise ValueError('No fresh positive eight-H200 capacity advice; no infrastructure created')
+
+
+def verify_capacity(runner=subprocess.run):
+    state_path=pilot.STATE_ROOT/'overnight-capacity-state.json'
+    state=json.loads(state_path.read_text()) if state_path.exists() else {}
+    not_before=state.get('next_identical_attempt_not_before')
+    if not_before and datetime.now(timezone.utc)<datetime.fromisoformat(not_before.replace('Z','+00:00')):
+        raise ValueError('Capacity backoff remains active; no infrastructure created')
+    result=runner([str(Path.home()/'.nebius/bin/nebius'),'capacity','resource-advice','list',
+        '--parent-id','tenant-e00evgkv9j4px9vymy','--all','--format','json','--no-check-update','--timeout','20s'],
+        capture_output=True,text=True,timeout=30,check=True)
+    selected=select_capacity(json.loads(result.stdout),state.get('last_failed_gpu_create_finished_at'))
+    return {'checked_unix':time.time(),'selected':selected,'reservation':False}
 
 
 def verify_cleanup_identity(runner=subprocess.run):
@@ -123,9 +155,11 @@ def main():
         if proof.get(field) is not True:raise ValueError('Missing preflight '+field)
     for path in [a.config,a.suite,*[HERE/name for name in CODE],*sorted((HERE/'terraform-rdma').glob('*.tf'))]:
         if proof['sha256'].get(path.name)!=hashlib.sha256(path.read_bytes()).hexdigest():raise ValueError('Changed preflight source '+path.name)
+    capacity=verify_capacity()
     identity=verify_cleanup_identity()
     run,session=pilot.prepare_session(a);pilot.write_json(run/'layout-preflight.json',proof)
     pilot.write_json(run/'cleanup-identity-access.json',identity)
+    pilot.write_json(run/'capacity-advice.json',capacity)
     print('RUN_DIR='+str(run),flush=True)
     guard=pilot.spawn_guard(run);pilot.wait_guard_ready(run,guard)
     session['guard_pid']=guard.pid;pilot.write_json(run/'session.json',session)
