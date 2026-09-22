@@ -15,7 +15,7 @@ sp=importlib.util.spec_from_file_location('staged',HERE/'run-tp4-staged.py')
 s=importlib.util.module_from_spec(sp);sp.loader.exec_module(s)
 pilot=s.pilot
 s.PROFILES=(*s.PROFILES,pilot.LAYOUT_PROFILE)
-CODE=(*s.CODE,'layout-client.py','layout-engines.py','run-layout-local.py')
+CODE=(*s.CODE,'layout-client.py','layout-engines.py','run-layout-local.py','v029_worker_probe.py')
 
 
 def verify_cleanup_identity(runner=subprocess.run):
@@ -99,7 +99,9 @@ class Controller(s.Controller):
         self.apply(manifest(self.config_path,self.nodes_by_role),'layout-engine-manifest')
         self.apply(s.client_manifest(self.cpu_node,suite),'layout-client-manifest')
         self.call(self.k+['-n',s.tp4.NS,'wait','--for=condition=Ready','pod/client','--timeout=180s'],'client-ready',190)
-        for epoch in ('default-a','packed','default-b'):
+        config,_=s.tp4.load_config(self.config_path)
+        epochs=('default-a','packed-doc','packed','default-b') if config.get('vllm_version')=='0.29.0' else ('default-a','packed','default-b')
+        for epoch in epochs:
             self.ready(epoch); result=self.epoch(epoch);self.collect()
             if epoch=='default-a' and not result['default_slow_reproduced']:
                 pilot.write_json(self.run/'inconclusive.json',{'reason':'Default slow-transfer state not reproduced; no packed restart'})
@@ -114,8 +116,10 @@ def main():
     p=pilot.parser();p.add_argument('--config',type=Path,required=True);p.add_argument('--suite',type=Path,required=True)
     p.add_argument('--preflight-record',type=Path,required=True);a=p.parse_args()
     if a.profile!=pilot.LAYOUT_PROFILE:raise ValueError('Wrong profile')
+    config,_=s.tp4.load_config(a.config)
+    if config.get('vllm_version')!='0.29.0':raise ValueError('This launcher requires the reviewed v0.29 V2 layouts; the v0.26 setup did not activate packing')
     proof=json.loads(a.preflight_record.read_text())
-    for field in ('native_vllm_parser_passed','full_http_rehearsal_passed','manifests_server_validated','layout_controller_rehearsed','restart_lifecycle_passed'):
+    for field in ('native_vllm_parser_passed','native_v2_layout_resolution_passed','native_cpu_allocation_passed','full_http_rehearsal_passed','manifests_server_validated','layout_controller_rehearsed','restart_lifecycle_passed'):
         if proof.get(field) is not True:raise ValueError('Missing preflight '+field)
     for path in [a.config,a.suite,*[HERE/name for name in CODE],*sorted((HERE/'terraform-rdma').glob('*.tf'))]:
         if proof['sha256'].get(path.name)!=hashlib.sha256(path.read_bytes()).hexdigest():raise ValueError('Changed preflight source '+path.name)

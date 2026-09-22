@@ -1,0 +1,257 @@
+[
+  {
+    "severity_text": "INFO",
+    "timestamp": "2026-09-22T03:14:33.579179296Z",
+    "logger": "setup",
+    "caller": "runner/runner.go:457",
+    "body": "parsed config",
+    "service.name": "llm-d-epp",
+    "scheduler-config": "{ProfileHandler: disagg-profile-handler/disagg-profile-handler, Profiles: map[decode:{Filters: [decode-filter/decode-filter, utilization-detector/utilization-detector, topology-affinity-filter/topology-affinity-filter], Scorers: [active-request-scorer/active-request-scorer: 1.000000], Picker: max-score-picker/max-score-picker} prefill:{Filters: [prefill-filter/prefill-filter, utilization-detector/utilization-detector], Scorers: [token-load-scorer/token-load-scorer: 1.000000], Picker: max-score-picker/max-score-picker}]}",
+    "severity_number": 9
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:34.910038922Z",
+    "caller": "activerequest/active_request.go:170",
+    "body": "Active request counts",
+    "service.name": "llm-d-epp",
+    "x-request-id": "405526dd-d484-458d-be4a-166211916f35",
+    "objectiveKey": "",
+    "incomingModelName": "Qwen/Qwen3-32B",
+    "targetModelName": "Qwen/Qwen3-32B",
+    "priority": 0,
+    "endpointCounts": {
+      "router-tp4/local-rank-0": 0
+    },
+    "maxCount": 0,
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:34.910392172Z",
+    "caller": "handlers/server.go:763",
+    "body": "Sending request header response",
+    "service.name": "llm-d-epp",
+    "x-request-id": "405526dd-d484-458d-be4a-166211916f35",
+    "obj": "request_headers:{response:{header_mutation:{set_headers:{header:{key:\"x-gateway-destination-endpoint\" raw_value:\"10.244.1.4:8000\"}} set_headers:{header:{key:\"Content-Length\" raw_value:\"614534\"}} set_headers:{header:{key:\"x-prefiller-host-port\" raw_value:\"10.244.1.5:8000\"}} set_headers:{header:{key:\":authority\" raw_value:\"127.0.0.1:18881\"}} set_headers:{header:{key:\":method\" raw_value:\"POST\"}} set_headers:{header:{key:\":scheme\" raw_value:\"http\"}} set_headers:{header:{key:\"user-agent\" raw_value:\"Python-urllib/3.14\"}} set_headers:{header:{key:\"content-type\" raw_value:\"application/json\"}} set_headers:{header:{key:\"x-forwarded-for\" raw_value:\"10.244.0.11\"}} set_headers:{header:{key:\"x-envoy-external-address\" raw_value:\"127.0.0.1\"}} set_headers:{header:{key:\":path\" raw_value:\"/v1/completions\"}} set_headers:{header:{key:\"accept-encoding\" raw_value:\"identity\"}} set_headers:{header:{key:\"x-benchmark-run\" raw_value:\"rehearsal-allowance\"}} set_headers:{header:{key:\"x-forwarded-proto\" raw_value:\"http\"}} set_headers:{header:{key:\"x-request-id\" raw_value:\"405526dd-d484-458d-be4a-166211916f35\"}}} clear_route_cache:true}} dynamic_metadata:{fields:{key:\"envoy.lb\" value:{struct_value:{fields:{key:\"x-gateway-destination-endpoint\" value:{string_value:\"10.244.1.4:8000\"}}}}}}",
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:35.447640297Z",
+    "caller": "activerequest/active_request.go:170",
+    "body": "Active request counts",
+    "service.name": "llm-d-epp",
+    "x-request-id": "801b42e9-2b64-4eef-97c8-9007944770b8",
+    "objectiveKey": "",
+    "incomingModelName": "Qwen/Qwen3-32B",
+    "targetModelName": "Qwen/Qwen3-32B",
+    "priority": 0,
+    "endpointCounts": {
+      "router-tp4/local-rank-0": 0
+    },
+    "maxCount": 0,
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:35.447818839Z",
+    "caller": "handlers/server.go:763",
+    "body": "Sending request header response",
+    "service.name": "llm-d-epp",
+    "x-request-id": "801b42e9-2b64-4eef-97c8-9007944770b8",
+    "obj": "request_headers:{response:{header_mutation:{set_headers:{header:{key:\"x-gateway-destination-endpoint\" raw_value:\"10.244.1.4:8000\"}} set_headers:{header:{key:\"Content-Length\" raw_value:\"614534\"}} set_headers:{header:{key:\"user-agent\" raw_value:\"Python-urllib/3.14\"}} set_headers:{header:{key:\"x-forwarded-for\" raw_value:\"10.244.0.11\"}} set_headers:{header:{key:\"x-envoy-external-address\" raw_value:\"127.0.0.1\"}} set_headers:{header:{key:\"x-prefiller-host-port\" raw_value:\"10.244.1.5:8000\"}} set_headers:{header:{key:\":path\" raw_value:\"/v1/completions\"}} set_headers:{header:{key:\"accept-encoding\" raw_value:\"identity\"}} set_headers:{header:{key:\"content-type\" raw_value:\"application/json\"}} set_headers:{header:{key:\"x-benchmark-run\" raw_value:\"rehearsal-allowance\"}} set_headers:{header:{key:\"x-forwarded-proto\" raw_value:\"http\"}} set_headers:{header:{key:\"x-request-id\" raw_value:\"801b42e9-2b64-4eef-97c8-9007944770b8\"}} set_headers:{header:{key:\":authority\" raw_value:\"127.0.0.1:18881\"}} set_headers:{header:{key:\":method\" raw_value:\"POST\"}} set_headers:{header:{key:\":scheme\" raw_value:\"http\"}}} clear_route_cache:true}} dynamic_metadata:{fields:{key:\"envoy.lb\" value:{struct_value:{fields:{key:\"x-gateway-destination-endpoint\" value:{string_value:\"10.244.1.4:8000\"}}}}}}",
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:35.463373797Z",
+    "caller": "activerequest/active_request.go:170",
+    "body": "Active request counts",
+    "service.name": "llm-d-epp",
+    "x-request-id": "06a76e25-28d1-426c-9d23-cff6e444ea1f",
+    "objectiveKey": "",
+    "incomingModelName": "Qwen/Qwen3-32B",
+    "targetModelName": "Qwen/Qwen3-32B",
+    "priority": 0,
+    "endpointCounts": {
+      "router-tp4/local-rank-0": 1
+    },
+    "maxCount": 1,
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:35.463542547Z",
+    "caller": "handlers/server.go:763",
+    "body": "Sending request header response",
+    "service.name": "llm-d-epp",
+    "x-request-id": "06a76e25-28d1-426c-9d23-cff6e444ea1f",
+    "obj": "request_headers:{response:{header_mutation:{set_headers:{header:{key:\"x-gateway-destination-endpoint\" raw_value:\"10.244.1.4:8000\"}} set_headers:{header:{key:\"Content-Length\" raw_value:\"614534\"}} set_headers:{header:{key:\"content-type\" raw_value:\"application/json\"}} set_headers:{header:{key:\"x-envoy-external-address\" raw_value:\"127.0.0.1\"}} set_headers:{header:{key:\"accept-encoding\" raw_value:\"identity\"}} set_headers:{header:{key:\"user-agent\" raw_value:\"Python-urllib/3.14\"}} set_headers:{header:{key:\"x-benchmark-run\" raw_value:\"rehearsal-allowance\"}} set_headers:{header:{key:\"x-forwarded-for\" raw_value:\"10.244.0.11\"}} set_headers:{header:{key:\"x-forwarded-proto\" raw_value:\"http\"}} set_headers:{header:{key:\"x-request-id\" raw_value:\"06a76e25-28d1-426c-9d23-cff6e444ea1f\"}} set_headers:{header:{key:\"x-prefiller-host-port\" raw_value:\"10.244.1.5:8000\"}} set_headers:{header:{key:\":authority\" raw_value:\"127.0.0.1:18881\"}} set_headers:{header:{key:\":path\" raw_value:\"/v1/completions\"}} set_headers:{header:{key:\":method\" raw_value:\"POST\"}} set_headers:{header:{key:\":scheme\" raw_value:\"http\"}}} clear_route_cache:true}} dynamic_metadata:{fields:{key:\"envoy.lb\" value:{struct_value:{fields:{key:\"x-gateway-destination-endpoint\" value:{string_value:\"10.244.1.4:8000\"}}}}}}",
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:35.48076438Z",
+    "caller": "activerequest/active_request.go:170",
+    "body": "Active request counts",
+    "service.name": "llm-d-epp",
+    "x-request-id": "e3ff06ec-9c45-4d08-9461-fca9fde88310",
+    "objectiveKey": "",
+    "incomingModelName": "Qwen/Qwen3-32B",
+    "targetModelName": "Qwen/Qwen3-32B",
+    "priority": 0,
+    "endpointCounts": {
+      "router-tp4/local-rank-0": 2,
+      "router-tp4/remote-rank-0": 0
+    },
+    "maxCount": 2,
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:35.480981797Z",
+    "caller": "handlers/server.go:763",
+    "body": "Sending request header response",
+    "service.name": "llm-d-epp",
+    "x-request-id": "e3ff06ec-9c45-4d08-9461-fca9fde88310",
+    "obj": "request_headers:{response:{header_mutation:{set_headers:{header:{key:\"x-gateway-destination-endpoint\" raw_value:\"10.244.2.3:8000\"}} set_headers:{header:{key:\"Content-Length\" raw_value:\"614534\"}} set_headers:{header:{key:\":method\" raw_value:\"POST\"}} set_headers:{header:{key:\":scheme\" raw_value:\"http\"}} set_headers:{header:{key:\"user-agent\" raw_value:\"Python-urllib/3.14\"}} set_headers:{header:{key:\"content-type\" raw_value:\"application/json\"}} set_headers:{header:{key:\"x-benchmark-run\" raw_value:\"rehearsal-allowance\"}} set_headers:{header:{key:\"x-forwarded-proto\" raw_value:\"http\"}} set_headers:{header:{key:\"accept-encoding\" raw_value:\"identity\"}} set_headers:{header:{key:\"x-forwarded-for\" raw_value:\"10.244.0.11\"}} set_headers:{header:{key:\"x-envoy-external-address\" raw_value:\"127.0.0.1\"}} set_headers:{header:{key:\"x-request-id\" raw_value:\"e3ff06ec-9c45-4d08-9461-fca9fde88310\"}} set_headers:{header:{key:\"x-prefiller-host-port\" raw_value:\"10.244.1.5:8000\"}} set_headers:{header:{key:\":authority\" raw_value:\"127.0.0.1:18881\"}} set_headers:{header:{key:\":path\" raw_value:\"/v1/completions\"}}} clear_route_cache:true}} dynamic_metadata:{fields:{key:\"envoy.lb\" value:{struct_value:{fields:{key:\"x-gateway-destination-endpoint\" value:{string_value:\"10.244.2.3:8000\"}}}}}}",
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:35.48644063Z",
+    "caller": "activerequest/active_request.go:170",
+    "body": "Active request counts",
+    "service.name": "llm-d-epp",
+    "x-request-id": "3497c330-5aeb-4afc-8ad3-4c6cf7696cee",
+    "objectiveKey": "",
+    "incomingModelName": "Qwen/Qwen3-32B",
+    "targetModelName": "Qwen/Qwen3-32B",
+    "priority": 0,
+    "endpointCounts": {
+      "router-tp4/local-rank-0": 2
+    },
+    "maxCount": 2,
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:35.486664339Z",
+    "caller": "handlers/server.go:763",
+    "body": "Sending request header response",
+    "service.name": "llm-d-epp",
+    "x-request-id": "3497c330-5aeb-4afc-8ad3-4c6cf7696cee",
+    "obj": "request_headers:{response:{header_mutation:{set_headers:{header:{key:\"x-gateway-destination-endpoint\" raw_value:\"10.244.1.4:8000\"}} set_headers:{header:{key:\"Content-Length\" raw_value:\"614534\"}} set_headers:{header:{key:\"accept-encoding\" raw_value:\"identity\"}} set_headers:{header:{key:\"user-agent\" raw_value:\"Python-urllib/3.14\"}} set_headers:{header:{key:\"x-benchmark-run\" raw_value:\"rehearsal-allowance\"}} set_headers:{header:{key:\"x-forwarded-proto\" raw_value:\"http\"}} set_headers:{header:{key:\"x-envoy-external-address\" raw_value:\"127.0.0.1\"}} set_headers:{header:{key:\":authority\" raw_value:\"127.0.0.1:18881\"}} set_headers:{header:{key:\":method\" raw_value:\"POST\"}} set_headers:{header:{key:\"content-type\" raw_value:\"application/json\"}} set_headers:{header:{key:\"x-forwarded-for\" raw_value:\"10.244.0.11\"}} set_headers:{header:{key:\"x-request-id\" raw_value:\"3497c330-5aeb-4afc-8ad3-4c6cf7696cee\"}} set_headers:{header:{key:\"x-prefiller-host-port\" raw_value:\"10.244.1.5:8000\"}} set_headers:{header:{key:\":path\" raw_value:\"/v1/completions\"}} set_headers:{header:{key:\":scheme\" raw_value:\"http\"}}} clear_route_cache:true}} dynamic_metadata:{fields:{key:\"envoy.lb\" value:{struct_value:{fields:{key:\"x-gateway-destination-endpoint\" value:{string_value:\"10.244.1.4:8000\"}}}}}}",
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:35.988044297Z",
+    "caller": "activerequest/active_request.go:170",
+    "body": "Active request counts",
+    "service.name": "llm-d-epp",
+    "x-request-id": "c06fefe6-5552-41bc-89e9-700607ea65f9",
+    "objectiveKey": "",
+    "incomingModelName": "Qwen/Qwen3-32B",
+    "targetModelName": "Qwen/Qwen3-32B",
+    "priority": 0,
+    "endpointCounts": {
+      "router-tp4/local-rank-0": 0
+    },
+    "maxCount": 0,
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:35.988236297Z",
+    "caller": "handlers/server.go:763",
+    "body": "Sending request header response",
+    "service.name": "llm-d-epp",
+    "x-request-id": "c06fefe6-5552-41bc-89e9-700607ea65f9",
+    "obj": "request_headers:{response:{header_mutation:{set_headers:{header:{key:\"x-gateway-destination-endpoint\" raw_value:\"10.244.1.4:8000\"}} set_headers:{header:{key:\"Content-Length\" raw_value:\"614534\"}} set_headers:{header:{key:\"x-benchmark-run\" raw_value:\"rehearsal-allowance\"}} set_headers:{header:{key:\"x-forwarded-for\" raw_value:\"10.244.0.11\"}} set_headers:{header:{key:\"x-envoy-external-address\" raw_value:\"127.0.0.1\"}} set_headers:{header:{key:\":authority\" raw_value:\"127.0.0.1:18881\"}} set_headers:{header:{key:\":scheme\" raw_value:\"http\"}} set_headers:{header:{key:\"accept-encoding\" raw_value:\"identity\"}} set_headers:{header:{key:\"x-forwarded-proto\" raw_value:\"http\"}} set_headers:{header:{key:\"x-request-id\" raw_value:\"c06fefe6-5552-41bc-89e9-700607ea65f9\"}} set_headers:{header:{key:\"x-prefiller-host-port\" raw_value:\"10.244.1.5:8000\"}} set_headers:{header:{key:\":path\" raw_value:\"/v1/completions\"}} set_headers:{header:{key:\":method\" raw_value:\"POST\"}} set_headers:{header:{key:\"user-agent\" raw_value:\"Python-urllib/3.14\"}} set_headers:{header:{key:\"content-type\" raw_value:\"application/json\"}}} clear_route_cache:true}} dynamic_metadata:{fields:{key:\"envoy.lb\" value:{struct_value:{fields:{key:\"x-gateway-destination-endpoint\" value:{string_value:\"10.244.1.4:8000\"}}}}}}",
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:36.007041547Z",
+    "caller": "activerequest/active_request.go:170",
+    "body": "Active request counts",
+    "service.name": "llm-d-epp",
+    "x-request-id": "159179e5-932a-4915-84b6-894f112c6ffb",
+    "objectiveKey": "",
+    "incomingModelName": "Qwen/Qwen3-32B",
+    "targetModelName": "Qwen/Qwen3-32B",
+    "priority": 0,
+    "endpointCounts": {
+      "router-tp4/local-rank-0": 1
+    },
+    "maxCount": 1,
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:36.008163964Z",
+    "caller": "handlers/server.go:763",
+    "body": "Sending request header response",
+    "service.name": "llm-d-epp",
+    "x-request-id": "159179e5-932a-4915-84b6-894f112c6ffb",
+    "obj": "request_headers:{response:{header_mutation:{set_headers:{header:{key:\"x-gateway-destination-endpoint\" raw_value:\"10.244.1.4:8000\"}} set_headers:{header:{key:\"Content-Length\" raw_value:\"614534\"}} set_headers:{header:{key:\":path\" raw_value:\"/v1/completions\"}} set_headers:{header:{key:\"content-type\" raw_value:\"application/json\"}} set_headers:{header:{key:\"x-benchmark-run\" raw_value:\"rehearsal-allowance\"}} set_headers:{header:{key:\"x-forwarded-for\" raw_value:\"10.244.0.11\"}} set_headers:{header:{key:\"x-forwarded-proto\" raw_value:\"http\"}} set_headers:{header:{key:\":authority\" raw_value:\"127.0.0.1:18881\"}} set_headers:{header:{key:\":method\" raw_value:\"POST\"}} set_headers:{header:{key:\":scheme\" raw_value:\"http\"}} set_headers:{header:{key:\"accept-encoding\" raw_value:\"identity\"}} set_headers:{header:{key:\"user-agent\" raw_value:\"Python-urllib/3.14\"}} set_headers:{header:{key:\"x-envoy-external-address\" raw_value:\"127.0.0.1\"}} set_headers:{header:{key:\"x-request-id\" raw_value:\"159179e5-932a-4915-84b6-894f112c6ffb\"}} set_headers:{header:{key:\"x-prefiller-host-port\" raw_value:\"10.244.1.5:8000\"}}} clear_route_cache:true}} dynamic_metadata:{fields:{key:\"envoy.lb\" value:{struct_value:{fields:{key:\"x-gateway-destination-endpoint\" value:{string_value:\"10.244.1.4:8000\"}}}}}}",
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:36.018090756Z",
+    "caller": "activerequest/active_request.go:170",
+    "body": "Active request counts",
+    "service.name": "llm-d-epp",
+    "x-request-id": "78b1a60e-eb10-4577-bc38-0f1c052bba04",
+    "objectiveKey": "",
+    "incomingModelName": "Qwen/Qwen3-32B",
+    "targetModelName": "Qwen/Qwen3-32B",
+    "priority": 0,
+    "endpointCounts": {
+      "router-tp4/local-rank-0": 2,
+      "router-tp4/remote-rank-0": 0
+    },
+    "maxCount": 2,
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:36.018328881Z",
+    "caller": "handlers/server.go:763",
+    "body": "Sending request header response",
+    "service.name": "llm-d-epp",
+    "x-request-id": "78b1a60e-eb10-4577-bc38-0f1c052bba04",
+    "obj": "request_headers:{response:{header_mutation:{set_headers:{header:{key:\"x-gateway-destination-endpoint\" raw_value:\"10.244.2.3:8000\"}} set_headers:{header:{key:\"Content-Length\" raw_value:\"614534\"}} set_headers:{header:{key:\"user-agent\" raw_value:\"Python-urllib/3.14\"}} set_headers:{header:{key:\"content-type\" raw_value:\"application/json\"}} set_headers:{header:{key:\"x-benchmark-run\" raw_value:\"rehearsal-allowance\"}} set_headers:{header:{key:\"x-forwarded-for\" raw_value:\"10.244.0.11\"}} set_headers:{header:{key:\":path\" raw_value:\"/v1/completions\"}} set_headers:{header:{key:\"x-forwarded-proto\" raw_value:\"http\"}} set_headers:{header:{key:\"x-envoy-external-address\" raw_value:\"127.0.0.1\"}} set_headers:{header:{key:\"x-request-id\" raw_value:\"78b1a60e-eb10-4577-bc38-0f1c052bba04\"}} set_headers:{header:{key:\"x-prefiller-host-port\" raw_value:\"10.244.1.5:8000\"}} set_headers:{header:{key:\":authority\" raw_value:\"127.0.0.1:18881\"}} set_headers:{header:{key:\":method\" raw_value:\"POST\"}} set_headers:{header:{key:\":scheme\" raw_value:\"http\"}} set_headers:{header:{key:\"accept-encoding\" raw_value:\"identity\"}}} clear_route_cache:true}} dynamic_metadata:{fields:{key:\"envoy.lb\" value:{struct_value:{fields:{key:\"x-gateway-destination-endpoint\" value:{string_value:\"10.244.2.3:8000\"}}}}}}",
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:36.024449797Z",
+    "caller": "activerequest/active_request.go:170",
+    "body": "Active request counts",
+    "service.name": "llm-d-epp",
+    "x-request-id": "f1e98a74-3e49-448f-91e9-ddd09b1f823d",
+    "objectiveKey": "",
+    "incomingModelName": "Qwen/Qwen3-32B",
+    "targetModelName": "Qwen/Qwen3-32B",
+    "priority": 0,
+    "endpointCounts": {
+      "router-tp4/local-rank-0": 2
+    },
+    "maxCount": 2,
+    "severity_number": 1
+  },
+  {
+    "severity_text": "TRACE",
+    "timestamp": "2026-09-22T03:14:36.024618547Z",
+    "caller": "handlers/server.go:763",
+    "body": "Sending request header response",
+    "service.name": "llm-d-epp",
+    "x-request-id": "f1e98a74-3e49-448f-91e9-ddd09b1f823d",
+    "obj": "request_headers:{response:{header_mutation:{set_headers:{header:{key:\"x-gateway-destination-endpoint\" raw_value:\"10.244.1.4:8000\"}} set_headers:{header:{key:\"Content-Length\" raw_value:\"614534\"}} set_headers:{header:{key:\":method\" raw_value:\"POST\"}} set_headers:{header:{key:\"accept-encoding\" raw_value:\"identity\"}} set_headers:{header:{key:\"user-agent\" raw_value:\"Python-urllib/3.14\"}} set_headers:{header:{key:\"x-benchmark-run\" raw_value:\"rehearsal-allowance\"}} set_headers:{header:{key:\"x-prefiller-host-port\" raw_value:\"10.244.1.5:8000\"}} set_headers:{header:{key:\":authority\" raw_value:\"127.0.0.1:18881\"}} set_headers:{header:{key:\":path\" raw_value:\"/v1/completions\"}} set_headers:{header:{key:\":scheme\" raw_value:\"http\"}} set_headers:{header:{key:\"content-type\" raw_value:\"application/json\"}} set_headers:{header:{key:\"x-forwarded-for\" raw_value:\"10.244.0.11\"}} set_headers:{header:{key:\"x-forwarded-proto\" raw_value:\"http\"}} set_headers:{header:{key:\"x-envoy-external-address\" raw_value:\"127.0.0.1\"}} set_headers:{header:{key:\"x-request-id\" raw_value:\"f1e98a74-3e49-448f-91e9-ddd09b1f823d\"}}} clear_route_cache:true}} dynamic_metadata:{fields:{key:\"envoy.lb\" value:{struct_value:{fields:{key:\"x-gateway-destination-endpoint\" value:{string_value:\"10.244.1.4:8000\"}}}}}}",
+    "severity_number": 1
+  }
+]

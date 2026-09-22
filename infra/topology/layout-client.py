@@ -32,11 +32,26 @@ def run(host,config_path,suite_path,out,epoch,deadline):
         raise ValueError('Frozen suite/base configuration mismatch')
     out=out/epoch;out.mkdir(parents=True,exist_ok=False)
     hosts={'local':host};rows=[];base=c.evidence(hosts);c.write(out/'baseline.json',base)
-    if epoch=='packed':
+    if config.get('vllm_version')=='0.29.0':
+        expected={'packed':'BHLNC','packed-doc':'BLHNC'}.get(epoch,'LBHNC')
+        probes=list(base['local'].get('layout_probes',{}).values())
+        if {(x['role'],x['rank']) for x in probes}!={(role,rank) for role in ('prefill','decode') for rank in range(4)}:
+            raise ValueError('Missing actual worker allocation evidence')
+        for x in probes:
+            if not x['use_v2'] or x['layout']!=expected or x['layer_count']!=64 or x['shared_storage_count']!=1 or x['kernel_block_sizes']!=[64] or x['attention_backends']!=['FLASH_ATTN']:
+                raise ValueError('Unexpected actual V2 cache allocation')
+            expected_stride=[2097152,1048576 if epoch=='packed' else 16384,256,1] if epoch in ('packed','packed-doc') else [32768,16384,256,1]
+            if x['stride']!=expected_stride or x['shape']!=[x['num_blocks'],2,64,256] or x['element_bytes']!=2 or x['storage_bytes']!=x['num_blocks']*4194304:
+                raise ValueError('Actual full cache geometry differs from the native CPU allocation proof')
+            block_stride=x['stride'][0]*x['element_bytes']
+            if block_stride!=(4194304 if epoch in ('packed','packed-doc') else 65536):
+                raise ValueError('Actual block stride does not match the selected layout')
+    elif epoch=='packed':
         for role,log in base['local']['engine_logs'].items():
             if log.count('Allocating a cross layer KV cache of shape')<4:
                 raise ValueError('No positive cross-layer allocation evidence for every '+role+' rank')
     c.write(out/'plan.json',{'epoch':epoch,'suite_sha256':hashlib.sha256(suite_path.read_bytes()).hexdigest(),
+        'planned_epochs':['default-a','packed-doc','packed','default-b'] if config.get('vllm_version')=='0.29.0' else ['default-a','packed','default-b'],
         'sequence':'4K/120K two-case direct/P-D qualification; two short warmups; eight repeated120K; four P-only/P-D pairs',
         'counterfactual_note':'P-only churn changes producer history; it is not a simulated remote performance result'})
     def measure(case,route,stage,body=None):
@@ -81,7 +96,8 @@ def run(host,config_path,suite_path,out,epoch,deadline):
             measure(long,'prefill-local','churn',dict(long['request_body'],max_tokens=1,ignore_eos=True))
             measure(long,'pd-local','churn-timed')
         final=c.evidence(hosts);c.write(out/'final-evidence.json',final);c.stable(base,final)
-        transport=c.qualify_evidence(final,'local')
+        minimum=4194304 if config.get('vllm_version')=='0.29.0' and epoch=='packed' else 32768
+        transport=c.qualify_evidence(final,'local',minimum_descriptor_bytes=minimum)
         timed=[r for r in rows if r['stage'] in ('repeated','churn-timed')]
         high=[r for r in timed if r['components'][METRICS[0]]>=60000 and r['components'][METRICS[1]]>=.1]
         result={'requests':len(rows),'timed_requests':len(timed),'parity':parity,'transport':transport,
@@ -97,5 +113,5 @@ def run(host,config_path,suite_path,out,epoch,deadline):
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--local',required=True);p.add_argument('--config',type=Path,required=True)
     p.add_argument('--suite',type=Path,required=True);p.add_argument('--out',type=Path,default=Path('/results'))
-    p.add_argument('--epoch',choices=['default-a','packed','default-b'],required=True);p.add_argument('--deadline',type=float,required=True)
+    p.add_argument('--epoch',choices=['default-a','packed-doc','packed','default-b'],required=True);p.add_argument('--deadline',type=float,required=True)
     a=p.parse_args();run(a.local,a.config,a.suite,a.out,a.epoch,a.deadline)

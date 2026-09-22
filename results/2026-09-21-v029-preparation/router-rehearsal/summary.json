@@ -1,0 +1,11 @@
+{
+  "published_head": "0217d29924ba93b90f952e7a0281dd8dda146703",
+  "policies": 5,
+  "recorded_requests": 40,
+  "all_streams_complete": true,
+  "real_epp": true,
+  "real_sidecar": true,
+  "synthetic_engines": true,
+  "gpu_performance": false,
+  "parameters_calibrated": false
+}

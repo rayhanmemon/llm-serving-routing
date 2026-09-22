@@ -1,0 +1,282 @@
+[
+  {
+    "request": 0,
+    "policy": "hard",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 1,
+    "policy": "hard",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 2,
+    "policy": "hard",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 3,
+    "policy": "hard",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 4,
+    "policy": "hard",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 5,
+    "policy": "hard",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 6,
+    "policy": "hard",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 7,
+    "policy": "hard",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 0,
+    "policy": "none",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 1,
+    "policy": "none",
+    "status": 200,
+    "decoder": "remote",
+    "stream_complete": true
+  },
+  {
+    "request": 2,
+    "policy": "none",
+    "status": 200,
+    "decoder": "remote",
+    "stream_complete": true
+  },
+  {
+    "request": 3,
+    "policy": "none",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 4,
+    "policy": "none",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 5,
+    "policy": "none",
+    "status": 200,
+    "decoder": "remote",
+    "stream_complete": true
+  },
+  {
+    "request": 6,
+    "policy": "none",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 7,
+    "policy": "none",
+    "status": 200,
+    "decoder": "remote",
+    "stream_complete": true
+  },
+  {
+    "request": 0,
+    "policy": "soft",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 1,
+    "policy": "soft",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 2,
+    "policy": "soft",
+    "status": 200,
+    "decoder": "remote",
+    "stream_complete": true
+  },
+  {
+    "request": 3,
+    "policy": "soft",
+    "status": 200,
+    "decoder": "remote",
+    "stream_complete": true
+  },
+  {
+    "request": 4,
+    "policy": "soft",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 5,
+    "policy": "soft",
+    "status": 200,
+    "decoder": "remote",
+    "stream_complete": true
+  },
+  {
+    "request": 6,
+    "policy": "soft",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 7,
+    "policy": "soft",
+    "status": 200,
+    "decoder": "remote",
+    "stream_complete": true
+  },
+  {
+    "request": 0,
+    "policy": "absolute-cap",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 1,
+    "policy": "absolute-cap",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 2,
+    "policy": "absolute-cap",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 3,
+    "policy": "absolute-cap",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 4,
+    "policy": "absolute-cap",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 5,
+    "policy": "absolute-cap",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 6,
+    "policy": "absolute-cap",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 7,
+    "policy": "absolute-cap",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 0,
+    "policy": "allowance",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 1,
+    "policy": "allowance",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 2,
+    "policy": "allowance",
+    "status": 200,
+    "decoder": "remote",
+    "stream_complete": true
+  },
+  {
+    "request": 3,
+    "policy": "allowance",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 4,
+    "policy": "allowance",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 5,
+    "policy": "allowance",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  },
+  {
+    "request": 6,
+    "policy": "allowance",
+    "status": 200,
+    "decoder": "remote",
+    "stream_complete": true
+  },
+  {
+    "request": 7,
+    "policy": "allowance",
+    "status": 200,
+    "decoder": "local",
+    "stream_complete": true
+  }
+]

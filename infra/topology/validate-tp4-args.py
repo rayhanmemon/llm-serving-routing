@@ -15,7 +15,7 @@ def validate(config_path):
     sp=importlib.util.spec_from_file_location('settings',HERE/'tp4-config.py')
     settings=importlib.util.module_from_spec(sp);sp.loader.exec_module(settings)
     config,_=settings.load_config(config_path)
-    if not vllm.__version__.startswith('0.26.0'):raise ValueError('Wrong vLLM parser version')
+    if not vllm.__version__.startswith(config.get('vllm_version','0.26.0')):raise ValueError('Wrong vLLM parser version')
     for host in ['local','remote']:
         for command in settings.engine_specs(config,host,'127.0.0.1'):
             parser=FlexibleArgumentParser()

@@ -10,7 +10,7 @@ METRICS=('vllm:nixl_num_descriptors','vllm:nixl_post_time_seconds','vllm:nixl_xf
 
 def summarize(folder):
     epochs={}
-    for name in ('default-a','packed','default-b'):
+    for name in ('default-a','packed-doc','packed','default-b'):
         path=folder/name
         if not (path/'requests.json').exists():continue
         rows=json.loads((path/'requests.json').read_text())
@@ -41,7 +41,9 @@ def summarize(folder):
                                    'ttft_ms':r['response']['ttft_seconds']*1000}
                                   for r in rows if r['route']=='direct-local' and 'response' in r]
         epochs[name]=result
-    return {'epochs':epochs,'complete_three_epoch_comparison':len(epochs)==3 and all(x['complete'] for x in epochs.values()),
+    plan_path=folder/'default-a/plan.json'
+    planned=json.loads(plan_path.read_text()).get('planned_epochs',['default-a','packed','default-b']) if plan_path.exists() else ['default-a','packed','default-b']
+    return {'epochs':epochs,'planned_epochs':planned,'complete_layout_comparison':set(epochs)==set(planned) and all(x['complete'] for x in epochs.values()),'complete_three_epoch_comparison':len(epochs)==3 and all(x['complete'] for x in epochs.values()),
             'cautions':['One local GPU host; no remote path or router policy comparison.',
                         'Transfer includes posting; per-rank averages are not TP-group critical-path times.',
                         'Fixed repeated prompt and request history, not production traffic or broad replication.',

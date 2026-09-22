@@ -25,7 +25,12 @@ def rehearsal(suite_path,config_path,out):
         log='\n'.join(f'(Worker_TP{i} pid={100+i}) ready' for i in range(4))
         if epoch[0]=='packed':log+='\n'+('\nAllocating a cross layer KV cache of shape (26147, 2, 64, 64, 256)'*4)
         logs={f'ucx-decode.{100+i}.log':f'[123] [local:{100+i}:0] | cfg#2 | remote memory read into cuda/GPU{i} from cuda/dev[0] |\n[123] [local:{100+i}:0] | 1..inf | zero-copy | cuda_ipc/cuda |\n' for i in range(4)}
-        return {'devices':{'prefill':[f'GPU-P{i}' for i in range(4)],'decode':[f'GPU-D{i}' for i in range(4)]},
+        probes={}
+        if config.get('vllm_version')=='0.29.0':
+            for role in ('prefill','decode'):
+                for rank in range(4):
+                    probes[f'layout-probe-{role}-{rank}.json']={'role':role,'rank':rank,'use_v2':True,'layout':{'packed':'BHLNC','packed-doc':'BLHNC'}.get(epoch[0],'LBHNC'),'layer_count':64,'shared_storage_count':1,'kernel_block_sizes':[64],'attention_backends':['FLASH_ATTN'],'stride':[2097152 if epoch[0] in ('packed','packed-doc') else 32768,1048576 if epoch[0]=='packed' else 16384,256,1],'element_bytes':2,'shape':[8,2,64,256],'num_blocks':8,'storage_bytes':33554432}
+        return {'layout_probes':probes,'devices':{'prefill':[f'GPU-P{i}' for i in range(4)],'decode':[f'GPU-D{i}' for i in range(4)]},
                 'identity':'stable','processes_alive':True,
                 'topology':'\n'.join(f'GPU{i} '+' '.join('X' if i==j else 'NV18' for j in range(8)) for i in range(8)),
                 'engine_logs':{'prefill':log,'decode':log},'ucx_logs':logs}
@@ -64,15 +69,15 @@ def rehearsal(suite_path,config_path,out):
         return original(v,*args,**kwargs)
     try:
         with patch.object(c.urllib.request,'urlopen',side_effect=redirect):
-            for name in ('default-a','packed','default-b'):
+            for name in (('default-a','packed-doc','packed','default-b') if config.get('vllm_version')=='0.29.0' else ('default-a','packed','default-b')):
                 epoch[0]=name
                 for metrics in state.values():metrics.update(dict.fromkeys(names,0))
                 l.run('fixture',config_path,suite_path,out,name,time.time()+600)
                 result=json.loads((out/name/'complete.json').read_text())
                 assert result['default_slow_reproduced']==(name!='packed')
                 assert result['requests']==26 and result['timed_requests']==12
-        assert calls[0]==78
-        return {'full_http_rehearsal_passed':True,'requests':78,'gpu_execution':False}
+        assert calls[0]==(104 if config.get('vllm_version')=='0.29.0' else 78)
+        return {'full_http_rehearsal_passed':True,'requests':calls[0],'gpu_execution':False}
     finally:server.shutdown();server.server_close()
 
 if __name__=='__main__':

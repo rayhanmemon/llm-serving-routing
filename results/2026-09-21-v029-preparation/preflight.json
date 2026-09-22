@@ -1,0 +1,31 @@
+{
+  "native_vllm_parser_passed": true,
+  "native_v2_layout_resolution_passed": true,
+  "native_cpu_allocation_passed": true,
+  "full_http_rehearsal_passed": true,
+  "manifests_server_validated": true,
+  "layout_controller_rehearsed": true,
+  "restart_lifecycle_passed": true,
+  "gpu_execution": false,
+  "cloud_actions": false,
+  "tests_passed": 226,
+  "sha256": {
+    "config.json": "0101f16a04bfd7d330647f7762639ac9ad71b7e35d94cae93db2f598ae5c53d2",
+    "suite.json.gz": "631249126949b63900572ed82f48264414496e86188b1dc2e8ef508db8481162",
+    "tp4-config.py": "a47c9b25c033a9193e4de011db570eecf8588861f9a86df2b873559b1ff75b61",
+    "tp4-engines.py": "2180681940b5150e53826f2089f2dbc3bae6a7711112691343bac3876a371c7b",
+    "tp4-client.py": "a5d31fbccc5bb3a897f86b6bd70c4408704cefc407d0aab41c6f200edc9b7849",
+    "tp4-evidence.py": "226e5e6a310f35b5bd267080369c88ad8368621f7a823cb8591c33939c65926f",
+    "validate-tp4-args.py": "6a91b3b72d90dfc2a5a930c36dd943fd1103d8a79ec1f8ef5c42f7fe7d92e657",
+    "run-tp4-staged.py": "4f52e1a8495ea24a7c4485c014819e866b47042796a1614670e905c4ac807861",
+    "run-paired-hosts.py": "1dc2121246c720c6f8a5e58a51a2e46b74b553e8d62d12ac9b25fc563cfc2579",
+    "pilot-session.py": "c17c95bac4f7f70a5c996cece063be3843541d45feb82ed219d9ec8a7ca9c921",
+    "cloud-deadline-guard.py": "afa22eb04418d7351de9573e0af427fa8d396b30de95b53ecd4f0b0b5d9c7dba",
+    "layout-client.py": "81feb54623fe8ee2e898b8b2007f7d06f41d740f103c93ea1469d242601ea319",
+    "layout-engines.py": "57e7f949219f3104ffe60b27efdd9d7dbf85303db5de9a2dee5b2ea3230e0c8c",
+    "run-layout-local.py": "f1bc5ef0b0e3c859e47dd149d14ae4b4483e96ae01b0aa06bd6a8baaebdc4d0a",
+    "v029_worker_probe.py": "38df91c0d853ec8280af13620f13962c5b1ade12ba280fb93118e42d45b5038e",
+    "main.tf": "c95ac1207fa1090442f5e1bc1b385786b8160536eb49f0c3ab1dd3d87d48dfb4",
+    "variables.tf": "17d7ad20d3394fa21a5b72ff91fb68660917a163bea0f5bdff71a6ec0fb4af01"
+  }
+}

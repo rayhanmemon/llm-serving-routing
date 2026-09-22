@@ -59,6 +59,7 @@ def main():
                     observed[name] = p.stdout
                 observed.update(devices=device_map, processes_alive=all(p.poll() is None for p in children),
                                 engine_logs={s['role']: Path(s['log_path']).read_text(errors='replace') for s in commands},
+                                layout_probes={p.name: json.loads(p.read_text()) for p in out.glob('layout-probe-*.json')},
                                 ucx_logs={p.name: p.read_text(errors='replace') for p in out.glob('ucx-*.log')})
                 body = json.dumps(observed).encode()
                 self.send_response(200)
@@ -81,7 +82,7 @@ def main():
     signal.signal(signal.SIGINT, stop)
     try:
         for command in commands:
-            env = {**os.environ, **command['env']}
+            env = {**os.environ, **command['env'],'TP4_ROLE':command['role'],'TP4_RESULTS_DIR':str(out)}
             env.pop('UCX_TLS', None)
             env.pop('UCX_CUDA_IPC_GET_ZCOPY', None)
             inspect = subprocess.run(['python3', '-c',

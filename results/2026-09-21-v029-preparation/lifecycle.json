@@ -1,0 +1,6 @@
+{
+  "restart_lifecycle_passed": true,
+  "epochs": 4,
+  "gpu_execution": false,
+  "scope": "Actual wrapper in CPU container with substitute child and GPU inventory command"
+}

@@ -24,6 +24,14 @@ def load_config(path=DEFAULT):
 
 
 def validate(config, architecture):
+    version=config.get('vllm_version','0.26.0')
+    if version not in ('0.26.0','0.29.0'):raise ValueError('Unreviewed vLLM version')
+    if version=='0.29.0':
+        if config.get('enable_cross_layers_blocks',False):raise ValueError('v0.29 uses explicit layout selection, not the legacy cross-layer flag')
+        if config.get('model_runner')!='V2' or config.get('kv_cache_layout') not in ('LBHNC','BLHNC','BHLNC'):
+            raise ValueError('Explicit V2 runner and reviewed cache layout required')
+        if config.get('vllm_image')!='docker.io/vllm/vllm-openai:v0.29.0@sha256:082ca6f035279109041ffd3fe0695cb568b29bc580b35c4f297a66a08b216c1b':
+            raise ValueError('Require pinned v0.29 amd64 GPU image')
     if config['model'] != 'Qwen/Qwen3-32B' or not re.fullmatch(r'[a-f0-9]{40}', config['revision']):
         raise ValueError('Pinned Qwen3-32B revision required')
     if config['tensor_parallel_size'] != 4:
@@ -109,8 +117,12 @@ def engine_specs(config, host_role, pod_ip):
                 '--enable-chunked-prefill', '--no-enable-prefix-caching',
                 '--hf-overrides', json.dumps({'rope_scaling': config['rope_scaling']}, sort_keys=True),
                 '--kv-transfer-config', json.dumps(kv, sort_keys=True)]
+        extra_env={}
+        if config.get('vllm_version')=='0.29.0':
+            args+=['--worker-cls','v029_worker_probe.ProbedWorker','--attention-backend','FLASH_ATTN']
+            extra_env={'VLLM_USE_V2_MODEL_RUNNER':'1','VLLM_KV_CACHE_LAYOUT':config['kv_cache_layout'], 'PYTHONPATH':'/probe'}
         specs.append({'role': role, 'devices': devices, 'http_port': port, 'command': args,
-                      'env': {'CUDA_VISIBLE_DEVICES': ','.join(map(str, devices)),
+                      'env': {**extra_env,'CUDA_VISIBLE_DEVICES': ','.join(map(str, devices)),
                               'HF_HOME': '/cache', 'VLLM_NIXL_SIDE_CHANNEL_HOST': pod_ip,
                               'VLLM_NIXL_SIDE_CHANNEL_PORT': str(side),
                               'UCX_PROTO_INFO': 'y', 'UCX_LOG_LEVEL': 'info',
@@ -132,6 +144,8 @@ def render(config_path, nodes, work_seconds=7200):
     single = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(single)
     data = {name: (HERE / name).read_text() for name in ('tp4-config.py', 'tp4-engines.py', 'tp4-client.py', 'tp4-evidence.py', 'validate-tp4-args.py')}
+    if config.get('vllm_version')=='0.29.0':
+        data['v029_worker_probe.py']=(HERE/'v029_worker_probe.py').read_text()
     data.update({'config.json': config_path.read_text(),
                  'model-config.json': config_path.with_name('model-config.json').read_text()})
     items = [{'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': NS}},
@@ -143,6 +157,7 @@ def render(config_path, nodes, work_seconds=7200):
         pod_spec = pod['spec']
         pod_spec['activeDeadlineSeconds'] = work_seconds
         engine = pod_spec['containers'][0]
+        if config.get('vllm_version')=='0.29.0':engine['image']=config['vllm_image']
         engine['command'] = ['python3', '-u', '/probe/tp4-engines.py', '--config', '/probe/config.json']
         engine['env'] = [{'name': 'ENGINE_ROLE', 'value': host_role},
                          {'name': 'POD_IP', 'valueFrom': {'fieldRef': {'fieldPath': 'status.podIP'}}}]

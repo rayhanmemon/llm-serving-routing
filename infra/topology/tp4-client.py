@@ -94,7 +94,7 @@ def stable(before,after):
             raise ValueError('GPU worker identity changed')
 
 
-def qualify_evidence(record,route):
+def qualify_evidence(record,route,minimum_descriptor_bytes=32768):
     ids=[gpu for host in record.values() for group in host['devices'].values() for gpu in group]
     expected=12 if 'remote' in record else 8
     if len(ids)!=expected or len(set(ids))!=expected:raise ValueError('Physical GPUs overlap or are missing')
@@ -105,7 +105,7 @@ def qualify_evidence(record,route):
     host=record[route];log=host['engine_logs']['decode']
     pids=e.worker_pids(log)
     logs={str(pid):host['ucx_logs'].get(f'ucx-decode.{pid}.log','') for pid in pids.values()}
-    return e.validate_rank_transports(log,logs,route)
+    return e.validate_rank_transports(log,logs,route,min_descriptor_bytes=minimum_descriptor_bytes)
 
 
 def run(hosts,suite_path,config_path,out,phase,deadline):

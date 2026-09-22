@@ -24,7 +24,9 @@ def main():
     vp = Path(vllm.__file__).parent
     modules = ('v1/worker/kv_connector_model_runner_mixin.py',
                'distributed/kv_transfer/kv_connector/v1/nixl/connector.py',
-               'distributed/kv_transfer/kv_connector/v1/nixl/base_worker.py')
+               'distributed/kv_transfer/kv_connector/v1/nixl/base_worker.py',
+               'v1/worker/gpu/model_runner.py','v1/worker/gpu/attn_utils.py',
+               'v1/worker/utils.py','v1/core/kv_cache_utils.py')
     (root/'installed-software.json').write_text(json.dumps({'versions': versions,
         'source_sha256': {m: hashlib.sha256((vp/m).read_bytes()).hexdigest() for m in modules}}, indent=2))
     child = None; stopping = False
@@ -34,9 +36,13 @@ def main():
         if child is not None and child.poll() is None: child.terminate()
     signal.signal(signal.SIGTERM, stop); signal.signal(signal.SIGINT, stop)
     try:
-        for epoch in EPOCHS:
+        epochs=('default-a','packed-doc','packed','default-b') if base.get('vllm_version')=='0.29.0' else EPOCHS
+        (root/'layout-matrix.json').write_text(json.dumps({'epochs':epochs}))
+        for epoch in epochs:
             out = root/epoch; out.mkdir()
-            config = dict(base, enable_cross_layers_blocks=epoch == 'packed')
+            config = (dict(base,kv_cache_layout={'packed':'BHLNC','packed-doc':'BLHNC'}.get(epoch,'LBHNC'))
+                      if base.get('vllm_version')=='0.29.0'
+                      else dict(base, enable_cross_layers_blocks=epoch == 'packed'))
             config_path = Path('/tmp')/f'{epoch}.json'
             config_path.write_text(json.dumps(config))
             (Path('/tmp')/'model-config.json').write_bytes(a.config.with_name('model-config.json').read_bytes())

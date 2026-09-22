@@ -1,0 +1,12 @@
+{
+  "epochs": [
+    "LBHNC default-a",
+    "BLHNC packed-doc",
+    "BHLNC packed",
+    "LBHNC default-b"
+  ],
+  "requests_per_epoch": 26,
+  "timed_long_pd_per_epoch": 12,
+  "maximum_requests": 104,
+  "early_stop": "Stop after default-a if the expensive default state is not reproduced; that is not proof that packing wins."
+}
