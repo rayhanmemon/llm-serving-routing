@@ -244,10 +244,11 @@ LAYOUT_PROFILE = "tp4-h200-layout-local"
 LAYOUT_GUARD_ID = "serviceaccount-u00z5fq630hbbrd7ck"
 PROFILE_POLICIES[LAYOUT_PROFILE] = {
     **PROFILE_POLICIES[PAIRED_PROFILES[0]],
-    "cleanup_start_seconds": 90 * 60,
-    "deletion_target_seconds": 110 * 60,
+    # Bounded overnight retry: same four epochs, less idle/setup headroom.
+    "cleanup_start_seconds": 75 * 60,
+    "deletion_target_seconds": 95 * 60,
     "hourly_rate_usd_pretax": Decimal("20.05"),
-    "attempt_admission_usd_pretax": Decimal("40"),
+    "attempt_admission_usd_pretax": Decimal("33"),
     "expected_creates": FULL_TOPOLOGY_CREATES - {"nebius_mk8s_v1_node_group.remote[0]"},
     "single_gpu_host": True,
     "existing_guard_service_account_id": LAYOUT_GUARD_ID,

@@ -1,0 +1,37 @@
+{
+  "native_vllm_parser_passed": true,
+  "native_v2_layout_resolution_passed": true,
+  "native_cpu_allocation_passed": true,
+  "full_http_rehearsal_passed": true,
+  "manifests_server_validated": true,
+  "layout_controller_rehearsed": true,
+  "restart_lifecycle_passed": true,
+  "gpu_execution": false,
+  "cloud_actions": false,
+  "tests_passed": 234,
+  "sha256": {
+    "config.json": "0101f16a04bfd7d330647f7762639ac9ad71b7e35d94cae93db2f598ae5c53d2",
+    "suite.json.gz": "631249126949b63900572ed82f48264414496e86188b1dc2e8ef508db8481162",
+    "tp4-config.py": "a47c9b25c033a9193e4de011db570eecf8588861f9a86df2b873559b1ff75b61",
+    "tp4-engines.py": "ba2f3307691e0e12cbb33d719804e0589fc0236c52bf2c18a294f457810f08cc",
+    "tp4-client.py": "a5d31fbccc5bb3a897f86b6bd70c4408704cefc407d0aab41c6f200edc9b7849",
+    "tp4-evidence.py": "226e5e6a310f35b5bd267080369c88ad8368621f7a823cb8591c33939c65926f",
+    "validate-tp4-args.py": "6a91b3b72d90dfc2a5a930c36dd943fd1103d8a79ec1f8ef5c42f7fe7d92e657",
+    "run-tp4-staged.py": "4f52e1a8495ea24a7c4485c014819e866b47042796a1614670e905c4ac807861",
+    "run-paired-hosts.py": "1dc2121246c720c6f8a5e58a51a2e46b74b553e8d62d12ac9b25fc563cfc2579",
+    "pilot-session.py": "d237e64cce271de3016ca5d14d3fafc3909d5e6b00332912d5fc26edd4fd9b2d",
+    "cloud-deadline-guard.py": "afa22eb04418d7351de9573e0af427fa8d396b30de95b53ecd4f0b0b5d9c7dba",
+    "layout-client.py": "81feb54623fe8ee2e898b8b2007f7d06f41d740f103c93ea1469d242601ea319",
+    "layout-engines.py": "a76520481b39710f0ade69762a60d58d831241fc34df58899edc75dff3c1ac8f",
+    "run-layout-local.py": "d4d994cfb885c0780a04db2b78a1b9d4c1dc35225a604f02582c22011cd3536a",
+    "v029_worker_probe.py": "38df91c0d853ec8280af13620f13962c5b1ade12ba280fb93118e42d45b5038e",
+    "main.tf": "c95ac1207fa1090442f5e1bc1b385786b8160536eb49f0c3ab1dd3d87d48dfb4",
+    "variables.tf": "17d7ad20d3394fa21a5b72ff91fb68660917a163bea0f5bdff71a6ec0fb4af01"
+  },
+  "revalidation": {
+    "changed_file": "pilot-session.py",
+    "change": "Only one-host work/deletion deadlines90/110 to75/95minutes and admission40 to33USD. Four epochs and model/client/transport settings unchanged.",
+    "checks": "234 host tests,2 platform skips; native Linux cases already pass. Native parser/layout/worker and manifest/restart/HTTP proofs reused from identical source and configuration.",
+    "previous_preflight_sha256": "79f5df840d3d8aac56ee80de534cd8860c445486cab443ab9342faf243be3ace"
+  }
+}

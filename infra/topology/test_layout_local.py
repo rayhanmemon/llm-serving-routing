@@ -15,6 +15,13 @@ def module(name):
 s=module('run-layout-local');l=module('layout-client');fixtures=module('test_pilot_session')
 
 class LayoutTests(unittest.TestCase):
+    def test_short_retry_admission_covers_full_deletion_window(self):
+        from decimal import Decimal
+        p=s.pilot.PROFILE_POLICIES[s.pilot.LAYOUT_PROFILE]
+        ceiling=p['hourly_rate_usd_pretax']*Decimal(p['deletion_target_seconds'])/3600
+        self.assertGreater(p['attempt_admission_usd_pretax'],ceiling+1)
+        self.assertGreaterEqual(p['deletion_target_seconds']-p['cleanup_start_seconds'],1200)
+
     def test_identity_access_probe_fails_before_infrastructure(self):
         with self.assertRaisesRegex(ValueError,'no infrastructure'):
             s.verify_cleanup_identity(lambda *a,**k:subprocess.CompletedProcess([],1,'','denied'))

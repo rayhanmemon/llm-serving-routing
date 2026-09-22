@@ -1,0 +1,31 @@
+[
+  {
+    "description": "Delete node group",
+    "created_at": "2026-09-22T06:29:25Z",
+    "finished_at": "2026-09-22T06:30:25Z",
+    "status": {
+      "message": "OK"
+    }
+  },
+  {
+    "description": "Create node group",
+    "created_at": "2026-09-22T06:09:24Z",
+    "finished_at": "2026-09-22T06:29:25Z",
+    "status": {
+      "code": 10,
+      "message": "operation \"opmk8snodegroup-u00c4s03rmxd6e7h4c\" over resource \"mk8snodegroup-u00tsk6myvrsk177ft\" was aborted by another operation \"opmk8snodegroup-u00wrqhr8nh9g217c0\"",
+      "details": [
+        {
+          "@type": "type.googleapis.com/nebius.common.v1.ServiceError",
+          "service": "mk8s",
+          "code": "OperationAborted",
+          "operation_aborted": {
+            "operation_id": "opmk8snodegroup-u00c4s03rmxd6e7h4c",
+            "aborted_by_operation_id": "opmk8snodegroup-u00wrqhr8nh9g217c0",
+            "resource_id": "mk8snodegroup-u00tsk6myvrsk177ft"
+          }
+        }
+      ]
+    }
+  }
+]
