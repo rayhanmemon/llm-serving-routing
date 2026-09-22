@@ -1,0 +1,26 @@
+PASS: collection saved to /var/folders/87/6_d5qltx6y31wctm89tjzl7r0000gn/T/tmp2s55ehu4/collection
+Collection success does not establish request success, correct pins or improved performance.
+Both transports and 8/8 four-route parity passed; starting warmups.
+Completed load0-512-0
+Completed load0-8192-0
+Cloud guard armed before GPU allocation.
+Engines ready; qualification client started.
+Cloud guard armed before GPU allocation.
+Engines ready; qualification client started.
+PASS RDMA and functional parity; starting timings
+PASS RDMA and functional parity; starting timings
+PASS RDMA and functional parity; starting timings
+failed-evidence-ready
+{"saved_off_box": true, "archive_sha256": "0085e0a0459cfbf538a203727a618d139ba04ef7197bfb07c2d3fa1f1cfae429", "worker_succeeded": false, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+evidence-ready
+{"saved_off_box": true, "archive_sha256": "8adb084d1bafc3651db568908c9c00e1b447fdc3607bfa6f733c04c18a7ec8c9", "worker_succeeded": true, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+evidence-ready
+{"saved_off_box": true, "archive_sha256": "8adb084d1bafc3651db568908c9c00e1b447fdc3607bfa6f733c04c18a7ec8c9", "worker_succeeded": true, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+evidence-ready
+{"saved_off_box": true, "archive_sha256": "8adb084d1bafc3651db568908c9c00e1b447fdc3607bfa6f733c04c18a7ec8c9", "worker_succeeded": true, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+Healthy local GPU host allocated.
+....ss...................................................................................................................................................................................................................................
+----------------------------------------------------------------------
+Ran 233 tests in 16.276s
+
+OK (skipped=2)

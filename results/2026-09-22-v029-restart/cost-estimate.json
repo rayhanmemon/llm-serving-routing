@@ -1,0 +1,24 @@
+{
+  "disk_usd": "0.020807226907013032",
+  "estimate_usd_pretax": "9.372726116521235254222222222",
+  "method": "Conservative compute create-start through delete-finish;320GiB SSD for whole session. Before tax, not invoice reconciled.",
+  "resources": [
+    {
+      "create_started": "2026-09-22T05:10:44.006971Z",
+      "delete_finished": "2026-09-22T05:41:30.913780Z",
+      "rate_usd_per_hour": "0.3968",
+      "role": "cpu",
+      "seconds": "1846.906809",
+      "usd": "0.2035701727253333333333333333"
+    },
+    {
+      "create_started": "2026-09-22T05:13:54.134786Z",
+      "delete_finished": "2026-09-22T05:41:54.443734Z",
+      "rate_usd_per_hour": "19.6",
+      "role": "gpu",
+      "seconds": "1680.308948",
+      "usd": "9.148348716888888888888888889"
+    }
+  ],
+  "session_id": "20260922T050502Z-82acff54"
+}

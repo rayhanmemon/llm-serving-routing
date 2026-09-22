@@ -75,8 +75,11 @@ def main():
         nonlocal stopping
         stopping = True
         for child in children:
-            if child.poll() is None:
+            # A process group can retain workers after its API parent exits.
+            try:
                 os.killpg(child.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
 
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)

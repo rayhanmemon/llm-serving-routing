@@ -21,7 +21,8 @@ def main():
  (a.out/'tests.log').write_text(tests.stdout+tests.stderr);tests.check_returncode()
  native=['docker','run','--rm','--network','none','--entrypoint','python3','-e','PYTHONPATH=/probe','-v',str(HERE)+':/probe:ro','-v',str(a.config.parent.resolve())+':/settings:ro',CPU_IMAGE]
  commands=[('native-parser',['/probe/validate-tp4-args.py','--config','/settings/'+a.config.name]),
-           ('native-layout',['/probe/native-v029-layout-check.py']),('native-worker',['/probe/native-v029-worker-check.py'])]
+           ('native-layout',['/probe/native-v029-layout-check.py']),('native-worker',['/probe/native-v029-worker-check.py']),
+           ('native-shutdown',['/probe/test_epoch_shutdown.py'])]
  for name,args in commands:
   result=subprocess.run(native+args,capture_output=True,text=True,timeout=180)
   (a.out/(name+'.log')).write_text(result.stdout+result.stderr);result.check_returncode()

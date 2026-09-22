@@ -1,0 +1,30 @@
+{
+  "role": "decode",
+  "rank": 1,
+  "runner_class": "vllm.v1.worker.gpu.model_runner.GPUModelRunner",
+  "use_v2": true,
+  "layout": "LBHNC",
+  "num_blocks": 26134,
+  "layer_count": 64,
+  "kernel_block_sizes": [
+    64
+  ],
+  "attention_backends": [
+    "FLASH_ATTN"
+  ],
+  "shape": [
+    26134,
+    2,
+    64,
+    256
+  ],
+  "stride": [
+    32768,
+    16384,
+    256,
+    1
+  ],
+  "element_bytes": 2,
+  "storage_bytes": 109613940736,
+  "shared_storage_count": 1
+}

@@ -1,0 +1,12 @@
+{
+  "epoch": "default-a",
+  "suite_sha256": "631249126949b63900572ed82f48264414496e86188b1dc2e8ef508db8481162",
+  "planned_epochs": [
+    "default-a",
+    "packed-doc",
+    "packed",
+    "default-b"
+  ],
+  "sequence": "4K/120K two-case direct/P-D qualification; two short warmups; eight repeated120K; four P-only/P-D pairs",
+  "counterfactual_note": "P-only churn changes producer history; it is not a simulated remote performance result"
+}

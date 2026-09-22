@@ -1,0 +1,217 @@
+{
+  "default_slow_reproduced": true,
+  "mean_descriptors_per_rank": 81941.33333333333,
+  "mean_post_seconds_per_rank": 0.2774712708333332,
+  "mean_ttft_seconds": 11.335571067666686,
+  "parity": [
+    {
+      "case": "code-4096-0",
+      "gold_matches": true,
+      "matches": true
+    },
+    {
+      "case": "code-4096-1",
+      "gold_matches": true,
+      "matches": true
+    },
+    {
+      "case": "code-122880-0",
+      "gold_matches": true,
+      "matches": true
+    },
+    {
+      "case": "code-122880-1",
+      "gold_matches": false,
+      "matches": true
+    }
+  ],
+  "requests": 26,
+  "slow_requests": 8,
+  "timed_requests": 12,
+  "transport": {
+    "0": {
+      "minimum_descriptor_bytes": 32768,
+      "pid": 3419,
+      "read_rows": [
+        {
+          "device": 0,
+          "header": "[1790055287.555234] [local:3419 :2]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3419,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 2
+        },
+        {
+          "device": 0,
+          "header": "[1790055287.555694] [local:3419 :3]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3419,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 3
+        },
+        {
+          "device": 0,
+          "header": "[1790055287.555704] [local:3419 :4]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3419,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 4
+        },
+        {
+          "device": 0,
+          "header": "[1790055287.555713] [local:3419 :5]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3419,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 5
+        }
+      ]
+    },
+    "1": {
+      "minimum_descriptor_bytes": 32768,
+      "pid": 3420,
+      "read_rows": [
+        {
+          "device": 1,
+          "header": "[1790055287.555761] [local:3420 :2]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU1 from cuda/dev[1]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3420,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 2
+        },
+        {
+          "device": 1,
+          "header": "[1790055287.555914] [local:3420 :3]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU1 from cuda/dev[1]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3420,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 3
+        },
+        {
+          "device": 1,
+          "header": "[1790055287.555958] [local:3420 :4]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU1 from cuda/dev[1]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3420,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 4
+        },
+        {
+          "device": 1,
+          "header": "[1790055287.555967] [local:3420 :5]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU1 from cuda/dev[1]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3420,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 5
+        }
+      ]
+    },
+    "2": {
+      "minimum_descriptor_bytes": 32768,
+      "pid": 3421,
+      "read_rows": [
+        {
+          "device": 2,
+          "header": "[1790055287.555730] [local:3421 :2]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU2 from cuda/dev[2]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3421,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 2
+        },
+        {
+          "device": 2,
+          "header": "[1790055287.555760] [local:3421 :3]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU2 from cuda/dev[2]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3421,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 3
+        },
+        {
+          "device": 2,
+          "header": "[1790055287.555790] [local:3421 :5]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU2 from cuda/dev[2]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3421,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 5
+        },
+        {
+          "device": 2,
+          "header": "[1790055287.555781] [local:3421 :4]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU2 from cuda/dev[2]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3421,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 4
+        }
+      ]
+    },
+    "3": {
+      "minimum_descriptor_bytes": 32768,
+      "pid": 3422,
+      "read_rows": [
+        {
+          "device": 3,
+          "header": "[1790055287.481229] [local:3422 :2]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU3 from cuda/dev[3]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3422,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 2
+        },
+        {
+          "device": 3,
+          "header": "[1790055287.481298] [local:3422 :3]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU3 from cuda/dev[3]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3422,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 3
+        },
+        {
+          "device": 3,
+          "header": "[1790055287.481327] [local:3422 :4]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU3 from cuda/dev[3]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3422,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 4
+        },
+        {
+          "device": 3,
+          "header": "[1790055287.481346] [local:3422 :5]   | ucp_context_0 intra-node cfg#2 | remote memory read by ucp_get*(multi) into cuda/GPU3 from cuda/dev[3]    |",
+          "lane": "cuda_ipc/cuda",
+          "method": "zero-copy",
+          "pid": 3422,
+          "range": "1..inf",
+          "seen_row": true,
+          "thread": 5
+        }
+      ]
+    }
+  }
+}

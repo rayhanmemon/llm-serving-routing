@@ -1,0 +1,59 @@
+{
+  "epochs": {
+    "default-a": {
+      "complete": true,
+      "requests": 26,
+      "timed_requests": 12,
+      "requests_sha256": "20eaee0bc4441d839697de8cc9618d405bf900ea62c618cb4824f2ecd3efb980",
+      "mean_ttft_ms": 11335.571067666688,
+      "median_ttft_ms": 11468.007545500086,
+      "mean_post_ms_per_rank": 277.47127083333316,
+      "mean_transfer_ms_per_rank": 315.16997916666656,
+      "descriptor_counts": [
+        64.0,
+        122880.0
+      ],
+      "slow_requests": 8,
+      "direct_controls": [
+        {
+          "case": "code-4096-0",
+          "input_tokens": 4096,
+          "output_tokens": 9,
+          "ttft_ms": 160.31514600012997
+        },
+        {
+          "case": "code-4096-1",
+          "input_tokens": 4096,
+          "output_tokens": 9,
+          "ttft_ms": 141.59630200015272
+        },
+        {
+          "case": "code-122880-0",
+          "input_tokens": 122880,
+          "output_tokens": 10,
+          "ttft_ms": 10797.394824000094
+        },
+        {
+          "case": "code-122880-1",
+          "input_tokens": 122880,
+          "output_tokens": 11,
+          "ttft_ms": 10796.490228000039
+        }
+      ]
+    }
+  },
+  "planned_epochs": [
+    "default-a",
+    "packed-doc",
+    "packed",
+    "default-b"
+  ],
+  "complete_layout_comparison": false,
+  "complete_three_epoch_comparison": false,
+  "cautions": [
+    "One local GPU host; no remote path or router policy comparison.",
+    "Transfer includes posting; per-rank averages are not TP-group critical-path times.",
+    "Fixed repeated prompt and request history, not production traffic or broad replication.",
+    "Direct controls have few observations; inspect computation and correctness before attributing all TTFT changes to transfer."
+  ]
+}

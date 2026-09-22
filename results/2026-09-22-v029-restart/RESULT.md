@@ -1,0 +1,9 @@
+# v0.29 baseline qualified; restart cleanup stopped the comparison
+
+Run `20260922T050502Z-82acff54` completed **26 baseline requests and 12 timed 120K P/D requests** on Qwen3-32B BF16 TP4 with vLLM0.29, V2, and layer-first LBHNC. All four direct/P-D qualification pairs matched; gold accuracy was separately 6/8. Live allocation shape/strides matched the intended layout, and all four receiving ranks selected CUDA IPC. The default still exhibited 64 versus122,880 descriptors per rank, with eight slow observations. Whole-set mean TTFT was11,335.57ms, posting277.47ms/rank and transfer315.17ms/rank; transfer includes posting.
+
+**No packed request ran.** On the first restart, the harness waited for the API-server parent processes and immediately required an empty GPU-process inventory. The check found remaining GPU workers. Logs show API shutdown and forced engine-manager termination; the remaining workers' exact lifetime was not captured. The evidence establishes an inadequate restart contract, not a CUDA IPC or packed-layout failure. The controller collected evidence and deleted the resources rather than overlap two engine configurations.
+
+Cleanup independently passed at **05:45:08UTC September22**. Estimated run cost **$9.37 before tax**; the overnight checkpoint has spent **$9.48 of $50**, leaving **$40.52**. Router-project cloud total is **$202.02**, not invoice-reconciled. Persistent narrow cleanup permissions remain as authorized.
+
+The repair adds bounded draining of workers marked with the exact epoch environment, checks process identity before signalling, waits for GPU cleanup, and preserves failure on a persistent GPU process. Linux tests exercise a detached worker that ignores TERM and outlives its parent, while verifying a different epoch's process is untouched. A separate four-epoch lifecycle replay uses real detached processes. These validate the harness, not GPU packing performance. Actual-router GPU readiness remains unverified.
