@@ -21,7 +21,9 @@ def run(kubeconfig,context,charts,rendered,out):
   if not route or (policy=='hard' and route!='local'):raise ValueError('Wrong route')
   return {'request':n,'policy':policy,'status':status,'decoder':route,'stream_complete':True}
  for policy in ('hard','none','soft','absolute-cap','allowance'):
-  rendered_yaml=subprocess.check_output(['helm','template','topology',str(charts),'-n','router-tp4','-f',str(rendered/f'router-{policy}.values.yaml')],text=True)
+  values=yaml.safe_load((rendered/f'router-{policy}.values.yaml').read_text());values['router']['epp']['flags']['v']=5
+  diagnostic=out/f'{policy}-diagnostic.values.yaml';diagnostic.write_text(yaml.safe_dump(values))
+  rendered_yaml=subprocess.check_output(['helm','template','topology',str(charts),'-n','router-tp4','-f',str(diagnostic)],text=True)
   modified=subprocess.run([sys.executable,str(HERE/'record-routes.py')],input=rendered_yaml,capture_output=True,text=True,check=True).stdout
   (out/f'{policy}-manifest.yaml').write_text(modified)
   subprocess.run(k+['apply','-f','-'],input=modified,text=True,check=True,stdout=subprocess.DEVNULL)

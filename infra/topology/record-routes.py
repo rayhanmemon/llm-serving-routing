@@ -25,6 +25,7 @@ for resource in resources:
                         'requested_decoder': '%REQ(X-BENCHMARK-DECODER)%',
                         'selected_decoder': '%RESP(X-BENCHMARK-DECODER)%',
                         'upstream_host': '%UPSTREAM_HOST%', 'status': '%RESPONSE_CODE%',
+                        'endpoint_scores': '%DYNAMIC_METADATA(envoy.lb:x-gateway-destination-endpoint-scores)%',
                         'duration_ms': '%DURATION%', 'response_flags': '%RESPONSE_FLAGS%'}}
                     changed += 1
     data['envoy.yaml'] = yaml.safe_dump(config, sort_keys=False)
