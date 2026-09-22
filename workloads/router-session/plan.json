@@ -1,0 +1,293 @@
+{
+  "schema_version": 1,
+  "layout": "BHLNC",
+  "input_tokens": [
+    4096,
+    122880
+  ],
+  "output_tokens": 32,
+  "decoder_max_num_seqs": 8,
+  "qualification_requests_per_host": 6,
+  "training_states": [
+    [
+      1,
+      0
+    ],
+    [
+      9,
+      8
+    ],
+    [
+      17,
+      0
+    ],
+    [
+      17,
+      8
+    ]
+  ],
+  "training_repeats": 2,
+  "training_probes": 32,
+  "training_trial_seconds": 60,
+  "background_output_tokens": 1024,
+  "grid": {
+    "allowance": [
+      0,
+      1,
+      2,
+      4
+    ],
+    "cap": [
+      0,
+      1,
+      4,
+      8,
+      9,
+      16,
+      24
+    ],
+    "weight": [
+      0.1,
+      0.25,
+      0.5,
+      1,
+      2
+    ],
+    "idle_threshold": [
+      0,
+      1,
+      2,
+      8,
+      9
+    ],
+    "max_busy_score": [
+      0.5,
+      1
+    ]
+  },
+  "trials": [
+    {
+      "id": "eval-0-high-allowance",
+      "mode": "heldout",
+      "policy": "allowance",
+      "trace": "high",
+      "repeat": 0,
+      "seed": 22092026,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-0-high-absolute-cap",
+      "mode": "heldout",
+      "policy": "absolute-cap",
+      "trace": "high",
+      "repeat": 0,
+      "seed": 22092026,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-0-high-none",
+      "mode": "heldout",
+      "policy": "none",
+      "trace": "high",
+      "repeat": 0,
+      "seed": 22092026,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-0-high-hard",
+      "mode": "heldout",
+      "policy": "hard",
+      "trace": "high",
+      "repeat": 0,
+      "seed": 22092026,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-0-high-soft",
+      "mode": "heldout",
+      "policy": "soft",
+      "trace": "high",
+      "repeat": 0,
+      "seed": 22092026,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-0-low-allowance",
+      "mode": "heldout",
+      "policy": "allowance",
+      "trace": "low",
+      "repeat": 0,
+      "seed": 22092026,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-0-low-absolute-cap",
+      "mode": "heldout",
+      "policy": "absolute-cap",
+      "trace": "low",
+      "repeat": 0,
+      "seed": 22092026,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-0-low-soft",
+      "mode": "heldout",
+      "policy": "soft",
+      "trace": "low",
+      "repeat": 0,
+      "seed": 22092026,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-0-low-hard",
+      "mode": "heldout",
+      "policy": "hard",
+      "trace": "low",
+      "repeat": 0,
+      "seed": 22092026,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-0-low-none",
+      "mode": "heldout",
+      "policy": "none",
+      "trace": "low",
+      "repeat": 0,
+      "seed": 22092026,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-1-low-allowance",
+      "mode": "heldout",
+      "policy": "allowance",
+      "trace": "low",
+      "repeat": 1,
+      "seed": 22092027,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-1-low-hard",
+      "mode": "heldout",
+      "policy": "hard",
+      "trace": "low",
+      "repeat": 1,
+      "seed": 22092027,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-1-low-none",
+      "mode": "heldout",
+      "policy": "none",
+      "trace": "low",
+      "repeat": 1,
+      "seed": 22092027,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-1-low-absolute-cap",
+      "mode": "heldout",
+      "policy": "absolute-cap",
+      "trace": "low",
+      "repeat": 1,
+      "seed": 22092027,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-1-low-soft",
+      "mode": "heldout",
+      "policy": "soft",
+      "trace": "low",
+      "repeat": 1,
+      "seed": 22092027,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-1-high-allowance",
+      "mode": "heldout",
+      "policy": "allowance",
+      "trace": "high",
+      "repeat": 1,
+      "seed": 22092027,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-1-high-soft",
+      "mode": "heldout",
+      "policy": "soft",
+      "trace": "high",
+      "repeat": 1,
+      "seed": 22092027,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-1-high-absolute-cap",
+      "mode": "heldout",
+      "policy": "absolute-cap",
+      "trace": "high",
+      "repeat": 1,
+      "seed": 22092027,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-1-high-none",
+      "mode": "heldout",
+      "policy": "none",
+      "trace": "high",
+      "repeat": 1,
+      "seed": 22092027,
+      "max_seconds": 90
+    },
+    {
+      "id": "eval-1-high-hard",
+      "mode": "heldout",
+      "policy": "hard",
+      "trace": "high",
+      "repeat": 1,
+      "seed": 22092027,
+      "max_seconds": 90
+    },
+    {
+      "id": "confirm-low-allowance",
+      "mode": "confirmation",
+      "policy": "allowance",
+      "trace": "low",
+      "repeat": 2,
+      "seed": 22092028,
+      "max_seconds": 90
+    },
+    {
+      "id": "confirm-low-reference",
+      "mode": "confirmation",
+      "policy": "reference",
+      "trace": "low",
+      "repeat": 2,
+      "seed": 22092028,
+      "max_seconds": 90
+    },
+    {
+      "id": "confirm-high-allowance",
+      "mode": "confirmation",
+      "policy": "allowance",
+      "trace": "high",
+      "repeat": 2,
+      "seed": 22092028,
+      "max_seconds": 90
+    },
+    {
+      "id": "confirm-high-reference",
+      "mode": "confirmation",
+      "policy": "reference",
+      "trace": "high",
+      "repeat": 2,
+      "seed": 22092028,
+      "max_seconds": 90
+    }
+  ],
+  "thresholds": {
+    "minimum_ms": 50,
+    "minimum_percent": 2,
+    "maximum_regression_percent": 5
+  },
+  "benchmark_engine": "inference-perf0.6.1; frozen-token adapter; native trace scheduler/HTTP/SSE/reports",
+  "limitations": "Controlled traces and mean latency; no production or tail-latency claim."
+}

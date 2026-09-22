@@ -51,7 +51,7 @@ def validate_qualification(run,config,suite):
             raise ValueError('Unverified worker shutdown')
 
 
-def select_capacity(data, newer_than=None):
+def select_capacity(data, newer_than=None, minimum=1):
     """Require positive advice for an eight-GPU VM, not eight single-GPU VMs."""
     for item in data.get('items',[]):
         spec=item.get('spec',{});machine=spec.get('compute_instance',{})
@@ -60,7 +60,7 @@ def select_capacity(data, newer_than=None):
                 or machine.get('preset',{}).get('name')!='8gpu-128vcpu-1600gb'):
             continue
         status=item.get('status',{}).get('preemptible',{})
-        if status.get('data_state')!='DATA_STATE_FRESH' or int(status.get('available',0))<1:
+        if status.get('data_state')!='DATA_STATE_FRESH' or int(status.get('available',0))<minimum:
             continue
         effective=datetime.fromisoformat(status['effective_at'].replace('Z','+00:00'))
         if newer_than and effective<=datetime.fromisoformat(newer_than.replace('Z','+00:00')):
@@ -69,7 +69,7 @@ def select_capacity(data, newer_than=None):
     raise ValueError('No fresh positive eight-H200 capacity advice; no infrastructure created')
 
 
-def verify_capacity(runner=subprocess.run):
+def verify_capacity(runner=subprocess.run,minimum=1):
     state_path=pilot.STATE_ROOT/'overnight-capacity-state.json'
     state=json.loads(state_path.read_text()) if state_path.exists() else {}
     not_before=state.get('next_identical_attempt_not_before')
@@ -78,7 +78,7 @@ def verify_capacity(runner=subprocess.run):
     result=runner([str(Path.home()/'.nebius/bin/nebius'),'capacity','resource-advice','list',
         '--parent-id','tenant-e00evgkv9j4px9vymy','--all','--format','json','--no-check-update','--timeout','20s'],
         capture_output=True,text=True,timeout=30,check=True)
-    selected=select_capacity(json.loads(result.stdout),state.get('last_failed_gpu_create_finished_at'))
+    selected=select_capacity(json.loads(result.stdout),state.get('last_failed_gpu_create_finished_at'),minimum)
     return {'checked_unix':time.time(),'selected':selected,'reservation':False}
 
 

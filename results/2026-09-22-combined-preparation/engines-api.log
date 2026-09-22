@@ -1,0 +1,4 @@
+namespace/router-tp4 serverside-applied (server dry run)
+configmap/tp4-code serverside-applied (server dry run)
+pod/preflight-local serverside-applied (server dry run)
+pod/preflight-remote serverside-applied (server dry run)

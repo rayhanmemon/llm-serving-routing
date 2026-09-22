@@ -8,11 +8,19 @@ The normal controller still performs complete Terraform cleanup and verification
 import argparse
 import asyncio
 import json
+import math
 from pathlib import Path
 import time
 import urllib.request
 
 NAMES = {'router-local', 'router-remote', 'router-cpu'}
+
+
+def shortened_deadline(current,request,cluster):
+    value=request.get('deadline')
+    if request.get('cluster')!=cluster or not isinstance(value,(int,float)) or not math.isfinite(value) or value<=0 or value>current:
+        raise ValueError('Invalid deadline reduction')
+    return value
 
 
 def select_groups(items, cluster):
@@ -45,6 +53,7 @@ async def main():
     if info['parent_id'] != a.project or not info.get('service_account_id'):
         raise ValueError('Guard has wrong project or lacks its own identity')
     ready = False
+    deadline=a.deadline
     while True:
         try:
             async with SDK(credentials=metadata('iam/sa/token/access_token').strip()) as sdk:
@@ -54,16 +63,24 @@ async def main():
                     raise ValueError('Unexpected pagination')
                 groups = select_groups([{'id': x.metadata.id, 'name': x.metadata.name,
                                           'parent_id': x.metadata.parent_id} for x in response.items], a.cluster)
+                update=Path('/results/deadline-request.json')
+                if update.exists():
+                    try:
+                        changed=shortened_deadline(deadline,json.loads(update.read_text()),a.cluster)
+                        if changed!=deadline:deadline=changed;ready=False
+                    except (ValueError,TypeError):
+                        print('Rejected deadline update; original cleanup remains armed.',flush=True)
                 if not ready:
                     if 'router-cpu' not in groups:
                         raise ValueError('CPU guard group missing')
                     record = {'armed': True, 'cluster': a.cluster, 'project': a.project,
-                              'deadline': a.deadline, 'service_account': info['service_account_id'],
+                              'deadline': deadline, 'service_account': info['service_account_id'],
                               'gpu_groups_present_at_arm': sorted(set(groups)-{'router-cpu'})}
-                    Path('/results/guard-ready.json').write_text(json.dumps(record))
+                    ready_path=Path('/results/guard-ready.json');temp=ready_path.with_suffix('.tmp')
+                    temp.write_text(json.dumps(record));temp.replace(ready_path)
                     print(json.dumps(record), flush=True)
                     ready = True
-                if time.time() >= a.deadline:
+                if time.time() >= deadline:
                     gpu = [groups[x] for x in ('router-local','router-remote') if x in groups]
                     for identifier in gpu:
                         try:
@@ -77,7 +94,7 @@ async def main():
         except Exception as error:
             # No credential-bearing request/exception repr in logs.
             print('Guard retry: '+type(error).__name__, flush=True)
-        await asyncio.sleep(5 if time.time() >= a.deadline else 15)
+        await asyncio.sleep(5 if time.time() >= deadline else 15)
 
 
 if __name__ == '__main__':

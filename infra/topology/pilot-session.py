@@ -257,6 +257,18 @@ PROFILE_POLICIES[LAYOUT_PROFILE] = {
 }
 GUARDED_PROFILES = (*PAIRED_PROFILES, LAYOUT_PROFILE)
 
+ROUTER_SESSION_PROFILE = 'tp4-router-comparison'
+PROFILE_POLICIES[ROUTER_SESSION_PROFILE] = {
+    **PROFILE_POLICIES[LAYOUT_PROFILE],
+    'single_gpu_host': False, 'expected_creates': FULL_TOPOLOGY_CREATES,
+    # Initial guard bounds ONE host. The controller must shorten/acknowledge
+    # the cost-derived two-host deadline before requesting remote allocation.
+    'cleanup_start_seconds': 160*60, 'deletion_target_seconds': 180*60,
+    'hourly_rate_usd_pretax': Decimal('39.70'),
+    'attempt_admission_usd_pretax': Decimal('70'), 'staged_cost_accounting': True,
+}
+GUARDED_PROFILES = (*GUARDED_PROFILES, ROUTER_SESSION_PROFILE)
+
 
 class SessionError(RuntimeError):
     pass
@@ -563,8 +575,8 @@ def validate_plan_structure(plan: dict, profile: str) -> dict:
                 raise SessionError("Wrong reusable cleanup identity")
             if cpu_template.get("service_account_id") != policy["existing_guard_service_account_id"]:
                 raise SessionError("CPU guard must use the reviewed cleanup identity")
-            if not plan_boolean(variables.get("single_gpu_host", {}).get("value"), "single_gpu_host"):
-                raise SessionError("Layout diagnostic must omit the remote GPU host")
+            if plan_boolean(variables.get("single_gpu_host", {}).get("value"), "single_gpu_host") is not bool(policy.get('single_gpu_host')):
+                raise SessionError("Single/two-host plan differs from the admitted profile")
         else:
             permit = next(x["change"]["after"] for x in changes if x["address"] == "nebius_iam_v1_access_permit.guard[0]")
             if permit.get("role") != "editor" or permit.get("resource_id") != project_id:
@@ -751,7 +763,10 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
         raise SessionError("Approval record must contain a non-empty approval_reference")
     if approval.get("authorization_scope") != AUTHORIZATION_SCOPE:
         raise SessionError(f"Approval authorization_scope must be {AUTHORIZATION_SCOPE}")
-    if approval.get("allow_multiple_attempts") is not True:
+    if profile == ROUTER_SESSION_PROFILE:
+        if approval.get('allow_multiple_attempts') is not False:
+            raise SessionError('Combined comparison approval must authorize one attempt only')
+    elif approval.get("allow_multiple_attempts") is not True:
         raise SessionError("Approval must explicitly allow multiple attempts")
     approved_budget = positive_money(approval.get("max_total_usd_pretax"))
     cli_budget = positive_money(args.approved_max_usd_pretax)
@@ -781,6 +796,12 @@ def prepare_session(args, state_root: Path = STATE_ROOT, now: float | None = Non
     with (state_root / "budget.lock").open("a+") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         budget = load_or_initialize_budget(state_root, approval, approved_budget)
+        if profile == ROUTER_SESSION_PROFILE:
+            approval_hash=file_sha256(args.approval_record)
+            for prior in budget.get('attempts',[]):
+                saved=Path(prior.get('run_dir',''))/'session.json'
+                if saved.is_file() and read_json(saved).get('approval_record_sha256')==approval_hash:
+                    raise SessionError('This single-attempt approval was already used; no retry is authorized')
         reconcile_recorded_costs(budget)
         spent = completed_spend(budget)
         remaining = approved_budget - spent
@@ -1017,6 +1038,10 @@ def guard_run(run_dir: Path, *, now_fn=time.time, sleep_fn=time.sleep, cleanup_f
         "ready_unix": now_fn(),
     })
     while not cleanup_verified(run_dir, session["session_id"]):
+        if session_profile(session)==ROUTER_SESSION_PROFILE:
+            latest=read_json(run_dir/'session.json')
+            if latest.get('session_id')!=session['session_id']:return cleanup_fn(run_dir)
+            session['cleanup_start_deadline_unix']=min(session['cleanup_start_deadline_unix'],latest['cleanup_start_deadline_unix'])
         if (run_dir / "manual-stop-requested.json").exists():
             return cleanup_fn(run_dir)
         current = now_fn()
@@ -1150,6 +1175,8 @@ def main(argv: list[str] | None = None) -> int:
         return cleanup_until_target(Path(argv[1]))
     args = parser().parse_args(argv)
     try:
+        if args.profile==ROUTER_SESSION_PROFILE:
+            raise SessionError('Combined profile requires run-router-session.py; full-plan apply is forbidden')
         run_dir, session = prepare_session(args)
         guard = spawn_guard(run_dir)
         wait_guard_ready(run_dir, guard)
