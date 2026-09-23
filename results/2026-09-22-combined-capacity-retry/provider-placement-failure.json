@@ -1,0 +1,8 @@
+{
+  "observed_unix": 1790135312.124487,
+  "code": "NotEnoughResources",
+  "operation_id": "computeoperation-u00gjy57nr45vgcdbe",
+  "instance_id": "computeinstance-u00zkdxsc2x2faqxtj",
+  "node_group_id": "mk8snodegroup-u00crs3nbtqxe230jf",
+  "inference_requests": 0
+}

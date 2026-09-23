@@ -1,0 +1,48 @@
+{
+  "checked_unix": 1790134872.9577441,
+  "reservation": false,
+  "selected": {
+    "metadata": {
+      "created_at": "2026-09-23T03:41:12.788434Z",
+      "parent_id": "tenant-e00evgkv9j4px9vymy",
+      "resource_version": "1",
+      "updated_at": "2026-09-23T03:41:12.788434Z"
+    },
+    "spec": {
+      "compute_instance": {
+        "gpu_memory_gigabytes": 141,
+        "platform": "gpu-h200-sxm",
+        "preset": {
+          "name": "8gpu-128vcpu-1600gb",
+          "resources": {
+            "gpu_count": 8,
+            "memory_gibibytes": 1600,
+            "vcpu_count": 128
+          }
+        }
+      },
+      "fabric": "us-central1-a",
+      "region": "us-central1"
+    },
+    "status": {
+      "on_demand": {
+        "availability_level": "AVAILABILITY_LEVEL_LOW",
+        "data_state": "DATA_STATE_FRESH",
+        "effective_at": "2026-09-23T03:15:36.291Z",
+        "limit": 4
+      },
+      "preemptible": {
+        "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+        "available": 2,
+        "data_state": "DATA_STATE_FRESH",
+        "effective_at": "2026-09-23T03:15:36.291Z",
+        "limit": 8
+      },
+      "reserved": {
+        "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+        "data_state": "DATA_STATE_FRESH",
+        "effective_at": "2026-09-23T03:41:11.669093Z"
+      }
+    }
+  }
+}

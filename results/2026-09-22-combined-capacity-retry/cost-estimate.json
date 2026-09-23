@@ -1,0 +1,15 @@
+{
+  "session_id": "20260923T033056Z-886eca0b",
+  "estimate_usd_pretax": "0.1958176890138888888888888889",
+  "estimate_type": "lifecycle-based estimate with conservative support allowance; not invoice-verified",
+  "gpu_compute_estimate_usd": "0",
+  "support_upper_allowance_usd": "0.1958176890138888888888888889",
+  "method": "Complete native GPU history is failed create (NotEnoughResources) plus successful deletion; no successful start. GPU compute estimated zero under running-VM billing. Preserve $0.50/hour support allowance over the full admitted-to-verified-cleanup interval.",
+  "gpu_evidence": "gpu-operations.json",
+  "cpu_evidence": "cpu-operations.json",
+  "billing_basis": "https://docs.nebius.com/compute/resources/pricing",
+  "started_unix": 1790134256.0299861,
+  "cleanup_verified_unix": 1790135665.917347,
+  "remote_requested": false,
+  "inference_requests": 0
+}
