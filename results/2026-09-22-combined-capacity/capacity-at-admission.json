@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-09-23T00:37:06.536456+00:00",
+  "qualifying": true,
+  "automatic_launch_authorized": true,
+  "status": "qualifying",
+  "matches": [
+    {
+      "data_state": "DATA_STATE_FRESH",
+      "available": 2,
+      "effective_at": "2026-09-23T00:16:13.542Z",
+      "age_seconds": 1252.994456
+    }
+  ]
+}

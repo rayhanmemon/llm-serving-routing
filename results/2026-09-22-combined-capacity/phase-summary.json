@@ -1,0 +1,19 @@
+{
+  "session_id": "20260923T003829Z-3f4f01df",
+  "started_utc": "2026-09-23T00:38:29.766252+00:00",
+  "source_commit": "a2ed3d5",
+  "router_commit": "0217d29924ba93b90f952e7a0281dd8dda146703",
+  "cpu_bootstrap_succeeded": true,
+  "cloud_guard_armed": true,
+  "benchmark_client_ready": true,
+  "epp_image_imported": true,
+  "local_gpu_requested": true,
+  "local_gpu_became_ready": false,
+  "remote_gpu_requested": false,
+  "model_requests": 0,
+  "packed_gpu_qualified": false,
+  "routing_policy_benchmarks": false,
+  "cleanup_verified": true,
+  "automation_paused": true,
+  "code_changed_during_attempt": false
+}

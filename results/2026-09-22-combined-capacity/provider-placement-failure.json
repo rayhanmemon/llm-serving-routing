@@ -1,0 +1,9 @@
+{
+  "observed_unix": 1790125079.425647,
+  "code": "NotEnoughResources",
+  "operation_id": "computeoperation-u00gs65wm04kkbfc38",
+  "instance_id": "computeinstance-u00cq4see319zt1n3c",
+  "node_group_id": "mk8snodegroup-u00bsnpf97gskpavg3",
+  "inference_requests": 0,
+  "stop_reason": "Agent stops admitted attempt after native NotEnoughResources / VM schedule timeout; no model request ran. Authorized stop-on-placement-failure, not a user-issued emergency command."
+}

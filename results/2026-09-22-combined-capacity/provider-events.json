@@ -1,0 +1,94 @@
+[
+  {
+    "name": "router-cpu",
+    "state": "RUNNING",
+    "events": [
+      {
+        "first_occurred_at": "2026-09-23T00:43:55Z",
+        "last_occurrence": {
+          "occurred_at": "2026-09-23T00:43:55Z",
+          "level": "WARN",
+          "code": "ComputeInstanceStopped",
+          "message": "Compute instance is stopped for node mk8snodegroup-u00ke876h7tqx1njey-njz7z-bf6kj"
+        },
+        "occurrence_count": "1"
+      },
+      {
+        "first_occurred_at": "2026-09-23T00:44:40Z",
+        "last_occurrence": {
+          "occurred_at": "2026-09-23T00:44:40Z",
+          "level": "WARN",
+          "code": "NodeProvisioning",
+          "message": "Waiting for a node with matching ProviderID to exist for node mk8snodegroup-u00ke876h7tqx1njey-njz7z-bf6kj"
+        },
+        "occurrence_count": "1"
+      },
+      {
+        "first_occurred_at": "2026-09-23T00:45:27Z",
+        "last_occurrence": {
+          "occurred_at": "2026-09-23T00:45:27Z",
+          "level": "WARN",
+          "code": "NodeConditionsFailed",
+          "message": "Node condition Ready is False for node mk8snodegroup-u00ke876h7tqx1njey-njz7z-bf6kj"
+        },
+        "occurrence_count": "1"
+      }
+    ]
+  },
+  {
+    "name": "router-local",
+    "state": "PROVISIONING",
+    "events": [
+      {
+        "first_occurred_at": "2026-09-23T00:55:08Z",
+        "last_occurrence": {
+          "occurred_at": "2026-09-23T00:55:08Z",
+          "level": "ERROR",
+          "code": "ComputeInstanceOperationFailed",
+          "message": "Operation computeoperation-u00gs65wm04kkbfc38 \"Create Instance\" of compute instance is failed for node mk8snodegroup-u00bsnpf97gskpavg3-lmknj-zpp2v",
+          "error": {
+            "code": 8,
+            "details": [
+              {
+                "@type": "type.googleapis.com/nebius.common.v1.ServiceError",
+                "service": "compute",
+                "code": "NotEnoughResources",
+                "not_enough_resources": {
+                  "violations": [
+                    {
+                      "resource_type": "virtualMachine",
+                      "message": "VM schedule timeout, most likely due to insufficient hardware resources, for more information see https://docs.nebius.com/compute/virtual-machines/not-enough-resources",
+                      "requested": "8gpu-128vcpu-1600gb"
+                    }
+                  ]
+                },
+                "retry_type": "NOTHING"
+              }
+            ]
+          }
+        },
+        "occurrence_count": "1"
+      },
+      {
+        "first_occurred_at": "2026-09-23T00:49:20Z",
+        "last_occurrence": {
+          "occurred_at": "2026-09-23T00:49:20Z",
+          "level": "WARN",
+          "code": "ComputeInstanceStopped",
+          "message": "Compute instance is stopped for node mk8snodegroup-u00bsnpf97gskpavg3-lmknj-zpp2v"
+        },
+        "occurrence_count": "1"
+      },
+      {
+        "first_occurred_at": "2026-09-23T00:49:19Z",
+        "last_occurrence": {
+          "occurred_at": "2026-09-23T00:49:19Z",
+          "level": "INFO",
+          "code": "WaitingForNodeRef",
+          "message": "WaitingForNodeRef for node mk8snodegroup-u00bsnpf97gskpavg3-lmknj-zpp2v"
+        },
+        "occurrence_count": "1"
+      }
+    ]
+  }
+]

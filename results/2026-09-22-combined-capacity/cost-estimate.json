@@ -1,0 +1,12 @@
+{
+  "session_id": "20260923T003829Z-3f4f01df",
+  "estimate_usd_pretax": "4.947801920444444444444444445",
+  "estimate_type": "conservative upper bound; not an invoice or measured GPU charge",
+  "support_upper_allowance_usd": "0.2103385627777777777777777778",
+  "gpu_upper_allowance_usd": "4.737463357666666666666666667",
+  "method": "Use the predeclared staged budget rates: $0.50/hour support for the full admitted session and $19.60/hour for the entire local GPU-request-to-verified-cleanup interval. Native VM creation failed with NotEnoughResources; GPU running/billing history was not obtained, so the GPU interval is reserved conservatively rather than claimed as charged. Remote was never requested.",
+  "started_utc": "2026-09-23T00:38:29.766252+00:00",
+  "local_requested_utc": "2026-09-23T00:49:14.057573+00:00",
+  "cleanup_verified_utc": "2026-09-23T01:03:44.203904+00:00",
+  "inference_requests": 0
+}
