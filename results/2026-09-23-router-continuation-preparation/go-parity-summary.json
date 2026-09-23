@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "cases": 56108,
+  "router_source": "0217d29924ba93b90f952e7a0281dd8dda146703",
+  "result_source_sha256": "fa81e842dd94476381e958d279b1f8f311c2bdcd0f44cfcdc0cab369f66e18c2",
+  "scope": "Actual Go filters/scorers versus all configured tuner grid values and counts 0\u201325; candidate sets compare score ties.",
+  "weights": [
+    0.01,
+    0.05,
+    0.1,
+    0.25,
+    0.5,
+    1,
+    2
+  ]
+}

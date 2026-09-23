@@ -1,0 +1,461 @@
+{
+  "combined_controller_rehearsed": true,
+  "real_router_rehearsed": true,
+  "native_perf_rehearsed": true,
+  "native_vllm_checked": true,
+  "manifests_validated": true,
+  "budget_bound_verified": true,
+  "soft_weight_grid_expansion": {
+    "rehearsal_weights": [
+      0.1,
+      0.25,
+      0.5,
+      1,
+      2
+    ],
+    "current_weights": [
+      0.01,
+      0.05,
+      0.1,
+      0.25,
+      0.5,
+      1,
+      2
+    ],
+    "validation": "Additional Go policy parity and actual tuning/summary regression tests; workload and control-flow AST unchanged."
+  },
+  "policy_model_parity": {
+    "passed": true,
+    "cases": 56108,
+    "router_source": "0217d29924ba93b90f952e7a0281dd8dda146703",
+    "result_source_sha256": "fa81e842dd94476381e958d279b1f8f311c2bdcd0f44cfcdc0cab369f66e18c2",
+    "scope": "Actual Go filters/scorers versus all configured tuner grid values and counts 0\u201325; candidate sets compare score ties.",
+    "weights": [
+      0.01,
+      0.05,
+      0.1,
+      0.25,
+      0.5,
+      1,
+      2
+    ]
+  },
+  "late_collection_volume": {
+    "raw_bytes": 1166287980,
+    "archive_bytes": 70153909,
+    "archive_seconds": 33.7747642659815,
+    "extract_and_verify_seconds": 16.739459131960757,
+    "verification": {
+      "files_verified": 780,
+      "mutable_log_prefixes": [
+        "trial-00/native.log",
+        "trial-01/native.log",
+        "trial-02/native.log",
+        "trial-03/native.log",
+        "trial-04/native.log",
+        "trial-05/native.log",
+        "trial-06/native.log",
+        "trial-07/native.log",
+        "trial-08/native.log",
+        "trial-09/native.log",
+        "trial-10/native.log",
+        "trial-11/native.log",
+        "trial-12/native.log",
+        "trial-13/native.log",
+        "trial-14/native.log",
+        "trial-15/native.log",
+        "trial-16/native.log",
+        "trial-17/native.log",
+        "trial-18/native.log",
+        "trial-19/native.log",
+        "trial-20/native.log",
+        "trial-21/native.log",
+        "trial-22/native.log",
+        "trial-23/native.log",
+        "trial-24/native.log",
+        "trial-25/native.log",
+        "trial-26/native.log",
+        "trial-27/native.log",
+        "trial-28/native.log",
+        "trial-29/native.log",
+        "trial-30/native.log",
+        "trial-31/native.log",
+        "trial-32/native.log",
+        "trial-33/native.log",
+        "trial-34/native.log",
+        "trial-35/native.log",
+        "trial-36/native.log",
+        "trial-37/native.log",
+        "trial-38/native.log",
+        "trial-39/native.log",
+        "trial-40/native.log",
+        "trial-41/native.log",
+        "trial-42/native.log",
+        "trial-43/native.log",
+        "trial-44/native.log",
+        "trial-45/native.log",
+        "trial-46/native.log",
+        "trial-47/native.log",
+        "trial-48/native.log",
+        "trial-49/native.log",
+        "trial-50/native.log",
+        "trial-51/native.log",
+        "trial-52/native.log",
+        "trial-53/native.log",
+        "trial-54/native.log",
+        "trial-55/native.log",
+        "trial-56/native.log",
+        "trial-57/native.log",
+        "trial-58/native.log",
+        "trial-59/native.log"
+      ],
+      "logs_changed_during_snapshot": []
+    },
+    "cpu_limit": 2,
+    "memory_limit_gib": 2,
+    "cloud_calls": false
+  },
+  "host_job_guard_revalidated_by_tests": false,
+  "cloud_actions": false,
+  "gpu_execution": false,
+  "tests_run": 267,
+  "router_rehearsal": {
+    "real_router_rehearsed": true,
+    "native_perf_rehearsed": true,
+    "recorded_requests": 848,
+    "foreground": 128,
+    "real_epp_source": "0217d29924ba93b90f952e7a0281dd8dda146703",
+    "real_sidecar": true,
+    "synthetic_workers": true,
+    "cloud_calls": false,
+    "gpu_execution": false,
+    "production_image_import_substituted": true,
+    "epp_architecture": "arm64",
+    "scope": "Real Controller evaluation/tuning/confirmation/summary, routing/collection; synthetic workers and explicit latency controls; no GPU performance claim.",
+    "full_workflow_rehearsed": true,
+    "completed_trials": [
+      {
+        "trial": "train-0-0-local",
+        "mode": "calibration",
+        "seconds": 33.482968708034605,
+        "requests": 3
+      },
+      {
+        "trial": "train-0-0-remote",
+        "mode": "calibration",
+        "seconds": 30.118096583057195,
+        "requests": 3
+      },
+      {
+        "trial": "train-0-1-local",
+        "mode": "calibration",
+        "seconds": 30.892697457922623,
+        "requests": 19
+      },
+      {
+        "trial": "train-0-1-remote",
+        "mode": "calibration",
+        "seconds": 32.12379250000231,
+        "requests": 19
+      },
+      {
+        "trial": "train-0-2-local",
+        "mode": "calibration",
+        "seconds": 36.93124812503811,
+        "requests": 19
+      },
+      {
+        "trial": "train-0-2-remote",
+        "mode": "calibration",
+        "seconds": 31.32814145903103,
+        "requests": 19
+      },
+      {
+        "trial": "train-0-3-local",
+        "mode": "calibration",
+        "seconds": 31.421471083071083,
+        "requests": 27
+      },
+      {
+        "trial": "train-0-3-remote",
+        "mode": "calibration",
+        "seconds": 31.601269083912484,
+        "requests": 27
+      },
+      {
+        "trial": "train-1-0-remote",
+        "mode": "calibration",
+        "seconds": 29.260671667056158,
+        "requests": 3
+      },
+      {
+        "trial": "train-1-0-local",
+        "mode": "calibration",
+        "seconds": 29.264486333937384,
+        "requests": 3
+      },
+      {
+        "trial": "train-1-1-remote",
+        "mode": "calibration",
+        "seconds": 30.674818000057712,
+        "requests": 19
+      },
+      {
+        "trial": "train-1-1-local",
+        "mode": "calibration",
+        "seconds": 30.747235041926615,
+        "requests": 19
+      },
+      {
+        "trial": "train-1-2-remote",
+        "mode": "calibration",
+        "seconds": 35.49953875003848,
+        "requests": 19
+      },
+      {
+        "trial": "train-1-2-local",
+        "mode": "calibration",
+        "seconds": 31.9951928750379,
+        "requests": 19
+      },
+      {
+        "trial": "train-1-3-remote",
+        "mode": "calibration",
+        "seconds": 32.1157227079384,
+        "requests": 27
+      },
+      {
+        "trial": "train-1-3-local",
+        "mode": "calibration",
+        "seconds": 35.80915550002828,
+        "requests": 27
+      },
+      {
+        "trial": "eval-0-high-allowance",
+        "mode": "heldout",
+        "seconds": 59.78853775002062,
+        "requests": 40
+      },
+      {
+        "trial": "eval-0-high-absolute-cap",
+        "mode": "heldout",
+        "seconds": 59.73119754099753,
+        "requests": 40
+      },
+      {
+        "trial": "eval-0-high-none",
+        "mode": "heldout",
+        "seconds": 59.71385083394125,
+        "requests": 40
+      },
+      {
+        "trial": "eval-0-high-hard",
+        "mode": "heldout",
+        "seconds": 60.487746833008714,
+        "requests": 40
+      },
+      {
+        "trial": "eval-0-high-soft",
+        "mode": "heldout",
+        "seconds": 59.75501279090531,
+        "requests": 40
+      },
+      {
+        "trial": "eval-0-low-allowance",
+        "mode": "heldout",
+        "seconds": 59.153976250090636,
+        "requests": 8
+      },
+      {
+        "trial": "eval-0-low-absolute-cap",
+        "mode": "heldout",
+        "seconds": 58.70888066699263,
+        "requests": 8
+      },
+      {
+        "trial": "eval-0-low-soft",
+        "mode": "heldout",
+        "seconds": 59.20400975004304,
+        "requests": 8
+      },
+      {
+        "trial": "eval-0-low-hard",
+        "mode": "heldout",
+        "seconds": 59.76440779096447,
+        "requests": 8
+      },
+      {
+        "trial": "eval-0-low-none",
+        "mode": "heldout",
+        "seconds": 59.42069062497467,
+        "requests": 8
+      },
+      {
+        "trial": "eval-1-low-allowance",
+        "mode": "heldout",
+        "seconds": 59.66204016597476,
+        "requests": 8
+      },
+      {
+        "trial": "eval-1-low-hard",
+        "mode": "heldout",
+        "seconds": 59.482593124965206,
+        "requests": 8
+      },
+      {
+        "trial": "eval-1-low-none",
+        "mode": "heldout",
+        "seconds": 59.56527000002097,
+        "requests": 8
+      },
+      {
+        "trial": "eval-1-low-absolute-cap",
+        "mode": "heldout",
+        "seconds": 59.27551579196006,
+        "requests": 8
+      },
+      {
+        "trial": "eval-1-low-soft",
+        "mode": "heldout",
+        "seconds": 61.254748000064865,
+        "requests": 8
+      },
+      {
+        "trial": "eval-1-high-allowance",
+        "mode": "heldout",
+        "seconds": 61.229781250003725,
+        "requests": 40
+      },
+      {
+        "trial": "eval-1-high-soft",
+        "mode": "heldout",
+        "seconds": 62.65239387494512,
+        "requests": 40
+      },
+      {
+        "trial": "eval-1-high-absolute-cap",
+        "mode": "heldout",
+        "seconds": 62.788040291983634,
+        "requests": 40
+      },
+      {
+        "trial": "eval-1-high-none",
+        "mode": "heldout",
+        "seconds": 62.701398625038564,
+        "requests": 40
+      },
+      {
+        "trial": "eval-1-high-hard",
+        "mode": "heldout",
+        "seconds": 62.07819091703277,
+        "requests": 40
+      },
+      {
+        "trial": "confirm-low-allowance",
+        "mode": "confirmation",
+        "seconds": 61.66860837501008,
+        "requests": 8
+      },
+      {
+        "trial": "confirm-low-reference",
+        "mode": "confirmation",
+        "seconds": 62.21443024999462,
+        "requests": 8
+      },
+      {
+        "trial": "confirm-high-allowance",
+        "mode": "confirmation",
+        "seconds": 62.13197729201056,
+        "requests": 40
+      },
+      {
+        "trial": "confirm-high-reference",
+        "mode": "confirmation",
+        "seconds": 62.74535270803608,
+        "requests": 40
+      }
+    ],
+    "synthetic_tradeoff_enabled": true,
+    "source_sha256": {
+      "tp4-config.py": "a47c9b25c033a9193e4de011db570eecf8588861f9a86df2b873559b1ff75b61",
+      "tp4-engines.py": "ba2f3307691e0e12cbb33d719804e0589fc0236c52bf2c18a294f457810f08cc",
+      "tp4-client.py": "babc12dbfa476743efbb1a5148b2a21dc59083495f9b09e6ae2cb66834189989",
+      "tp4-evidence.py": "226e5e6a310f35b5bd267080369c88ad8368621f7a823cb8591c33939c65926f",
+      "validate-tp4-args.py": "6a91b3b72d90dfc2a5a930c36dd943fd1103d8a79ec1f8ef5c42f7fe7d92e657",
+      "run-tp4-staged.py": "4f52e1a8495ea24a7c4485c014819e866b47042796a1614670e905c4ac807861",
+      "run-paired-hosts.py": "1dc2121246c720c6f8a5e58a51a2e46b74b553e8d62d12ac9b25fc563cfc2579",
+      "pilot-session.py": "f88f8acf7307d47f04f4ed322e9d4b891744a81566da44b6db62764dc83b1d04",
+      "cloud-deadline-guard.py": "ff8d1a482893aa4fd24438c8f81a1421e11b25ab60c094a95f0892ceca06bf84",
+      "layout-client.py": "a9c08fdd3fd687040a2710264272709cf520b88723a8278b41823c6797b9145a",
+      "layout-engines.py": "d50aac887b4a2e97ea764b6de74a1c2f03706260b586e5b473b7822da67bcdae",
+      "run-layout-local.py": "f21b16cb3f6f8f6a26068079a36418d7c1e7814704730c2e933d1e974ee3605e",
+      "v029_worker_probe.py": "38df91c0d853ec8280af13620f13962c5b1ade12ba280fb93118e42d45b5038e",
+      "run-single-host.py": "b613f302910e7ee6a11a6c1d139b28a7c93a8f9dbcf62f6216fcfd3e65d2b478",
+      "prepare-teardown.py": "baecb4e8594766ac38cb4c4e680d886185a8e683d887e77ca2bfda6ddb873299",
+      "teardown.sh": "2167915bb53ee7fe8594042f2e610aa833ecc0804372e023c1e9f2aea07f9ae0",
+      "verify-empty.sh": "2be7c4c7a948cdc0d4e45aba08aadce9d9a584381fdc0dd0f991c7c34f72c2ac",
+      "router-session-budget.py": "6a8d5886062fabc970548e72ee728cca5adf50341d7e7d5ea5ed07864a241137",
+      "router-session-plan.py": "d1e0dcbab4434c06bd46474f191cf3da1e79b710557554dbe3554e4333e3bc65",
+      "router-session-client.py": "6c828ffbbf9799766d4d231748a449f3bfa510cf46e51f68e94cd1dc16e1837b",
+      "router-perf-adapter.py": "ed81d6e3ebc6a4c707ff90a07cd3217bf961927a34957df55a21a2251197e102",
+      "router-session-results.py": "fa81e842dd94476381e958d279b1f8f311c2bdcd0f44cfcdc0cab369f66e18c2",
+      "router-session-qualify.py": "43f5aba9142aa6b6501b99ca8db40a273195e965415db13bbea9d102a0526f57",
+      "router-session-transfer.py": "9e0b96533a052ca6155dfda95d1c301d5b018cc8504280cd0d9b1e75612d5af6",
+      "snapshot-results.py": "2142cfea8e1ab9e7d73d04e6b89f6f91acff498758765e6821012dff8cf4a9e9",
+      "run-router-session.py": "170885315043c3978698ffb41b1a42399f73042267c81063e7115e173ed4aab8",
+      "render-tp4-router.py": "1d2657fadd9edc00b86c4d0d5597e997f3ca607286758f71304693164b349066",
+      "render.py": "2fd49c324fbadafef4e59a8040b5ddbf7a90db687a3e076e9df9f544ff38388f",
+      "record-routes.py": "70f237cd7a93cfefdb545cdd1d2a3b53cbaf28cd24f69583c7e9d22e316a68ba",
+      "import-image.py": "f5700be7fdf9f968c3202728194c79b9b9a9a05aab9cfc8356ecfc48c2982868"
+    },
+    "benchmark_execution": "Exact pinned AMD64 image in Docker through local Kubernetes port forwards; no GPU timing claims",
+    "continuous_log_writers": true,
+    "live_identity_checked_each_trial": true,
+    "growing_log_snapshots_validated": true
+  },
+  "chart_sha256": "b642f23dc54c7723348ab30c1e34a41915222407637e57e31b9f680b1db78cc3",
+  "sha256": {
+    "config.json": "2db456c0d8ac91978eae93b712623109b34207c65023ed7ee7e9e484f3257fb9",
+    "suite.json.gz": "c73e185c0369fcb1d75730796279bd3d40b7b7ead56e6fb0dc23838916a13889",
+    "qualification.json.gz": "87572aa88348049f54ad143f5c088dd619912b0546d83cae64cc945a73c7b13d",
+    "plan.json": "67c96e8fc73261e7303b1e495395b56a5502faf13c63e7b379372ee3c318b839",
+    "epp-amd64.tar": "7ab220d2eb3a56d62ffb5595f3981944256c4072be7e88913be4bb3e182dd0d5",
+    "tp4-config.py": "a47c9b25c033a9193e4de011db570eecf8588861f9a86df2b873559b1ff75b61",
+    "tp4-engines.py": "ba2f3307691e0e12cbb33d719804e0589fc0236c52bf2c18a294f457810f08cc",
+    "tp4-client.py": "babc12dbfa476743efbb1a5148b2a21dc59083495f9b09e6ae2cb66834189989",
+    "tp4-evidence.py": "226e5e6a310f35b5bd267080369c88ad8368621f7a823cb8591c33939c65926f",
+    "validate-tp4-args.py": "6a91b3b72d90dfc2a5a930c36dd943fd1103d8a79ec1f8ef5c42f7fe7d92e657",
+    "run-tp4-staged.py": "4f52e1a8495ea24a7c4485c014819e866b47042796a1614670e905c4ac807861",
+    "run-paired-hosts.py": "1dc2121246c720c6f8a5e58a51a2e46b74b553e8d62d12ac9b25fc563cfc2579",
+    "pilot-session.py": "f88f8acf7307d47f04f4ed322e9d4b891744a81566da44b6db62764dc83b1d04",
+    "cloud-deadline-guard.py": "ff8d1a482893aa4fd24438c8f81a1421e11b25ab60c094a95f0892ceca06bf84",
+    "layout-client.py": "a9c08fdd3fd687040a2710264272709cf520b88723a8278b41823c6797b9145a",
+    "layout-engines.py": "d50aac887b4a2e97ea764b6de74a1c2f03706260b586e5b473b7822da67bcdae",
+    "run-layout-local.py": "f21b16cb3f6f8f6a26068079a36418d7c1e7814704730c2e933d1e974ee3605e",
+    "v029_worker_probe.py": "38df91c0d853ec8280af13620f13962c5b1ade12ba280fb93118e42d45b5038e",
+    "run-single-host.py": "b613f302910e7ee6a11a6c1d139b28a7c93a8f9dbcf62f6216fcfd3e65d2b478",
+    "prepare-teardown.py": "baecb4e8594766ac38cb4c4e680d886185a8e683d887e77ca2bfda6ddb873299",
+    "teardown.sh": "2167915bb53ee7fe8594042f2e610aa833ecc0804372e023c1e9f2aea07f9ae0",
+    "verify-empty.sh": "2be7c4c7a948cdc0d4e45aba08aadce9d9a584381fdc0dd0f991c7c34f72c2ac",
+    "router-session-budget.py": "6a8d5886062fabc970548e72ee728cca5adf50341d7e7d5ea5ed07864a241137",
+    "router-session-plan.py": "23897fff85c6147e364d2fc89533da53925114481e2a9ec9902c911f0360202e",
+    "router-session-client.py": "6c828ffbbf9799766d4d231748a449f3bfa510cf46e51f68e94cd1dc16e1837b",
+    "router-perf-adapter.py": "ed81d6e3ebc6a4c707ff90a07cd3217bf961927a34957df55a21a2251197e102",
+    "router-session-results.py": "fa81e842dd94476381e958d279b1f8f311c2bdcd0f44cfcdc0cab369f66e18c2",
+    "router-session-qualify.py": "43f5aba9142aa6b6501b99ca8db40a273195e965415db13bbea9d102a0526f57",
+    "router-session-transfer.py": "9e0b96533a052ca6155dfda95d1c301d5b018cc8504280cd0d9b1e75612d5af6",
+    "snapshot-results.py": "2142cfea8e1ab9e7d73d04e6b89f6f91acff498758765e6821012dff8cf4a9e9",
+    "run-router-session.py": "170885315043c3978698ffb41b1a42399f73042267c81063e7115e173ed4aab8",
+    "render-tp4-router.py": "1d2657fadd9edc00b86c4d0d5597e997f3ca607286758f71304693164b349066",
+    "render.py": "2fd49c324fbadafef4e59a8040b5ddbf7a90db687a3e076e9df9f544ff38388f",
+    "record-routes.py": "70f237cd7a93cfefdb545cdd1d2a3b53cbaf28cd24f69583c7e9d22e316a68ba",
+    "import-image.py": "f5700be7fdf9f968c3202728194c79b9b9a9a05aab9cfc8356ecfc48c2982868",
+    "main.tf": "c95ac1207fa1090442f5e1bc1b385786b8160536eb49f0c3ab1dd3d87d48dfb4",
+    "variables.tf": "17d7ad20d3394fa21a5b72ff91fb68660917a163bea0f5bdff71a6ec0fb4af01"
+  },
+  "limits": [
+    "Cloud provisioning/cleanup are command/phase substitutions in tests, not a fresh provider qualification.",
+    "Real router is ARM64 on Kind; native AMD64 benchmark runs in Docker via port forwards; GPU workers are synthetic.",
+    "Input/output streams and actual routes/count gauges are verified; CUDA execution, RDMA, real load crossover and policy advantage remain unmeasured."
+  ]
+}

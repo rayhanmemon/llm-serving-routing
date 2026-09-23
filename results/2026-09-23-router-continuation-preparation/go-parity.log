@@ -1,0 +1,5 @@
+=== RUN   TestPreparedPolicyParity
+    prepared_parity_test.go:50: Verified 56108 cases against actual Go filters/scorers; ties compare candidate sets
+--- PASS: TestPreparedPolicyParity (0.44s)
+PASS
+ok  	github.com/llm-d/llm-d-router/pkg/epp/framework/plugins/scheduling/filter/topologyaffinity	0.469s

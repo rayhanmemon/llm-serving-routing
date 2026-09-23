@@ -1,0 +1,17 @@
+{
+  "calibration": {
+    "trials": 16,
+    "mean_trial_seconds": 32.07915661725565,
+    "total_trial_seconds": 513.2665058760904
+  },
+  "heldout": {
+    "trials": 20,
+    "mean_trial_seconds": 60.32091414369643,
+    "total_trial_seconds": 1206.4182828739285
+  },
+  "confirmation": {
+    "trials": 4,
+    "mean_trial_seconds": 62.190092156262835,
+    "total_trial_seconds": 248.76036862505134
+  }
+}

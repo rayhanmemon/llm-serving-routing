@@ -1,0 +1,517 @@
+{
+  "candidate_scores": {
+    "absolute-cap": [
+      {
+        "mean_route_cost": 0.5369612217546091,
+        "parameters": {
+          "cap": 8
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "cap": 16
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "cap": 9
+        }
+      },
+      {
+        "mean_route_cost": 0.752437607246975,
+        "parameters": {
+          "cap": 1
+        }
+      },
+      {
+        "mean_route_cost": 0.752437607246975,
+        "parameters": {
+          "cap": 4
+        }
+      },
+      {
+        "mean_route_cost": 0.825068805112096,
+        "parameters": {
+          "cap": 0
+        }
+      },
+      {
+        "mean_route_cost": 0.9985860473098,
+        "parameters": {
+          "cap": 24
+        }
+      }
+    ],
+    "allowance": [
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "allowance": 1
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "allowance": 2
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "allowance": 4
+        }
+      },
+      {
+        "mean_route_cost": 0.6095924196197302,
+        "parameters": {
+          "allowance": 0
+        }
+      }
+    ],
+    "hard": [
+      {
+        "mean_route_cost": 0.9985860473098,
+        "parameters": {}
+      }
+    ],
+    "none": [
+      {
+        "mean_route_cost": 0.6095924196197302,
+        "parameters": {}
+      }
+    ],
+    "soft": [
+      {
+        "mean_route_cost": 0.5369612217546091,
+        "parameters": {
+          "idle_threshold": 1,
+          "max_busy_score": 1,
+          "weight": 0.1
+        }
+      },
+      {
+        "mean_route_cost": 0.5369612217546091,
+        "parameters": {
+          "idle_threshold": 2,
+          "max_busy_score": 1,
+          "weight": 0.1
+        }
+      },
+      {
+        "mean_route_cost": 0.5369612217546091,
+        "parameters": {
+          "idle_threshold": 8,
+          "max_busy_score": 0.5,
+          "weight": 0.1
+        }
+      },
+      {
+        "mean_route_cost": 0.5369612217546091,
+        "parameters": {
+          "idle_threshold": 8,
+          "max_busy_score": 0.5,
+          "weight": 0.25
+        }
+      },
+      {
+        "mean_route_cost": 0.5369612217546091,
+        "parameters": {
+          "idle_threshold": 8,
+          "max_busy_score": 0.5,
+          "weight": 0.5
+        }
+      },
+      {
+        "mean_route_cost": 0.5369612217546091,
+        "parameters": {
+          "idle_threshold": 8,
+          "max_busy_score": 1,
+          "weight": 0.1
+        }
+      },
+      {
+        "mean_route_cost": 0.5369612217546091,
+        "parameters": {
+          "idle_threshold": 8,
+          "max_busy_score": 1,
+          "weight": 0.25
+        }
+      },
+      {
+        "mean_route_cost": 0.5369612217546091,
+        "parameters": {
+          "idle_threshold": 8,
+          "max_busy_score": 1,
+          "weight": 0.5
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 1,
+          "max_busy_score": 0.5,
+          "weight": 0.1
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 1,
+          "max_busy_score": 0.5,
+          "weight": 0.25
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 1,
+          "max_busy_score": 1,
+          "weight": 0.25
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 1,
+          "max_busy_score": 1,
+          "weight": 0.5
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 2,
+          "max_busy_score": 0.5,
+          "weight": 0.1
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 2,
+          "max_busy_score": 0.5,
+          "weight": 0.25
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 2,
+          "max_busy_score": 1,
+          "weight": 0.25
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 2,
+          "max_busy_score": 1,
+          "weight": 0.5
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 9,
+          "max_busy_score": 0.5,
+          "weight": 0.1
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 9,
+          "max_busy_score": 0.5,
+          "weight": 0.25
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 9,
+          "max_busy_score": 0.5,
+          "weight": 0.5
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 9,
+          "max_busy_score": 1,
+          "weight": 0.1
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 9,
+          "max_busy_score": 1,
+          "weight": 0.25
+        }
+      },
+      {
+        "mean_route_cost": 0.5647337868867908,
+        "parameters": {
+          "idle_threshold": 9,
+          "max_busy_score": 1,
+          "weight": 0.5
+        }
+      },
+      {
+        "mean_route_cost": 0.6095924196197302,
+        "parameters": {
+          "idle_threshold": 0,
+          "max_busy_score": 1,
+          "weight": 0.1
+        }
+      },
+      {
+        "mean_route_cost": 0.6373649847519118,
+        "parameters": {
+          "idle_threshold": 0,
+          "max_busy_score": 0.5,
+          "weight": 0.1
+        }
+      },
+      {
+        "mean_route_cost": 0.6373649847519118,
+        "parameters": {
+          "idle_threshold": 0,
+          "max_busy_score": 0.5,
+          "weight": 0.25
+        }
+      },
+      {
+        "mean_route_cost": 0.6373649847519118,
+        "parameters": {
+          "idle_threshold": 0,
+          "max_busy_score": 1,
+          "weight": 0.25
+        }
+      },
+      {
+        "mean_route_cost": 0.6373649847519118,
+        "parameters": {
+          "idle_threshold": 0,
+          "max_busy_score": 1,
+          "weight": 0.5
+        }
+      },
+      {
+        "mean_route_cost": 0.752437607246975,
+        "parameters": {
+          "idle_threshold": 1,
+          "max_busy_score": 0.5,
+          "weight": 0.5
+        }
+      },
+      {
+        "mean_route_cost": 0.752437607246975,
+        "parameters": {
+          "idle_threshold": 2,
+          "max_busy_score": 0.5,
+          "weight": 0.5
+        }
+      },
+      {
+        "mean_route_cost": 0.7677736345322046,
+        "parameters": {
+          "idle_threshold": 8,
+          "max_busy_score": 0.5,
+          "weight": 1
+        }
+      },
+      {
+        "mean_route_cost": 0.7677736345322046,
+        "parameters": {
+          "idle_threshold": 8,
+          "max_busy_score": 1,
+          "weight": 1
+        }
+      },
+      {
+        "mean_route_cost": 0.7816599170982954,
+        "parameters": {
+          "idle_threshold": 9,
+          "max_busy_score": 0.5,
+          "weight": 1
+        }
+      },
+      {
+        "mean_route_cost": 0.7816599170982954,
+        "parameters": {
+          "idle_threshold": 9,
+          "max_busy_score": 1,
+          "weight": 1
+        }
+      },
+      {
+        "mean_route_cost": 0.825068805112096,
+        "parameters": {
+          "idle_threshold": 0,
+          "max_busy_score": 0.5,
+          "weight": 0.5
+        }
+      },
+      {
+        "mean_route_cost": 0.8755118272783875,
+        "parameters": {
+          "idle_threshold": 1,
+          "max_busy_score": 0.5,
+          "weight": 1
+        }
+      },
+      {
+        "mean_route_cost": 0.8755118272783875,
+        "parameters": {
+          "idle_threshold": 1,
+          "max_busy_score": 1,
+          "weight": 1
+        }
+      },
+      {
+        "mean_route_cost": 0.8755118272783875,
+        "parameters": {
+          "idle_threshold": 2,
+          "max_busy_score": 0.5,
+          "weight": 1
+        }
+      },
+      {
+        "mean_route_cost": 0.8755118272783875,
+        "parameters": {
+          "idle_threshold": 2,
+          "max_busy_score": 1,
+          "weight": 1
+        }
+      },
+      {
+        "mean_route_cost": 0.911827426210948,
+        "parameters": {
+          "idle_threshold": 0,
+          "max_busy_score": 0.5,
+          "weight": 1
+        }
+      },
+      {
+        "mean_route_cost": 0.911827426210948,
+        "parameters": {
+          "idle_threshold": 0,
+          "max_busy_score": 1,
+          "weight": 1
+        }
+      },
+      {
+        "mean_route_cost": 0.9985860473098,
+        "parameters": {
+          "idle_threshold": 0,
+          "max_busy_score": 0.5,
+          "weight": 2
+        }
+      },
+      {
+        "mean_route_cost": 0.9985860473098,
+        "parameters": {
+          "idle_threshold": 0,
+          "max_busy_score": 1,
+          "weight": 2
+        }
+      },
+      {
+        "mean_route_cost": 0.9985860473098,
+        "parameters": {
+          "idle_threshold": 1,
+          "max_busy_score": 0.5,
+          "weight": 2
+        }
+      },
+      {
+        "mean_route_cost": 0.9985860473098,
+        "parameters": {
+          "idle_threshold": 1,
+          "max_busy_score": 1,
+          "weight": 2
+        }
+      },
+      {
+        "mean_route_cost": 0.9985860473098,
+        "parameters": {
+          "idle_threshold": 2,
+          "max_busy_score": 0.5,
+          "weight": 2
+        }
+      },
+      {
+        "mean_route_cost": 0.9985860473098,
+        "parameters": {
+          "idle_threshold": 2,
+          "max_busy_score": 1,
+          "weight": 2
+        }
+      },
+      {
+        "mean_route_cost": 0.9985860473098,
+        "parameters": {
+          "idle_threshold": 8,
+          "max_busy_score": 0.5,
+          "weight": 2
+        }
+      },
+      {
+        "mean_route_cost": 0.9985860473098,
+        "parameters": {
+          "idle_threshold": 8,
+          "max_busy_score": 1,
+          "weight": 2
+        }
+      },
+      {
+        "mean_route_cost": 0.9985860473098,
+        "parameters": {
+          "idle_threshold": 9,
+          "max_busy_score": 0.5,
+          "weight": 2
+        }
+      },
+      {
+        "mean_route_cost": 0.9985860473098,
+        "parameters": {
+          "idle_threshold": 9,
+          "max_busy_score": 1,
+          "weight": 2
+        }
+      }
+    ]
+  },
+  "method": "Finite shared-data route-cost tuning; correlated probes and sampled pre-request counts. Validate actual policies only on held-out trials.",
+  "parameters": {
+    "absolute-cap": {
+      "cap": 8
+    },
+    "allowance": {
+      "allowance": 1
+    },
+    "hard": {},
+    "none": {},
+    "soft": {
+      "idle_threshold": 1,
+      "max_busy_score": 1,
+      "weight": 0.1
+    }
+  },
+  "queue_pressure_signal_observed": true,
+  "reference": "soft",
+  "route_cost_contrasts_seconds": [
+    0.2913826244766824,
+    0.28966695844428614,
+    -0.10442806256469339,
+    -0.11775245849275962,
+    -0.9940300419693813,
+    -0.9751574785332195,
+    -0.7491496249567717,
+    -0.7524809379247017
+  ],
+  "tradeoff_observed": true
+}
