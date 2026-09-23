@@ -24,16 +24,28 @@ def records(folder,require_counts=True):
             raise ValueError('Router in-flight observation missing')
         result.append({'request_key':key,'kind':p['kind'],'index':p['index'],'pin':p['pin'],'case_id':p['case_id'],
                        'input_tokens':len(body['prompt']),'output_tokens':usage['completion_tokens'],
+                       'start_unix':row['start_time'],'first_token_unix':times[0],'end_unix':row['end_time'],
                        'ttft':times[0]-row['start_time'],'duration':row['end_time']-row['start_time'],
                        'maximum_chunk_gap':max([b-a for a,b in zip(times,times[1:])],default=0),
                        'counts':counts,'request_hash':hashlib.sha256(row['request'].encode()).hexdigest()})
     return doc,result
+
+def probe_load_timelines(rows,samples):
+    valid=[x for x in samples if x.get('workers')]
+    def nearest(at):
+        sample=min(valid,key=lambda x:abs(x['unix']-at),default=None)
+        return sample if sample and abs(sample['unix']-at)<=2 else None
+    return [{'request_key':r['request_key'],'input_tokens':r['input_tokens'],'pin':r['pin'],
+             'at_dispatch':nearest(r['start_unix']),'near_first_token':nearest(r['first_token_unix']),
+             'scope':'Nearest sample within two seconds; first token is not an exact decoder-arrival timestamp.'}
+            for r in rows if r['kind']=='foreground']
 
 def choose(policy,params,local,remote):
     if policy=='hard':return ['local']
     if policy=='allowance' and local-remote<=params['allowance']:return ['local']
     if policy=='absolute-cap':
         eligible=[r for r,n in [('local',local),('remote',remote)] if n<=params['cap']]
+        if not eligible:return ['local']  # Fail open, then apply hard topology.
         if 'local' in eligible:return ['local']
         if eligible:return eligible
     maximum=max(local,remote);idle=params.get('idle_threshold',0);busy=params.get('max_busy_score',1)

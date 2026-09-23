@@ -14,7 +14,7 @@ def rehearse(kubeconfig,charts,out):
     out.mkdir(parents=True,exist_ok=False);obj=object.__new__(r.Controller);obj.run=out;obj.out=out/'paired';obj.out.mkdir()
     obj.k=k;obj.context='kind-router-session';obj.cpu_node=node;obj.nodes_by_role={'local':node,'remote':node+'-synthetic-remote'}
     obj.env={**os.environ,'KUBECONFIG':str(kubeconfig),'KUBECTL_REMOTE_COMMAND_WEBSOCKETS':'false'};obj.sleep=time.sleep
-    obj.session={'cleanup_start_deadline_unix':time.time()+2400};obj.gpu_checks=False;obj.architecture='arm64';obj.policy=None;obj.ips={}
+    obj.session={'cleanup_start_deadline_unix':time.time()+5400};obj.gpu_checks=False;obj.architecture='arm64';obj.policy=None;obj.ips={}
     obj.config_path=HERE.parent.parent/'workloads/router-session/config.json';obj.plan_path=obj.config_path.with_name('plan.json');obj.plan=json.loads(obj.plan_path.read_text())
     obj.charts=charts;obj.image=Path('/Users/rayhanmemon/.codex/run-state/router-h100-pilot/prepared/v029-overnight-final/epp-amd64.tar')
     obj.url='http://topology-epp.router-tp4.svc.cluster.local'
@@ -30,6 +30,7 @@ def rehearse(kubeconfig,charts,out):
         pod['spec']['nodeSelector']={'kubernetes.io/hostname':node}
         engine=pod['spec']['containers'][0];engine['image']='python:3.12-slim@sha256:44ff437bba879d4941b710a369a8f19266aea34b29002807f0c487fabc9eec9b'
         engine['command']=['sh','-c','python3 /probe/live-log-writer.py & exec python3 -u /probe/router-http-fixture.py'];engine['resources']={'requests':{'cpu':'100m','memory':'128Mi'},'limits':{'memory':'512Mi'}}
+        engine.setdefault('env',[]).append({'name':'SYNTHETIC_TRADEOFF','value':'1'})
         engine.pop('securityContext',None)
     obj.apply(doc,'synthetic-workers')
     client=r.client_manifest(node,obj.config_path.with_name('suite.json.gz'),obj.config_path.with_name('qualification.json.gz'),obj.plan_path)
@@ -40,8 +41,6 @@ def rehearse(kubeconfig,charts,out):
     pods=json.loads(obj.call(k+['-n','router-tp4','get','pods','-o','json'],'fixtures').stdout)['items']
     obj.ips={x['metadata']['name']:x['status']['podIP'] for x in pods if x['metadata']['name'] in ('local','remote')}
     obj.setup_router()
-    trials=[{'id':'smoke-diagnostic','mode':'calibration','state':[1,1],'repeat':0,'seed':22092026,'max_seconds':75}]
-    trials += [{'id':'smoke-'+p,'mode':'heldout','policy':p,'trace':'low','repeat':0,'seed':22092026,'max_seconds':90} for p in r.result.POLICIES]
     # Kind's ARM CRI cannot reliably start the AMD64 benchmark image. Run that
     # exact pinned image in Docker's supported AMD64 emulation through local forwards.
     # The CPU administrative Pod and all router/sidecar paths remain real Kubernetes.
@@ -75,16 +74,22 @@ def rehearse(kubeconfig,charts,out):
             subprocess.run(k+['-n','router-tp4','exec','-i','client','--','tar','xzf','-','-C','/results'],stdin=src,check=True,timeout=30)
         if obj.live_identity()!=identity:raise ValueError('Live identity changed during native replay')
     obj.job=native_job
-    count=0;foreground=0
-    for t in trials:
-        if t['mode']!='calibration':obj.picker(t['policy'],{'allowance':1,'weight':.5,'cap':2})
-        doc,rows=obj.trial(t);count+=len(rows);foreground+=sum(x['kind']=='foreground' for x in rows)
+    count=0;foreground=0;completed=[];real_trial=obj.trial
+    def trial(t):
+        nonlocal count,foreground
+        started=time.monotonic();doc,rows=real_trial(t);count+=len(rows);foreground+=sum(x['kind']=='foreground' for x in rows)
         if not any(x['counts']['local']+x['counts']['remote']>0 for x in rows):raise ValueError('No genuine router in-flight load observed')
+        completed.append({'trial':t['id'],'mode':t['mode'],'seconds':time.monotonic()-started,'requests':len(rows)})
         print(json.dumps({'trial':t['id'],'requests':len(rows),'joined_routes':len(rows),'nonzero_inflight':True}),flush=True)
+        return doc,rows
+    obj.trial=trial;obj.evaluate()
+    comparison=json.loads((out/'comparison-summary.json').read_text())
+    if not comparison['complete'] or len(completed)!=40:raise ValueError('Full calibration/comparison flow incomplete')
     summary={'real_router_rehearsed':True,'native_perf_rehearsed':True,'recorded_requests':count,'foreground':foreground,
              'real_epp_source':'0217d29924ba93b90f952e7a0281dd8dda146703','real_sidecar':True,'synthetic_workers':True,
              'cloud_calls':False,'gpu_execution':False,'production_image_import_substituted':True,'epp_architecture':'arm64',
-             'scope':'Real Controller setup/picker/job/collection/route joins; six native benchmark trials; cloud/GPU qualification validated separately.'}
+             'scope':'Real Controller evaluation/tuning/confirmation/summary, routing/collection; synthetic workers and explicit latency controls; no GPU performance claim.',
+             'full_workflow_rehearsed':True,'completed_trials':completed,'synthetic_tradeoff_enabled':True}
     summary['source_sha256']=source_hashes
     summary['benchmark_execution']='Exact pinned AMD64 image in Docker through local Kubernetes port forwards; no GPU timing claims'
     summary['continuous_log_writers']=True

@@ -12,7 +12,7 @@ HERE=Path(__file__).resolve().parent
 def module(name):
     sp=importlib.util.spec_from_file_location(name,HERE/(name+'.py'));m=importlib.util.module_from_spec(sp);sp.loader.exec_module(m);return m
 s=module('run-tp4-staged');pilot=s.pilot;s.PROFILES=(*s.PROFILES,pilot.ROUTER_SESSION_PROFILE)
-budget=module('router-session-budget');layout=module('run-layout-local');render=module('render-tp4-router');result=module('router-session-results');transfer=module('router-session-transfer')
+budget=module('router-session-budget');layout=module('run-layout-local');render=module('render-tp4-router');result=module('router-session-results');transfer=module('router-session-transfer');planning=module('router-session-plan')
 snapshots=module('snapshot-results')
 PERF_IMAGE='quay.io/inference-perf/inference-perf:v0.6.1@sha256:e29328cc223ebae58d9022d60ad651cc3c4cbd534885a78b28f54086aa4b9c9e'
 CODE=tuple(dict.fromkeys((*layout.CODE,'router-session-budget.py','router-session-plan.py','router-session-client.py','router-perf-adapter.py','router-session-results.py','router-session-qualify.py','router-session-transfer.py','snapshot-results.py','run-router-session.py','render-tp4-router.py','render.py','record-routes.py','import-image.py')))
@@ -153,14 +153,19 @@ class Controller(s.Controller):
         for pod in (*self.ips,'client'):
             container='client' if pod=='client' else 'engines'
             try:
-                r=self.call(self.k+['-n',s.tp4.NS,'exec',pod,'-c',container,'--','python3','/probe/snapshot-results.py','--root','/results'],pod+'-evidence',60,binary=True,check=False)
+                # Completed trial directories are immutable. Retain earlier verified
+                # copies locally rather than retransmitting all prior reports.
+                relative=Path(required).parent if pod=='client' and required else Path('.')
+                source_root=str(Path('/results')/relative)
+                r=self.call(self.k+['-n',s.tp4.NS,'exec',pod,'-c',container,'--','python3','/probe/snapshot-results.py','--root',source_root],pod+'-evidence',60,binary=True,check=False)
                 if r.returncode:
                     raise RuntimeError(f'{pod} snapshot command exited {r.returncode}: '+r.stderr.decode(errors='replace')[-1200:])
                 with tempfile.TemporaryDirectory(dir=self.out) as tmp:
                     with tarfile.open(self.out/(pod+'-evidence.tar.gz')) as t:t.extractall(tmp,filter='data')
                     verified[pod]=snapshots.validate(tmp)
-                    if required and pod=='client' and not (Path(tmp)/required).is_file():raise ValueError('Fresh required artifact missing')
-                    shutil.copytree(tmp,self.out/pod,dirs_exist_ok=True)
+                    verified[pod]['source_root']=source_root
+                    if required and pod=='client' and not (Path(tmp)/Path(required).name).is_file():raise ValueError('Fresh required artifact missing')
+                    shutil.copytree(tmp,self.out/pod/relative,dirs_exist_ok=True)
             except Exception as e:errors.append({'pod':pod,'error':str(e)[:1600]})
         for container in ('epp','envoy-proxy'):
             try:self.call(self.k+['-n',s.tp4.NS,'logs','deploy/topology-epp','-c',container],('envoy' if container=='envoy-proxy' else container)+'-log',20,check=False)
@@ -275,6 +280,8 @@ class Controller(s.Controller):
         pilot.write_json(folder/'routes.json',matched)
         pilot.write_json(folder/'sampled-inflight-counts.json',{'scope':'Router gauges sampled just before client request timing; not exact internal scheduling snapshots','requests':{row['request_key']:row['counts'] for row in rows}})
         if self.gpu_checks:
+            samples=pilot.read_json(folder/'engine-load.json')
+            pilot.write_json(folder/'probe-load-timelines.json',result.probe_load_timelines(rows,samples))
             _,architecture=s.tp4.load_config(self.config_path)
             checked=transfer.verify(pilot.read_json(folder/'metrics-before.json'),pilot.read_json(folder/'metrics-after.json'),rows,matched,self.ips,architecture)
             pilot.write_json(folder/'transfer-verified.json',checked)
@@ -290,11 +297,12 @@ class Controller(s.Controller):
         self.import_picker()
         self.allocate('local');self.deploy('local');self.qualify('local')
         self.allocate('remote');self.deploy('remote');self.qualify('remote');self.setup_router()
+        self.evaluate()
+
+    def evaluate(self):
         training=[]
-        for repeat in range(2):
-            for i,state in enumerate(self.plan['training_states']):
-                t={'id':f'train-{repeat}-{i}','mode':'calibration','state':state,'repeat':repeat,'seed':22092026+repeat,'max_seconds':60}
-                training.append(self.trial(t))
+        for t in planning.calibration_trials(self.plan):
+            training.append(self.trial(t))
         self.tuning=result.tune(training,self.plan)
         if self.gpu_checks:
             loads=[sample for path in (self.out/'client/trials').glob('train-*/engine-load.json') for sample in json.loads(path.read_text())]

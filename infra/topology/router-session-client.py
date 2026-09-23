@@ -8,6 +8,11 @@ def module(name):
     sp=importlib.util.spec_from_file_location(name,HERE/(name+'.py'));m=importlib.util.module_from_spec(sp);sp.loader.exec_module(m);return m
 p=module('router-session-plan');results=module('router-session-results')
 
+def finish_observation(observer,stop,samples,path,timeout=8):
+    stop.set();observer.join(timeout=timeout)
+    if observer.is_alive():raise TimeoutError('Load observer did not finish; no completion marker')
+    module('tp4-client').write(path,samples)
+
 def execute(plan,suite,trial,out,url,metrics,pins,deadline,hosts=None):
     if time.time()+trial['max_seconds']+120>=deadline:raise TimeoutError('Trial would consume collection reserve')
     root=out/trial['id'];doc=p.make_trial(plan,trial,suite['cases'],root,url,pins)
@@ -17,10 +22,9 @@ def execute(plan,suite,trial,out,url,metrics,pins,deadline,hosts=None):
     def sample_load():
         while not stop.is_set():
             try:
-                snap=c.snapshot(hosts)
+                snap=c.snapshot(hosts,timeout=2)
                 samples.append({'unix':time.time(),'workers':{role:{'running':v['values'][c.RUNNING],'waiting':v['values'][c.WAITING]} for role,v in snap.items()}})
             except Exception as error:samples.append({'unix':time.time(),'error':type(error).__name__})
-            c.write(root/'engine-load.json',samples)
             stop.wait(.5)
     observer=threading.Thread(target=sample_load,daemon=True) if hosts else None
     if observer:observer.start()
@@ -35,7 +39,7 @@ def execute(plan,suite,trial,out,url,metrics,pins,deadline,hosts=None):
             (root/'failure.json').write_text(json.dumps({'reason':'interrupted or trial duration exceeded; partial records retained'}));raise
         finally:
             stop.set()
-            if observer:observer.join(timeout=1)
+            if observer:finish_observation(observer,stop,samples,root/'engine-load.json')
     if code:raise RuntimeError('Native benchmark failed; inspect native.log')
     _,rows=results.records(root)
     if hosts:

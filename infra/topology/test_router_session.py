@@ -27,14 +27,27 @@ class CombinedTests(unittest.TestCase):
    with (root/'client-evidence.tar.gz').open('wb') as output:r.snapshots.snapshot(source,output)
    obj.call=lambda *a,**k:subprocess.CompletedProcess([],0,b'',b'')
    with self.assertRaisesRegex(RuntimeError,'Fresh required artifact missing'):obj.collect(required='qualification/local/complete.json')
+ def test_trial_snapshot_preserves_previous_verified_results(self):
+  import subprocess
+  with tempfile.TemporaryDirectory() as temp:
+   root=Path(temp);source=root/'source';source.mkdir();(source/'complete.json').write_text('{"requests":2}')
+   obj=object.__new__(r.Controller);obj.run=root;obj.out=root;obj.ips={};obj.k=['kubectl']
+   old=root/'client/trials/earlier';old.mkdir(parents=True);(old/'complete.json').write_text('{"requests":1}')
+   with (root/'client-evidence.tar.gz').open('wb') as output:r.snapshots.snapshot(source,output)
+   calls=[]
+   def call(cmd,*a,**k):calls.append(cmd);return subprocess.CompletedProcess([],0,b'',b'')
+   obj.call=call;obj.collect(required='trials/current/complete.json')
+   self.assertEqual(calls[0][-1],'/results/trials/current')
+   self.assertEqual(json.loads((root/'client/trials/current/complete.json').read_text()),{'requests':2})
+   self.assertEqual(json.loads((old/'complete.json').read_text()),{'requests':1})
  def test_remaining_pool_limits_both_host_deadline(self):
   from decimal import Decimal
-  cap=b.spending_cap('69.7896614372222222222')
+  cap=b.spending_cap('74.7896614372222222222')
   d=b.admit_remote(0,11*60,32*60,180*60,cap=cap)
   self.assertLessEqual(b.cost(0,11*60,32*60,d['deletion_target_unix'])+b.MARGIN,cap)
   self.assertEqual(d['deletion_target_unix']-d['cleanup_start_deadline_unix'],1200)
-  self.assertEqual(b.spending_cap('100'),Decimal('70'))
-  for value in ['68.99','NaN','Infinity','-1']:
+  self.assertEqual(b.spending_cap('100'),Decimal('75'))
+  for value in ['73.99','NaN','Infinity','-1']:
    with self.assertRaises(ValueError):b.spending_cap(value)
   with self.assertRaises(ValueError):b.admit_remote(0,11*60,36*60,180*60,cap=cap)
  def test_capacity_age_and_recheck_before_first_gpu_mutation(self):
@@ -84,8 +97,8 @@ class CombinedTests(unittest.TestCase):
   case=fixtures.PilotSessionTest();case.setUp()
   try:
    module=fixtures.pilot;profile=module.ROUTER_SESSION_PROFILE;policy=module.PROFILE_POLICIES[profile]
-   approval=json.loads(case.approval.read_text());approval.update(allowed_profiles=[profile],allow_multiple_attempts=False,max_total_usd_pretax='70',project_id=policy['project_id'],subnet_id=policy['subnet_id'])
-   case.approval.write_text(json.dumps(approval));case.args.profile=profile;case.args.approved_max_usd_pretax='70'
+   approval=json.loads(case.approval.read_text());approval.update(allowed_profiles=[profile],allow_multiple_attempts=False,max_total_usd_pretax='75',project_id=policy['project_id'],subnet_id=policy['subnet_id'])
+   case.approval.write_text(json.dumps(approval));case.args.profile=profile;case.args.approved_max_usd_pretax='75'
    module.prepare_session(case.args,state_root=case.root/'state',now=10000)
    with self.assertRaisesRegex(module.SessionError,'already used'):
     module.prepare_session(case.args,state_root=case.root/'state',now=10001)
@@ -133,7 +146,7 @@ class CombinedTests(unittest.TestCase):
      else:r.execute_admitted(run,session,ROOT/'config.json',ROOT/'suite.json.gz',ROOT/'qualification.json.gz',Path('chart'),Path('image'),ROOT/'plan.json')
     self.assertEqual(events[-1],'cleanup')
     if fault is None:
-     self.assertEqual(events.count('local-deploy'),1);self.assertEqual(events.count('trial'),32)
+     self.assertEqual(events.count('local-deploy'),1);self.assertEqual(events.count('trial'),40)
      self.assertLess(events.index('local-qualify'),events.index('remote-allocate'))
      self.assertLess(events.index('client-ready'),events.index('local-allocate'));self.assertLess(events.index('image-import'),events.index('local-allocate'))
     if fault=='local-qualify':self.assertNotIn('remote-allocate',events)

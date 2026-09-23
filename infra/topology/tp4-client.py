@@ -24,12 +24,12 @@ def write(path,value):
     tmp=path.with_suffix('.tmp');tmp.write_text(json.dumps(value,indent=2)+'\n');tmp.replace(path)
 
 
-def get(url):
-    with urllib.request.urlopen(url,timeout=30) as response:return response.read().decode()
+def get(url,timeout=30):
+    with urllib.request.urlopen(url,timeout=timeout) as response:return response.read().decode()
 
 
-def metrics(url):
-    raw=get(url);values={}
+def metrics(url,timeout=30):
+    raw=get(url,timeout=timeout);values={}
     for line in raw.splitlines():
         if not line or line.startswith('#'):continue
         name=line.split('{')[0].split()[0]
@@ -41,10 +41,10 @@ def metrics(url):
     return {'raw':raw,'values':values}
 
 
-def snapshot(hosts):
+def snapshot(hosts,timeout=30):
     urls={'prefill':f'http://{hosts["local"]}:8100/metrics',
           **{r:f'http://{host}:8200/metrics' for r,host in hosts.items()}}
-    return {role:metrics(url) for role,url in urls.items()}
+    return {role:metrics(url,timeout=timeout) for role,url in urls.items()}
 
 
 def idle(hosts,deadline):

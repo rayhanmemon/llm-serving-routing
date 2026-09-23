@@ -10,6 +10,16 @@ GRID={'allowance':[0,1,2,4],'cap':[0,1,4,8,9,16,24], 'weight':[0.1,0.25,0.5,1,2]
 
 def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
+def calibration_trials(plan):
+    trials=[]
+    for repeat in range(2):
+        routes=('local','remote') if repeat==0 else ('remote','local')
+        for i,state in enumerate(plan['training_states']):
+            for route in routes:
+                trials.append({'id':f'train-{repeat}-{i}-{route}','mode':'calibration','state':state,
+                               'route':route,'repeat':repeat,'seed':22092026+repeat,'max_seconds':60})
+    return trials
+
 def frozen_plan():
     rng=random.Random(22092026)
     trials=[]
@@ -22,9 +32,9 @@ def frozen_plan():
     for trace in ('low','high'):
         for policy in ('allowance','reference'):
             trials.append({'id':f'confirm-{trace}-{policy}','mode':'confirmation','policy':policy,'trace':trace,'repeat':2,'seed':22092028,'max_seconds':90})
-    return {'schema_version':1,'layout':'BHLNC','input_tokens':[4096,122880], 'output_tokens':32,'decoder_max_num_seqs':8,
+    return {'schema_version':2,'layout':'BHLNC','input_tokens':[4096,122880], 'output_tokens':32,'decoder_max_num_seqs':8,
             'qualification_requests_per_host':6,'training_states':[[1,0],[9,8],[17,0],[17,8]],
-            'training_repeats':2,'training_probes':32,'training_trial_seconds':60,
+            'training_repeats':2,'training_probes':32,'training_episodes':16,'training_trial_seconds':60,
             'background_output_tokens':1024,'grid':GRID,'trials':trials,
             'thresholds':{'minimum_ms':50,'minimum_percent':2,'maximum_regression_percent':5},
             'benchmark_engine':'inference-perf0.6.1; frozen-token adapter; native trace scheduler/HTTP/SSE/reports',
@@ -42,10 +52,10 @@ def requests_for(plan,trial,cases):
         local,remote=trial['state']
         for role,count in [('local',local),('remote',remote)]:
             for i in range(count):add(i*.15,short,'background',role,plan['background_output_tokens'])
-        routes=['local','remote'] if trial['repeat']==0 else ['remote','local']
-        # Matched route-order reversal. Actual counts are recorded, never fabricated.
-        for i,(size,role) in enumerate((n,r) for n in plan['input_tokens'] for r in routes):
-            add([3,3.05,6,6.05][i],bysize[size],'foreground',role)
+        route=trial['route']
+        if route not in ('local','remote'):raise ValueError('Calibration needs one route per episode')
+        for at,size in zip((3,6),plan['input_tokens']):
+            add(at,bysize[size],'foreground',route)
     else:
         count=2 if trial['trace']=='low' else 18
         for i in range(count):add(i*.2,short,'background',None,plan['background_output_tokens'])

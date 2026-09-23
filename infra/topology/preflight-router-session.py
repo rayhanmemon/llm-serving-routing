@@ -36,12 +36,17 @@ def main():
  archive_hash=hashlib.sha256(a.image.read_bytes()).hexdigest()
  validated=subprocess.run([sys.executable,str(HERE/'import-image.py'),'--context','kind-router-session','--node','unused','--archive',str(a.image),'--sha256',archive_hash],capture_output=True,text=True,timeout=30)
  validated.check_returncode();(a.out/'image-validation.json').write_text(json.dumps({'sha256':archive_hash,'archive_validated':True,'node_import_performed':False}))
- until=time.time()+900
+ until=time.time()+5400
  while not (a.router_rehearsal/'summary.json').exists():
   if time.time()>until:raise TimeoutError('Real-router rehearsal not complete; no proof issued')
   time.sleep(2)
  proof=json.loads((a.router_rehearsal/'summary.json').read_text())
- if not proof.get('real_router_rehearsed') or proof['recorded_requests']!=46 or proof.get('gpu_execution') is not False:raise ValueError('Wrong real-router rehearsal proof')
+ parity=json.loads((a.out.parent/'parity/summary.json').read_text())
+ if not parity.get('passed') or parity['cases']!=42588 or parity['result_source_sha256']!=hashlib.sha256((HERE/'router-session-results.py').read_bytes()).hexdigest():raise ValueError('Policy-model parity proof is missing or stale')
+ volume=json.loads((a.out.parent/'volume-late/summary.json').read_text())
+ if volume['raw_bytes']<1000000000 or volume['archive_seconds']>=45:raise ValueError('Late-run snapshot volume exceeds validated collection envelope')
+ if not proof.get('real_router_rehearsed') or proof['recorded_requests']!=848 or proof.get('gpu_execution') is not False:raise ValueError('Wrong real-router rehearsal proof')
+ if not proof.get('full_workflow_rehearsed') or len(proof.get('completed_trials',[]))!=40:raise ValueError('Full evaluation workflow not exercised')
  if not proof.get('growing_log_snapshots_validated') or not proof.get('live_identity_checked_each_trial'):
   raise ValueError('Replay must validate growing-log snapshots and live identities on every trial')
  host_guard_revalidated=False
@@ -65,7 +70,7 @@ def main():
  (a.out/'guard-protocol.log').write_text(guard_test.stdout+guard_test.stderr);guard_test.check_returncode()
  files=[a.workload/n for n in ('config.json','suite.json.gz','qualification.json.gz','plan.json')]+[a.image]+[HERE/n for n in r.CODE]+sorted((HERE/'terraform-rdma').glob('*.tf'))
  record={k:True for k in ('combined_controller_rehearsed','real_router_rehearsed','native_perf_rehearsed','native_vllm_checked','manifests_validated','budget_bound_verified')}
- record.update(host_job_guard_revalidated_by_tests=host_guard_revalidated,cloud_actions=False,gpu_execution=False,tests_run=int(re.search(r'Ran (\d+) tests',tests.stderr).group(1)),router_rehearsal=proof,
+ record.update(policy_model_parity=parity,late_collection_volume=volume,host_job_guard_revalidated_by_tests=host_guard_revalidated,cloud_actions=False,gpu_execution=False,tests_run=int(re.search(r'Ran (\d+) tests',tests.stderr).group(1)),router_rehearsal=proof,
   chart_sha256=r.chart_digest(a.charts),sha256={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in files},
   limits=['Cloud provisioning/cleanup are command/phase substitutions in tests, not a fresh provider qualification.',
           'Real router is ARM64 on Kind; native AMD64 benchmark runs in Docker via port forwards; GPU workers are synthetic.',

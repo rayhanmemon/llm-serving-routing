@@ -4,7 +4,7 @@ import math
 
 GPU_RATE=Decimal('19.60')
 SUPPORT_RATE=Decimal('0.50')
-CAP=Decimal('70')
+CAP=Decimal('75')
 MARGIN=Decimal('3')
 CLEANUP_SECONDS=1200
 
@@ -18,7 +18,7 @@ def cost(start,local,remote,end):
 
 def spending_cap(remaining):
     value=Decimal(str(remaining))
-    if not value.is_finite() or value < Decimal('69'):
+    if not value.is_finite() or value < Decimal('74'):
         raise ValueError('Insufficient remaining budget for the prepared full comparison')
     return min(CAP,value)
 
@@ -36,7 +36,7 @@ def deadlines(start,local,remote,now,original_target,cap=CAP):
             'local_requested_unix':local,'remote_requested_unix':remote}
 
 
-def admit_remote(start,local,now,original_target,required_work_seconds=69*60,cap=CAP):
+def admit_remote(start,local,now,original_target,required_work_seconds=76*60,cap=CAP):
     result=deadlines(start,local,now,now,original_target,cap=cap)
     if result['cleanup_start_deadline_unix']-now < required_work_seconds:
         raise ValueError('Insufficient funded time for remote startup, minimum comparison and cleanup')
