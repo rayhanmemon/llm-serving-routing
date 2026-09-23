@@ -6,6 +6,7 @@ No execution without an explicit new profile admission and matching local proof.
 import argparse,base64,copy,gzip,hashlib,importlib.util,json,os,shlex,shutil,subprocess,sys,tarfile,tempfile,time
 from pathlib import Path
 import yaml
+from datetime import datetime
 HERE=Path(__file__).resolve().parent
 
 def module(name):
@@ -19,6 +20,14 @@ def chart_digest(charts):
     root=charts.parent
     values={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(root.rglob('*')) if p.is_file() and not any(x.startswith('.') for x in p.relative_to(root).parts)}
     return hashlib.sha256(json.dumps(values,sort_keys=True).encode()).hexdigest()
+
+def fresh_capacity(minimum):
+    record=layout.verify_capacity(minimum=minimum)
+    status=record['selected']['status']['preemptible']
+    effective=datetime.fromisoformat(status['effective_at'].replace('Z','+00:00')).timestamp()
+    if not 0 <= time.time()-effective <= 30*60:
+        raise ValueError('Capacity observation is older than30minutes or future-dated; no GPU request')
+    return record
 
 def code_manifest(config,nodes,seconds=7200):
     doc=s.tp4.render(config,nodes,seconds)
@@ -41,6 +50,7 @@ class Controller(s.Controller):
         self.env.update(TF_VAR_single_gpu_host='false',TF_VAR_existing_guard_service_account_id=pilot.LAYOUT_GUARD_ID)
         self.gpu_checks=True;self.architecture='amd64';self.charts=charts;self.image=image;self.plan_path=plan;self.plan=json.loads(plan.read_text())
         self.local_requested=None;self.remote_requested=None;self.tuning=None;self.policy=None
+        self.session_cap=budget.spending_cap(self.session['budget_snapshot']['remaining_before_attempt_usd_pretax'])
         self.original_target=self.session['deletion_target_unix'];self.context='router-topology';self.url='http://topology-epp.router-tp4.svc.cluster.local'
 
     def reduce_deadline(self,record):
@@ -59,12 +69,15 @@ class Controller(s.Controller):
         raise RuntimeError('Cloud guard did not acknowledge shorter deadline; remote remains unallocated')
 
     def allocate(self,role):
-        if role=='local':self.local_requested=time.time()
+        if role=='local':
+            # CPU/image preparation can outlive the initial availability snapshot.
+            pilot.write_json(self.run/'capacity-before-local.json',fresh_capacity(minimum=2))
+            self.local_requested=time.time()
         else:
             if not (self.run/'tp4-local-qualified.json').exists():raise ValueError('No verified local qualification')
             # Recheck availability before committing the second node; never wait on a billed host.
-            layout.verify_capacity()
-            now=time.time();record=budget.admit_remote(self.session['started_unix'],self.local_requested,now,self.original_target)
+            pilot.write_json(self.run/'capacity-before-remote.json',fresh_capacity(minimum=1))
+            now=time.time();record=budget.admit_remote(self.session['started_unix'],self.local_requested,now,self.original_target,cap=self.session_cap)
             self.reduce_deadline(record)
             self.remote_requested=now
         pilot.write_json(self.run/'resource-request-times.json',{'local':self.local_requested,'remote':self.remote_requested})
@@ -328,7 +341,7 @@ def main():
         if proof.get(k) is not True:raise ValueError('Missing preparation proof: '+k)
     for path in [a.config,a.suite,a.qualification,a.comparison_plan,a.image,*[HERE/n for n in CODE],*sorted((HERE/'terraform-rdma').glob('*.tf'))]:
         if proof['sha256'].get(path.name)!=hashlib.sha256(path.read_bytes()).hexdigest():raise ValueError('Changed prepared input: '+path.name)
-    layout.verify_capacity(minimum=2);layout.verify_cleanup_identity()
+    fresh_capacity(minimum=2);layout.verify_cleanup_identity()
     run,session=pilot.prepare_session(a);pilot.write_json(run/'combined-preflight.json',proof)
     execute_admitted(run,session,a.config,a.suite,a.qualification,a.charts,a.image,a.comparison_plan)
 

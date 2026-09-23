@@ -10,6 +10,35 @@ r=module('run-router-session');b=module('router-session-budget');p=module('route
 ROOT=HERE.parent.parent/'workloads/router-session'
 
 class CombinedTests(unittest.TestCase):
+ def test_remaining_pool_limits_both_host_deadline(self):
+  from decimal import Decimal
+  cap=b.spending_cap('69.7896614372222222222')
+  d=b.admit_remote(0,11*60,32*60,180*60,cap=cap)
+  self.assertLessEqual(b.cost(0,11*60,32*60,d['deletion_target_unix'])+b.MARGIN,cap)
+  self.assertEqual(d['deletion_target_unix']-d['cleanup_start_deadline_unix'],1200)
+  self.assertEqual(b.spending_cap('100'),Decimal('70'))
+  for value in ['68.99','NaN','Infinity','-1']:
+   with self.assertRaises(ValueError):b.spending_cap(value)
+  with self.assertRaises(ValueError):b.admit_remote(0,11*60,36*60,180*60,cap=cap)
+ def test_capacity_age_and_recheck_before_first_gpu_mutation(self):
+  from datetime import datetime,timezone
+  now=10000
+  def advice(age):return {'selected':{'status':{'preemptible':{'effective_at':datetime.fromtimestamp(now-age,timezone.utc).isoformat()}}}}
+  for age,valid in [(0,True),(1800,True),(1801,False),(-1,False)]:
+   with self.subTest(age=age),patch.object(r.layout,'verify_capacity',return_value=advice(age)) as check,patch.object(r.time,'time',return_value=now):
+    if valid:self.assertEqual(r.fresh_capacity(2),advice(age))
+    else:
+     with self.assertRaises(ValueError):r.fresh_capacity(2)
+    check.assert_called_once_with(minimum=2)
+  with tempfile.TemporaryDirectory() as temp:
+   obj=object.__new__(r.Controller);obj.run=Path(temp);obj.local_requested=None;obj.remote_requested=None
+   with patch.object(r,'fresh_capacity',side_effect=ValueError('capacity disappeared')),patch.object(r.s.Controller,'allocate') as allocate:
+    with self.assertRaises(ValueError):obj.allocate('local')
+    allocate.assert_not_called();self.assertIsNone(obj.local_requested)
+    self.assertFalse((obj.run/'resource-request-times.json').exists())
+   with patch.object(r,'fresh_capacity',return_value=advice(0)) as check,patch.object(r.s.Controller,'allocate') as allocate:
+    obj.allocate('local');check.assert_called_once_with(minimum=2);allocate.assert_called_once_with('local')
+    self.assertTrue((obj.run/'capacity-before-local.json').exists())
  def test_budget_early_late_and_reserve(self):
   for local,now in [(0,0),(0,20*60),(8*60,30*60)]:
    d=b.admit_remote(0,local,now,180*60)

@@ -5,14 +5,19 @@
   ],
   "cpu_usd": "0.1712890931235555555555555556",
   "disk_usd": "0.01780898127490527123287671233",
-  "estimate_type": "conservative upper bound pending GPU allocation history",
-  "estimate_usd_pretax": "7.054542518842905271232876712",
-  "gpu_group_interval": [
-    "2026-09-22T06:09:24Z",
-    "2026-09-22T06:30:25Z"
+  "estimate_type": "conservative resource-lifecycle estimate; not invoice-verified",
+  "estimate_usd_pretax": "2.777973270065127493455098935",
+  "gpu_group_interval": null,
+  "gpu_upper_bound_usd": "2.588875195666666666666666667",
+  "method": "Complete native instance-operation history proves one successful create, one successful stop and deletion. Charge from create-operation start to stop-operation completion, conservatively including startup. Preserve the earlier CPU and disk estimates. No additional start operation exists.",
+  "reconciliation_blocker": null,
+  "session_id": "20260922T060053Z-bb2ce4f2",
+  "gpu_instance_interval": [
+    "2026-09-22T06:09:25.755538Z",
+    "2026-09-22T06:17:21.263227Z"
   ],
-  "gpu_upper_bound_usd": "6.865444444444444444444444444",
-  "method": "CPU create-start/delete-finish; charge the entire GPU-group creation/deletion interval as an eight-GPU rental because physical VM history was not captured.320GiB disk for full session. Node group never became ready; no workload. This over-reserves rather than assumes zero GPU cost.",
-  "reconciliation_blocker": "CLI audit access denied; browser sign-in expired and requires user passkey. No new access requested.",
-  "session_id": "20260922T060053Z-bb2ce4f2"
+  "reconciled_at": "2026-09-23T02:36:08.250179+00:00",
+  "previous_reservation_usd": "7.054542518842905271232876712",
+  "billing_basis": "https://docs.nebius.com/compute/resources/pricing",
+  "operation_evidence": "gpu-operations.json"
 }

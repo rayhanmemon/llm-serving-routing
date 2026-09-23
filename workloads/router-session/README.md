@@ -7,12 +7,12 @@ This is the prepared **single-allowance** evaluation. It uses Qwen3-32B BF16, fo
 The combined runner is `infra/topology/run-router-session.py`. It:
 
 1. Arms cleanup and prepares the benchmark image and router image on the CPU node before requesting GPUs.
-2. Starts the selected layout on one host, verifies six real requests, and saves the evidence.
+2. Rechecks exact capacity after CPU/image preparation, rejecting observations older than 30 minutes, then starts the selected layout on one host, verifies six real requests, and saves the evidence.
 3. Requires remaining capacity and funded time, shortens both cleanup guards, waits for acknowledgement, and only then adds remote.
 4. Qualifies remote, deploys the actual published router/sidecar, and waits for all three serving endpoints.
 5. Uses 32 calibration probes to select a fixed allowance and tune existing configurations. All background work goes through the same endpoint picker.
 6. Runs 20 held-out trials across five policies and two traces, followed by four predeclared confirmation trials when time permits. There are 96 evaluation probes plus background requests. Policy changes require drained requests; the engines stay running.
-7. Saves results and deletes the deployment. An inconclusive or incomplete run is recorded as such; no automatic retry follows.
+7. Saves results and deletes the deployment. An inconclusive or incomplete run is recorded as such. The runner never retries itself; any separately authorized capacity retry needs a fresh admission and counts against the same spending pool.
 
 The foreground total is 140 including 12 qualification calls. The background workload adds 600 requests. Every policy also receives a declared short warmup; warmup transfers must settle before measured counters begin. All request outcomes, including background completion/stream gaps, are retained. Routing-policy trials are unpinned; only calibration uses forced routes. The soft baseline's locality weight and idle/busy scoring preferences are included in the same training-data search. The existing absolute-load filter is another baseline.
 
@@ -30,4 +30,4 @@ Use a Python environment with PyYAML, the local Docker daemon, kubectl and Helm.
 
 The new profile is `tp4-router-comparison`. It requires a **fresh single-attempt approval** (`allow_multiple_attempts: false`), a new execution window, the exact fresh Terraform plan, and the matching preflight record. Old approvals do not admit this profile. Direct full-plan execution through `pilot-session.py` is blocked.
 
-The proposed session ceiling is $70 before tax. Accounting charges each requested eight-GPU node at $19.60/hour plus $0.50/hour supporting resources, reserves $3 margin and 20 minutes for collection/deletion, and refuses remote admission without 69 funded working minutes afterward. It never starts a new budget clock when adding remote. These are conservative admission controls, not a provider-enforced billing cap. A concrete run still needs budget authorization and fresh capacity checks.
+The spending pool is capped at $70 before tax across authorized attempts. A new full-comparison attempt requires at least $69 remaining; its own ceiling is the lesser of $70 and the actual remaining balance at admission. Accounting charges each requested eight-GPU node at $19.60/hour plus $0.50/hour supporting resources, reserves $3 margin and 20 minutes for collection/deletion, and refuses remote admission without 69 funded working minutes afterward. A smaller balance shortens the deadline; it never resets the clock or restores money spent on prior attempts. These are conservative admission controls, not a provider-enforced billing cap. A concrete run still needs budget authorization and fresh capacity checks before each GPU allocation.

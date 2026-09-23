@@ -1,5 +1,7 @@
 # Combined runner prepared locally — no GPU result
 
+**September23 recovery update:** after the failed provider allocation, the runner now repeats the exact capacity check after CPU/image preparation, immediately before GPU allocation; observations older than30minutes are rejected. Its session ceiling uses the actual remaining shared budget, capped at$70, with$69minimum admission, the unchanged$3margin,20-minute cleanup reserve and69-minute remote work requirement. It does not restore money spent on failed attempts. The fixed workloads, model, layout and tuning/comparison rules are unchanged. New validation passed254host test methods (251passes,3Linux skips; all3passed in the pinned Linux container),46real-router/synthetic-worker requests, native vLLM checks, manifests and actual local job/deadline RPCs with a substituted provider SDK. Exact hashes are in `recovery-preflight.json`. The task-owned Kind cluster was removed; no cloud resources were created during recovery.
+
 **Step 1 is complete locally. No cloud resources were allocated and cloud spending was $0.** The combined runner retains one selected packed deployment through local qualification, remote qualification, calibration and the actual five-policy comparison. It does not rent separate packing or calibration experiments.
 
 ## What passed

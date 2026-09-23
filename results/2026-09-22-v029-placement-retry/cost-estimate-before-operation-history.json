@@ -1,0 +1,18 @@
+{
+  "cpu_interval": [
+    "2026-09-22T06:06:14.367365Z",
+    "2026-09-22T06:32:08.401476Z"
+  ],
+  "cpu_usd": "0.1712890931235555555555555556",
+  "disk_usd": "0.01780898127490527123287671233",
+  "estimate_type": "conservative upper bound pending GPU allocation history",
+  "estimate_usd_pretax": "7.054542518842905271232876712",
+  "gpu_group_interval": [
+    "2026-09-22T06:09:24Z",
+    "2026-09-22T06:30:25Z"
+  ],
+  "gpu_upper_bound_usd": "6.865444444444444444444444444",
+  "method": "CPU create-start/delete-finish; charge the entire GPU-group creation/deletion interval as an eight-GPU rental because physical VM history was not captured.320GiB disk for full session. Node group never became ready; no workload. This over-reserves rather than assumes zero GPU cost.",
+  "reconciliation_blocker": "CLI audit access denied; browser sign-in expired and requires user passkey. No new access requested.",
+  "session_id": "20260922T060053Z-bb2ce4f2"
+}

@@ -16,20 +16,28 @@ def cost(start,local,remote,end):
     return result
 
 
-def deadlines(start,local,remote,now,original_target):
+def spending_cap(remaining):
+    value=Decimal(str(remaining))
+    if not value.is_finite() or value < Decimal('69'):
+        raise ValueError('Insufficient remaining budget for the prepared full comparison')
+    return min(CAP,value)
+
+
+def deadlines(start,local,remote,now,original_target,cap=CAP):
     """Treat requested node groups as fully billed; never extend the original target."""
     spent=cost(start,local,remote,now)
     rate=SUPPORT_RATE+GPU_RATE*sum(x is not None for x in (local,remote))
-    left=CAP-MARGIN-spent
+    cap=spending_cap(cap)
+    left=cap-MARGIN-spent
     if left<=0:raise ValueError('Session spending reserve exhausted')
     target=math.floor(min(original_target,now+float(left/rate*3600)))
     return {'cleanup_start_deadline_unix':target-CLEANUP_SECONDS,'deletion_target_unix':target,
-            'projected_cost_usd':str(cost(start,local,remote,target)),
+            'projected_cost_usd':str(cost(start,local,remote,target)), 'session_cap_usd':str(cap),
             'local_requested_unix':local,'remote_requested_unix':remote}
 
 
-def admit_remote(start,local,now,original_target,required_work_seconds=69*60):
-    result=deadlines(start,local,now,now,original_target)
+def admit_remote(start,local,now,original_target,required_work_seconds=69*60,cap=CAP):
+    result=deadlines(start,local,now,now,original_target,cap=cap)
     if result['cleanup_start_deadline_unix']-now < required_work_seconds:
         raise ValueError('Insufficient funded time for remote startup, minimum comparison and cleanup')
     return result

@@ -1,5 +1,9 @@
 # Combined comparison attempt — stopped at GPU placement
 
+**Cost reconciliation — September23, 02:40UTC:** complete native GPU operation history is now saved in `gpu-operations.json`. The only operations are failed creation (`NotEnoughResources`) and successful deletion; no successful start occurred. Under Nebius’s running-VM billing rule, GPU compute is estimated zero. Keeping the conservative support allowance reduces this attempt from the$4.95 reservation to **about$0.21**. This is not invoice verification. The prior reservation remains in `cost-estimate-before-operation-history.json`. The current$70continuation pool therefore has **about$69.79 remaining**; the older attempt’s refund does not add authority to that pool. The automatic monitor has been resumed at Rayhan’s instruction; revised launch preparation is in progress.
+
+Billing basis: [Nebius Compute pricing](https://docs.nebius.com/compute/resources/pricing). Earlier cost statements below describe the initial report and are superseded by this reconciliation.
+
 **No inference or policy benchmark ran.** Nebius reported two available eight-H200 spot nodes, but the first VM failed native scheduling with `NotEnoughResources`. The selected packed configuration was never executed on GPUs. All experiment resources were independently verified deleted at **2026-09-23 01:03:44 UTC** (September22 Toronto). The automatic launcher is paused after its one authorized attempt.
 
 ## What happened

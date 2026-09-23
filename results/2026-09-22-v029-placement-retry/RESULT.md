@@ -1,5 +1,9 @@
 # Corrected restart attempt blocked during GPU allocation
 
+**Cost reconciliation — September23, 02:40UTC:** complete native GPU operation history is now saved in `gpu-operations.json`. The VM creation succeeded at06:12:23UTC, a stop completed at06:17:21UTC, and deletion completed at06:30:02UTC. The node group still failed to reach usable readiness and no model request ran. Charging conservatively from create-operation start to stop completion reduces the estimate from$7.05 to **$2.78**, including the unchanged CPU/disk allowances. This is a lifecycle-based estimate, not an invoice. The earlier missing-history upper reservation remains in `cost-estimate-before-operation-history.json`.
+
+Billing basis: [Nebius Compute pricing](https://docs.nebius.com/compute/resources/pricing). Earlier cost statements below describe the initial report and are superseded by this reconciliation.
+
 Run `20260922T060053Z-bb2ce4f2` armed its CPU/cloud guard and attempted the same one-host layout matrix. Fresh advice reported two suitable preemptible eight-H200 VMs; advice was not a reservation. The GPU node group never became ready within its 20-minute placement allowance. The controller interrupted Terraform and tore down resources. **No model or layout request ran.** This attempt therefore neither validates nor refutes the corrected restart logic.
 
 Independent cleanup verification completed at **06:35:13 UTC September22**. The recorded node-group creation was aborted by cleanup. The precise physical GPU creation outcome was not captured before deletion, so this report does not label it a proven `NotEnoughResources` error or assume zero GPU cost.

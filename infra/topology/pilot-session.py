@@ -265,7 +265,7 @@ PROFILE_POLICIES[ROUTER_SESSION_PROFILE] = {
     # the cost-derived two-host deadline before requesting remote allocation.
     'cleanup_start_seconds': 160*60, 'deletion_target_seconds': 180*60,
     'hourly_rate_usd_pretax': Decimal('39.70'),
-    'attempt_admission_usd_pretax': Decimal('70'), 'staged_cost_accounting': True,
+    'attempt_admission_usd_pretax': Decimal('69'), 'staged_cost_accounting': True,
 }
 GUARDED_PROFILES = (*GUARDED_PROFILES, ROUTER_SESSION_PROFILE)
 
