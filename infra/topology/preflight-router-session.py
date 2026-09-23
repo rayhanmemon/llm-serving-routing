@@ -67,13 +67,13 @@ def main():
    grid_expansion={'rehearsal_weights':old_grid['weight'],'current_weights':new_grid['weight'],'validation':'Additional Go policy parity and actual tuning/summary regression tests; workload and control-flow AST unchanged.'}
    continue
   if n!='run-router-session.py':raise ValueError('Code changed after real-router rehearsal: '+n)
-  # The local adapter substitutes job() to run AMD64 Docker outside ARM Kind.
-  # A new Pod-identity check in that unexecuted method needs focused tests,
-  # not a claim that the preceding Kind run executed it.
+  # Cloud advice is substituted in a local replay. Admission-contract changes
+  # require current focused tests; the serving/evaluation path must be identical.
   original=json.loads((a.router_rehearsal/'paired/synthetic-workers.json').read_text())['items'][1]['data'][n]
   if hashlib.sha256(original.encode()).hexdigest()!=proof['source_sha256'][n]:raise ValueError('Unbound original source')
   def without_host_job(text):
    tree=ast.parse(text)
+   tree.body=[x for x in tree.body if not isinstance(x,ast.FunctionDef) or x.name!='fresh_capacity']
    for node in tree.body:
     if isinstance(node,ast.ClassDef) and node.name=='Controller':
      node.body=[x for x in node.body if not isinstance(x,ast.FunctionDef) or x.name not in ('job','live_identity')]

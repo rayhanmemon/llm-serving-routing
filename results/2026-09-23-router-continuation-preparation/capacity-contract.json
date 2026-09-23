@@ -1,0 +1,57 @@
+{
+  "verified_unix": 1790176721.051747,
+  "previous_proof_sha256": "07bff56266b48601c972deb4f67b0650f254f8b1edded8f879b20034245c0970",
+  "scope": "Only fresh_capacity changed; all serving/evaluation functions and other production files match completed local proof. Current267tests include providerFRESH with older measurement, rejection ofSTALE/UNKNOWN/future data and rejection before any GPU mutation. Native advice fetched and validated.",
+  "provider_contract": "https://github.com/nebius/gosdk/blob/main/proto/nebius/capacity/v1/resource_advice.pb.go#L25-L35",
+  "advice": {
+    "checked_unix": 1790176721.051702,
+    "selected": {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:18:40.911507Z",
+        "updated_at": "2026-09-23T15:18:40.911507Z"
+      },
+      "spec": {
+        "region": "us-central1",
+        "fabric": "us-central1-a",
+        "compute_instance": {
+          "platform": "gpu-h200-sxm",
+          "preset": {
+            "name": "8gpu-128vcpu-1600gb",
+            "resources": {
+              "vcpu_count": 128,
+              "memory_gibibytes": 1600,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 141
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:18:40.402060Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 3,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    "reservation": false,
+    "measurement_age_seconds": 8918.32073712349,
+    "freshness_basis": "Provider DATA_STATE_FRESH on this newly fetched response; no reservation"
+  },
+  "source_sha256": "a20f52eef6f1ff4013fc293f3d5dc3195448b71d206a9846dd93857f1952db4f"
+}

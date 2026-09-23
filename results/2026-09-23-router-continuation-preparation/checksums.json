@@ -1,5 +1,8 @@
 {
-  "RESULT.md": "ca68d334c94ff1f1013d7ef7f7920a9d10db85439cc7a455fa71cf0990a2379d",
+  "RESULT.md": "469e0f1573b128088f27f59688407da20ffeb3dc53db10e7fa3488c4152dd4da",
+  "admitted-preflight.json": "b4de942c6c4cf2ffe7903f519d37383cac03aa084ac9e238f2b52af3354a947c",
+  "capacity-contract-tests.log": "bdc77847b72352bd56ab6bb0e2750049e1e425119749ef93e80b87ebfb38ef89",
+  "capacity-contract.json": "e3220c34d9a1760b91a2d9369911e7fc3bfad9400494b42519e604bed14bb91b",
   "control-rehearsal.json": "cc600c1c8aa5a8360dfe2fc53b90442c2c72a87ef1f68695e52c952fc9e3851f",
   "go-cases.json.gz": "471defa220656d2fab042288fe60bce9ffad76a51417827226a637650cb45cfd",
   "go-overlay.json": "ab06477417d9851e409a63df1d79873602855942476531761edbb83faf78e633",

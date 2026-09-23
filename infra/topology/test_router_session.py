@@ -50,16 +50,20 @@ class CombinedTests(unittest.TestCase):
   for value in ['73.99','NaN','Infinity','-1']:
    with self.assertRaises(ValueError):b.spending_cap(value)
   with self.assertRaises(ValueError):b.admit_remote(0,11*60,36*60,180*60,cap=cap)
- def test_capacity_age_and_recheck_before_first_gpu_mutation(self):
+ def test_provider_freshness_contract_and_recheck_before_gpu_mutation(self):
   from datetime import datetime,timezone
   now=10000
-  def advice(age):return {'selected':{'status':{'preemptible':{'effective_at':datetime.fromtimestamp(now-age,timezone.utc).isoformat()}}}}
-  for age,valid in [(0,True),(1800,True),(1801,False),(-1,False)]:
+  def advice(age):return {'selected':{'status':{'preemptible':{'data_state':'DATA_STATE_FRESH','effective_at':datetime.fromtimestamp(now-age,timezone.utc).isoformat()}}}}
+  for age,valid in [(0,True),(1800,True),(1801,True),(86400,True),(-1,False)]:
    with self.subTest(age=age),patch.object(r.layout,'verify_capacity',return_value=advice(age)) as check,patch.object(r.time,'time',return_value=now):
-    if valid:self.assertEqual(r.fresh_capacity(2),advice(age))
+    if valid:self.assertEqual(r.fresh_capacity(2)['selected'],advice(age)['selected'])
     else:
      with self.assertRaises(ValueError):r.fresh_capacity(2)
     check.assert_called_once_with(minimum=2)
+  for state in ('DATA_STATE_STALE','DATA_STATE_UNKNOWN',None):
+   record=advice(0);record['selected']['status']['preemptible']['data_state']=state
+   with patch.object(r.layout,'verify_capacity',return_value=record),patch.object(r.time,'time',return_value=now):
+    with self.assertRaises(ValueError):r.fresh_capacity(2)
   with tempfile.TemporaryDirectory() as temp:
    obj=object.__new__(r.Controller);obj.run=Path(temp);obj.local_requested=None;obj.remote_requested=None
    with patch.object(r,'fresh_capacity',side_effect=ValueError('capacity disappeared')),patch.object(r.s.Controller,'allocate') as allocate:

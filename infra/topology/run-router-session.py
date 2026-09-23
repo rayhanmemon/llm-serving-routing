@@ -26,8 +26,12 @@ def fresh_capacity(minimum):
     record=layout.verify_capacity(minimum=minimum)
     status=record['selected']['status']['preemptible']
     effective=datetime.fromisoformat(status['effective_at'].replace('Z','+00:00')).timestamp()
-    if not 0 <= time.time()-effective <= 30*60:
-        raise ValueError('Capacity observation is older than30minutes or future-dated; no GPU request')
+    # Nebius defines FRESH as reflecting current state. The measurement timestamp
+    # can remain older than the newly returned advice; it is not a client TTL.
+    if status.get('data_state')!='DATA_STATE_FRESH' or effective>time.time():
+        raise ValueError('Provider advice is not fresh or is future-dated; no GPU request')
+    record['measurement_age_seconds']=time.time()-effective
+    record['freshness_basis']='Provider DATA_STATE_FRESH on this newly fetched response; no reservation'
     return record
 
 def code_manifest(config,nodes,seconds=7200):
