@@ -1,0 +1,66 @@
+{
+  "session_id": "20260923T071445Z-35cdac2d",
+  "source_commit": "64e3be5",
+  "model": "Qwen/Qwen3-32B",
+  "tensor_parallel_size": 4,
+  "layout": "BHLNC",
+  "logical_qualification_requests": 12,
+  "gold_matches": 12,
+  "all_receiving_ranks_qualified": true,
+  "policy_comparison_complete": false,
+  "failure_attribution": "our collection bug",
+  "calibration_batches": 2,
+  "calibration_foreground_requests": 8,
+  "calibration_background_requests": 18,
+  "calibration_order_balanced": false,
+  "transfer_observations": [
+    {
+      "role": "local",
+      "case_id": "code-4096-0",
+      "input_tokens": 4096,
+      "receiving_rank_transfers": 4.0,
+      "total_kv_bytes": 1073741824.0,
+      "mean_rank_transfer_ms": 2.7575
+    },
+    {
+      "role": "local",
+      "case_id": "code-122880-0",
+      "input_tokens": 122880,
+      "receiving_rank_transfers": 4.0,
+      "total_kv_bytes": 32212254720.0,
+      "mean_rank_transfer_ms": 44.796249999999986
+    },
+    {
+      "role": "local",
+      "case_id": "code-122880-0-repeat",
+      "input_tokens": 122880,
+      "receiving_rank_transfers": 4.0,
+      "total_kv_bytes": 32212254720.0,
+      "mean_rank_transfer_ms": 41.84974999999999
+    },
+    {
+      "role": "remote",
+      "case_id": "code-4096-0",
+      "input_tokens": 4096,
+      "receiving_rank_transfers": 4.0,
+      "total_kv_bytes": 1073741824.0,
+      "mean_rank_transfer_ms": 8.92475
+    },
+    {
+      "role": "remote",
+      "case_id": "code-122880-0",
+      "input_tokens": 122880,
+      "receiving_rank_transfers": 4.0,
+      "total_kv_bytes": 32212254720.0,
+      "mean_rank_transfer_ms": 181.72299999999998
+    },
+    {
+      "role": "remote",
+      "case_id": "code-122880-0-repeat",
+      "input_tokens": 122880,
+      "receiving_rank_transfers": 4.0,
+      "total_kv_bytes": 32212254720.0,
+      "mean_rank_transfer_ms": 178.84625
+    }
+  ]
+}

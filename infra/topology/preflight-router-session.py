@@ -42,6 +42,8 @@ def main():
   time.sleep(2)
  proof=json.loads((a.router_rehearsal/'summary.json').read_text())
  if not proof.get('real_router_rehearsed') or proof['recorded_requests']!=46 or proof.get('gpu_execution') is not False:raise ValueError('Wrong real-router rehearsal proof')
+ if not proof.get('growing_log_snapshots_validated') or not proof.get('live_identity_checked_each_trial'):
+  raise ValueError('Replay must validate growing-log snapshots and live identities on every trial')
  host_guard_revalidated=False
  for n in r.CODE:
   if proof['source_sha256'].get(n)==hashlib.sha256((HERE/n).read_bytes()).hexdigest():continue

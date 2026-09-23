@@ -10,6 +10,23 @@ r=module('run-router-session');b=module('router-session-budget');p=module('route
 ROOT=HERE.parent.parent/'workloads/router-session'
 
 class CombinedTests(unittest.TestCase):
+ def test_collection_error_is_bounded_and_does_not_embed_archive_bytes(self):
+  import subprocess
+  with tempfile.TemporaryDirectory() as temp:
+   obj=object.__new__(r.Controller);obj.run=Path(temp);obj.out=Path(temp);obj.ips={};obj.k=['kubectl']
+   obj.call=lambda *a,**k:subprocess.CompletedProcess([],1,b'large binary archive'*10000,b'connection failed')
+   with self.assertRaises(RuntimeError) as error:obj.collect()
+   self.assertLess(len(str(error.exception)),2000)
+   self.assertNotIn('large binary archive',str(error.exception))
+   self.assertFalse(json.loads((obj.run/'last-collection.json').read_text())['complete'])
+ def test_verified_snapshot_still_requires_completion_marker(self):
+  import subprocess
+  with tempfile.TemporaryDirectory() as temp:
+   root=Path(temp);source=root/'source';source.mkdir();(source/'other.json').write_text('{}')
+   obj=object.__new__(r.Controller);obj.run=root;obj.out=root;obj.ips={};obj.k=['kubectl']
+   with (root/'client-evidence.tar.gz').open('wb') as output:r.snapshots.snapshot(source,output)
+   obj.call=lambda *a,**k:subprocess.CompletedProcess([],0,b'',b'')
+   with self.assertRaisesRegex(RuntimeError,'Fresh required artifact missing'):obj.collect(required='qualification/local/complete.json')
  def test_remaining_pool_limits_both_host_deadline(self):
   from decimal import Decimal
   cap=b.spending_cap('69.7896614372222222222')

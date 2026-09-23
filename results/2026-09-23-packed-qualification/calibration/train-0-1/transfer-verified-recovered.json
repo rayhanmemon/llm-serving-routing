@@ -1,0 +1,16 @@
+{
+  "recovered_after_collector_abort": true,
+  "verification": {
+    "validated": true,
+    "expected": {
+      "local": {
+        "requests": 11,
+        "bytes": 42949672960
+      },
+      "remote": {
+        "requests": 10,
+        "bytes": 41875931136
+      }
+    }
+  }
+}

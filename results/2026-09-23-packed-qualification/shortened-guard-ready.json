@@ -1,0 +1,10 @@
+{
+  "armed": true,
+  "cluster": "mk8scluster-u00jrrd5vqgbdcr3tq",
+  "deadline": 1790153784,
+  "gpu_groups_present_at_arm": [
+    "router-local"
+  ],
+  "project": "project-u00k8gmbpr0067akfrxdah",
+  "service_account": "serviceaccount-u00z5fq630hbbrd7ck"
+}

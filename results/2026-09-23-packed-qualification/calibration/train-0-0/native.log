@@ -1,0 +1,109 @@
+None of PyTorch, TensorFlow >= 2.0, or Flax have been found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+2026-09-23 08:10:06,395 - inference_perf.config.config - INFO - Using configuration from: /results/trials/train-0-0/config.yaml
+2026-09-23 08:10:06,400 - inference_perf.config.config - INFO - Benchmarking with the following config:
+
+api:
+  type: completion
+  streaming: true
+  headers:
+    x-benchmark-run: train-0-0
+  slo_unit: null
+  slo_tpot_header: null
+  slo_ttft_header: null
+  response_format: null
+  session_id_header_key: null
+data:
+  type: mock
+  path: /results/trials/train-0-0/requests.json
+  corpus_file_path: null
+  input_distribution: null
+  output_distribution: null
+  shared_prefix: null
+  multimodal: null
+  trace: &id001
+    file: /results/trials/train-0-0/trace.csv
+    format: AzurePublicDataset
+  otel_trace_replay: null
+  weka_trace_replay: null
+  conversation_replay: null
+  visionarena: null
+load:
+  type: trace_replay
+  interval: 1.0
+  stages:
+  - !!python/object:inference_perf.config.loadgen.config.StandardLoadStage
+    __dict__:
+      rate: 0.1
+      duration: 50
+      num_requests: null
+      concurrency_level: null
+    __pydantic_extra__: null
+    __pydantic_fields_set__: !!set
+      rate: null
+      duration: null
+    __pydantic_private__: null
+  sweep: null
+  num_workers: 1
+  worker_max_concurrency: 64
+  worker_max_tcp_connections: 2500
+  trace: *id001
+  circuit_breakers: []
+  request_timeout: 60
+  lora_traffic_split: null
+  base_seed: 22092026
+metrics: null
+report:
+  request_lifecycle:
+    summary: false
+    per_stage: false
+    per_request: true
+    per_adapter: true
+    per_adapter_stage: false
+    percentiles:
+    - 0.1
+    - 1.0
+    - 5.0
+    - 10.0
+    - 25.0
+    - 50.0
+    - 75.0
+    - 90.0
+    - 95.0
+    - 99.0
+    - 99.9
+    use_server_output_tokens: false
+    max_error_messages: 100
+  prometheus:
+    summary: true
+    per_stage: false
+  session_lifecycle:
+    summary: true
+    per_stage: true
+    per_session: false
+  goodput: null
+storage:
+  local_storage:
+    path: /results/trials/train-0-0/reports
+    report_file_prefix: null
+  google_cloud_storage: null
+  simple_storage_service: null
+server:
+  type: vllm
+  model_name: Qwen/Qwen3-32B
+  ignore_eos: true
+  base_url: http://topology-epp.router-tp4.svc.cluster.local
+tokenizer: null
+circuit_breakers: null
+
+
+2026-09-23 08:10:06,401 - inference_perf.client.filestorage.local - INFO - Report files will be stored at: /results/trials/train-0-0/reports
+2026-09-23 08:10:06,461 - inference_perf.loadgen.load_generator - INFO - Stage 0 - run started
+2026-09-23 08:10:06,462 - inference_perf.utils.trace_reader - INFO - Loading traces from /results/trials/train-0-0/trace.csv
+2026-09-23 08:10:06,464 - inference_perf.utils.trace_reader - INFO - Time taken to load traces: 0.001987934112548828 seconds
+2026-09-23 08:10:36,517 - inference_perf.loadgen.load_generator - INFO - Stage 0 - run completed
+Overall Progress ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 1/1 0:00:00 0:00:30
+2026-09-23 08:10:37,581 - inference_perf.reportgen.base - INFO - Generating Reports...
+2026-09-23 08:10:37,581 - inference_perf.reportgen.base - WARNING - Prometheus Metrics Client is not configured or not of type PrometheusMetricsClient
+2026-09-23 08:10:37,592 - inference_perf.client.filestorage.local - INFO - Report saved to: /results/trials/train-0-0/reports/per_request_lifecycle_metrics.json
+2026-09-23 08:10:37,594 - inference_perf.client.filestorage.local - INFO - Report saved to: /results/trials/train-0-0/reports/config.yaml
+No per-stage lifecycle metrics found to display summary table.

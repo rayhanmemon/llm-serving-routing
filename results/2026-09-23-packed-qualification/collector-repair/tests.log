@@ -1,0 +1,62 @@
+PASS: collection saved to /var/folders/87/6_d5qltx6y31wctm89tjzl7r0000gn/T/tmpvaq5w9a1/collection
+Collection success does not establish request success, correct pins or improved performance.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+packed-doc engines ready.
+packed engines ready.
+default-b engines ready.
+Cloud guard armed before GPU allocation.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Both transports and 8/8 four-route parity passed; starting warmups.
+Completed load0-512-0
+Completed load0-8192-0
+Cloud guard armed before GPU allocation.
+Engines ready; qualification client started.
+Cloud guard armed before GPU allocation.
+Engines ready; qualification client started.
+PASS RDMA and functional parity; starting timings
+PASS RDMA and functional parity; starting timings
+PASS RDMA and functional parity; starting timings
+failed-evidence-ready
+{"saved_off_box": true, "archive_sha256": "6822debe22c745f6f2a3e8bb9d8e3b1077ac2b9f1cdd28729fb7ffe9621d3eae", "worker_succeeded": false, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+evidence-ready
+{"saved_off_box": true, "archive_sha256": "16cce0d69bedb8fac28662b37f6499b5369bcab0bce3e4380a4bbd8574d06656", "worker_succeeded": true, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+evidence-ready
+{"saved_off_box": true, "archive_sha256": "16cce0d69bedb8fac28662b37f6499b5369bcab0bce3e4380a4bbd8574d06656", "worker_succeeded": true, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+evidence-ready
+{"saved_off_box": true, "archive_sha256": "16cce0d69bedb8fac28662b37f6499b5369bcab0bce3e4380a4bbd8574d06656", "worker_succeeded": true, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+Healthy local GPU host allocated.
+....sss............../opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 503: 'Service Unavailable'>
+  _warnings.warn(self.warn_message, ResourceWarning)
+.............................................................................................................pilot-session: Combined profile requires run-router-session.py; full-plan apply is forbidden
+...................................................................................................................................
+----------------------------------------------------------------------
+Ran 261 tests in 20.640s
+
+OK (skipped=3)

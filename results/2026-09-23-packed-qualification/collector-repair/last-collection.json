@@ -1,0 +1,36 @@
+{
+  "complete": true,
+  "errors": [],
+  "snapshots": {
+    "client": {
+      "files_verified": 42,
+      "logs_changed_during_snapshot": [],
+      "mutable_log_prefixes": [
+        "trials/smoke-absolute-cap/native.log",
+        "trials/smoke-allowance/native.log",
+        "trials/smoke-diagnostic/native.log",
+        "trials/smoke-hard/native.log",
+        "trials/smoke-none/native.log",
+        "trials/smoke-soft/native.log"
+      ]
+    },
+    "local": {
+      "files_verified": 1,
+      "logs_changed_during_snapshot": [
+        "prefill.log"
+      ],
+      "mutable_log_prefixes": [
+        "prefill.log"
+      ]
+    },
+    "remote": {
+      "files_verified": 1,
+      "logs_changed_during_snapshot": [
+        "prefill.log"
+      ],
+      "mutable_log_prefixes": [
+        "prefill.log"
+      ]
+    }
+  }
+}

@@ -1,0 +1,100 @@
+[
+  {
+    "trial": "train-0-0",
+    "requests": 5,
+    "foreground": 4,
+    "routes_joined": true,
+    "transfer_verified": true,
+    "foreground_observations": [
+      {
+        "input_tokens": 4096,
+        "pin": "local",
+        "ttft": 0.20223917100020117,
+        "counts": {
+          "local": 1.0,
+          "remote": 0.0,
+          "sample_unix": 1790151010.468813
+        }
+      },
+      {
+        "input_tokens": 4096,
+        "pin": "remote",
+        "ttft": 0.2694575360001181,
+        "counts": {
+          "local": 2.0,
+          "remote": 0.0,
+          "sample_unix": 1790151010.520351
+        }
+      },
+      {
+        "input_tokens": 122880,
+        "pin": "local",
+        "ttft": 11.232941066000421,
+        "counts": {
+          "local": 1.0,
+          "remote": 0.0,
+          "sample_unix": 1790151013.4689329
+        }
+      },
+      {
+        "input_tokens": 122880,
+        "pin": "remote",
+        "ttft": 22.274086344999887,
+        "counts": {
+          "local": 2.0,
+          "remote": 0.0,
+          "sample_unix": 1790151013.5208075
+        }
+      }
+    ]
+  },
+  {
+    "trial": "train-0-1",
+    "requests": 21,
+    "foreground": 4,
+    "routes_joined": true,
+    "transfer_verified": true,
+    "foreground_observations": [
+      {
+        "input_tokens": 4096,
+        "pin": "remote",
+        "ttft": 5.164743666000049,
+        "counts": {
+          "local": 10.0,
+          "remote": 8.0,
+          "sample_unix": 1790151057.6270795
+        }
+      },
+      {
+        "input_tokens": 4096,
+        "pin": "local",
+        "ttft": 5.518012404000274,
+        "counts": {
+          "local": 9.0,
+          "remote": 8.0,
+          "sample_unix": 1790151057.5779538
+        }
+      },
+      {
+        "input_tokens": 122880,
+        "pin": "local",
+        "ttft": 11.306404725999982,
+        "counts": {
+          "local": 10.0,
+          "remote": 9.0,
+          "sample_unix": 1790151060.5760612
+        }
+      },
+      {
+        "input_tokens": 122880,
+        "pin": "remote",
+        "ttft": 22.35214024600009,
+        "counts": {
+          "local": 11.0,
+          "remote": 9.0,
+          "sample_unix": 1790151060.626514
+        }
+      }
+    ]
+  }
+]

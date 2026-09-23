@@ -1,0 +1,7 @@
+{
+  "local_kubernetes_control_rehearsed": true,
+  "real_job_launch_poll_and_identity": true,
+  "real_deadline_write_and_ack_rpc": true,
+  "provider_sdk_substituted": true,
+  "cloud_actions": false
+}

@@ -1,0 +1,21 @@
+{
+  "session_id": "20260923T071445Z-35cdac2d",
+  "estimate_usd_pretax": "25.49887120416666666666666667",
+  "estimate_type": "conservative resource-lifecycle estimate; not invoice-verified",
+  "gpu_intervals": {
+    "local": {
+      "from": "2026-09-23T07:25:06.964878Z",
+      "through": "2026-09-23T08:14:25.042544Z",
+      "upper_compute_estimate_usd": "16.10508951488888888888888889"
+    },
+    "remote": {
+      "from": "2026-09-23T07:47:16.264192Z",
+      "through": "2026-09-23T08:14:25.505986Z",
+      "upper_compute_estimate_usd": "8.870316434"
+    }
+  },
+  "gpu_estimate_usd": "24.97540594888888888888888889",
+  "support_upper_allowance_usd": "0.5234652552777777777777777778",
+  "method": "Each eight-H200 host charged conservatively from successful create-operation start through delete-operation completion at$19.60/hour, including startup. Add the predeclared$0.50/hour support allowance over the full admission-to-verified-cleanup session. Native histories for all three VMs are retained.",
+  "cleanup_verified_utc": "2026-09-23T08:17:34.949014+00:00"
+}

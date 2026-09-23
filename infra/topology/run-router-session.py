@@ -13,8 +13,9 @@ def module(name):
     sp=importlib.util.spec_from_file_location(name,HERE/(name+'.py'));m=importlib.util.module_from_spec(sp);sp.loader.exec_module(m);return m
 s=module('run-tp4-staged');pilot=s.pilot;s.PROFILES=(*s.PROFILES,pilot.ROUTER_SESSION_PROFILE)
 budget=module('router-session-budget');layout=module('run-layout-local');render=module('render-tp4-router');result=module('router-session-results');transfer=module('router-session-transfer')
+snapshots=module('snapshot-results')
 PERF_IMAGE='quay.io/inference-perf/inference-perf:v0.6.1@sha256:e29328cc223ebae58d9022d60ad651cc3c4cbd534885a78b28f54086aa4b9c9e'
-CODE=tuple(dict.fromkeys((*layout.CODE,'router-session-budget.py','router-session-plan.py','router-session-client.py','router-perf-adapter.py','router-session-results.py','router-session-qualify.py','router-session-transfer.py','run-router-session.py','render-tp4-router.py','render.py','record-routes.py','import-image.py')))
+CODE=tuple(dict.fromkeys((*layout.CODE,'router-session-budget.py','router-session-plan.py','router-session-client.py','router-perf-adapter.py','router-session-results.py','router-session-qualify.py','router-session-transfer.py','snapshot-results.py','run-router-session.py','render-tp4-router.py','render.py','record-routes.py','import-image.py')))
 
 def chart_digest(charts):
     root=charts.parent
@@ -148,20 +149,23 @@ class Controller(s.Controller):
         pilot.write_json(self.run/('tp4-'+role+'-qualified.json'),marker)
 
     def collect(self,required=None):
-        errors=[]
+        errors=[];verified={}
         for pod in (*self.ips,'client'):
             container='client' if pod=='client' else 'engines'
             try:
-                r=self.call(self.k+['-n',s.tp4.NS,'exec',pod,'-c',container,'--','tar','czf','-','-C','/results','.'],pod+'-evidence',60,binary=True,check=False);r.check_returncode()
+                r=self.call(self.k+['-n',s.tp4.NS,'exec',pod,'-c',container,'--','python3','/probe/snapshot-results.py','--root','/results'],pod+'-evidence',60,binary=True,check=False)
+                if r.returncode:
+                    raise RuntimeError(f'{pod} snapshot command exited {r.returncode}: '+r.stderr.decode(errors='replace')[-1200:])
                 with tempfile.TemporaryDirectory(dir=self.out) as tmp:
                     with tarfile.open(self.out/(pod+'-evidence.tar.gz')) as t:t.extractall(tmp,filter='data')
+                    verified[pod]=snapshots.validate(tmp)
                     if required and pod=='client' and not (Path(tmp)/required).is_file():raise ValueError('Fresh required artifact missing')
                     shutil.copytree(tmp,self.out/pod,dirs_exist_ok=True)
-            except Exception as e:errors.append({'pod':pod,'error':repr(e)})
+            except Exception as e:errors.append({'pod':pod,'error':str(e)[:1600]})
         for container in ('epp','envoy-proxy'):
             try:self.call(self.k+['-n',s.tp4.NS,'logs','deploy/topology-epp','-c',container],('envoy' if container=='envoy-proxy' else container)+'-log',20,check=False)
             except Exception:pass
-        pilot.write_json(self.run/'last-collection.json',{'complete':not errors,'errors':errors})
+        pilot.write_json(self.run/'last-collection.json',{'complete':not errors,'errors':errors,'snapshots':verified})
         if errors:raise RuntimeError('Incomplete collection; no next phase: '+str(errors))
 
     def picker(self,policy,params=None):

@@ -1,0 +1,14 @@
+{
+  "session_id": "20260923T071445Z-35cdac2d",
+  "failure_kind": "our collection bug",
+  "reason": "GNU tar returned1 because ./prefill.log changed during archiving; the collector treated this live-log warning as fatal",
+  "warning": "tar: ./prefill.log: file changed as we read it\\\\\\\\ncommand terminated with exit code 1\\\\\\\\n\\\\\\')\\'}]')",
+  "failure_collection_recovered": true,
+  "saved_trial_ids": [
+    "train-0-1",
+    "train-0-0"
+  ],
+  "local_qualified": true,
+  "remote_qualified": true,
+  "full_policy_comparison": false
+}

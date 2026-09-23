@@ -1,0 +1,34 @@
+api:
+  type: completion
+  streaming: true
+  headers:
+    x-benchmark-run: train-0-1
+data:
+  type: mock
+  path: /results/trials/train-0-1/requests.json
+  trace: &id001
+    file: /results/trials/train-0-1/trace.csv
+    format: AzurePublicDataset
+load:
+  type: trace_replay
+  num_workers: 1
+  worker_max_concurrency: 64
+  base_seed: 22092026
+  request_timeout: 60
+  trace: *id001
+  stages:
+  - rate: 0.42
+    duration: 50
+server:
+  type: vllm
+  model_name: Qwen/Qwen3-32B
+  ignore_eos: true
+  base_url: http://topology-epp.router-tp4.svc.cluster.local
+storage:
+  local_storage:
+    path: /results/trials/train-0-1/reports
+report:
+  request_lifecycle:
+    summary: false
+    per_stage: false
+    per_request: true

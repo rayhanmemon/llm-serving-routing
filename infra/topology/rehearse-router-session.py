@@ -25,10 +25,11 @@ def rehearse(kubeconfig,charts,out):
     obj.rpc=rpc
     doc=r.code_manifest(obj.config_path,{'local':node,'remote':node+'-synthetic-remote'})
     doc['items'][1]['data']['router-http-fixture.py']=(HERE/'router-http-fixture.py').read_text()
+    doc['items'][1]['data']['live-log-writer.py']='from pathlib import Path\nimport time\np=Path("/results/prefill.log")\nwith p.open("ab") as f:\n while True:\n  f.write(b"live inference log line\\n"*16);f.flush();time.sleep(.005)\n'
     for pod in [x for x in doc['items'] if x['kind']=='Pod']:
         pod['spec']['nodeSelector']={'kubernetes.io/hostname':node}
         engine=pod['spec']['containers'][0];engine['image']='python:3.12-slim@sha256:44ff437bba879d4941b710a369a8f19266aea34b29002807f0c487fabc9eec9b'
-        engine['command']=['python3','-u','/probe/router-http-fixture.py'];engine['resources']={'requests':{'cpu':'100m','memory':'128Mi'},'limits':{'memory':'512Mi'}}
+        engine['command']=['sh','-c','python3 /probe/live-log-writer.py & exec python3 -u /probe/router-http-fixture.py'];engine['resources']={'requests':{'cpu':'100m','memory':'128Mi'},'limits':{'memory':'512Mi'}}
         engine.pop('securityContext',None)
     obj.apply(doc,'synthetic-workers')
     client=r.client_manifest(node,obj.config_path.with_name('suite.json.gz'),obj.config_path.with_name('qualification.json.gz'),obj.plan_path)
@@ -45,6 +46,7 @@ def rehearse(kubeconfig,charts,out):
     # exact pinned image in Docker's supported AMD64 emulation through local forwards.
     # The CPU administrative Pod and all router/sidecar paths remain real Kubernetes.
     def native_job(name,args,limit):
+        identity=obj.live_identity()
         trial=json.loads(args[args.index('--trial')+1]);base=out/name;base.mkdir()
         (base/'plan.json').write_text(obj.plan_path.read_text())
         suite=base/'suite.json.gz';suite.write_bytes(obj.config_path.with_name('suite.json.gz').read_bytes())
@@ -71,6 +73,7 @@ def rehearse(kubeconfig,charts,out):
         with tarfile.open(archive,'w:gz') as t:t.add(base/'trials'/name,arcname='trials/'+name)
         with archive.open('rb') as src:
             subprocess.run(k+['-n','router-tp4','exec','-i','client','--','tar','xzf','-','-C','/results'],stdin=src,check=True,timeout=30)
+        if obj.live_identity()!=identity:raise ValueError('Live identity changed during native replay')
     obj.job=native_job
     count=0;foreground=0
     for t in trials:
@@ -84,6 +87,12 @@ def rehearse(kubeconfig,charts,out):
              'scope':'Real Controller setup/picker/job/collection/route joins; six native benchmark trials; cloud/GPU qualification validated separately.'}
     summary['source_sha256']=source_hashes
     summary['benchmark_execution']='Exact pinned AMD64 image in Docker through local Kubernetes port forwards; no GPU timing claims'
+    summary['continuous_log_writers']=True
+    summary['live_identity_checked_each_trial']=True
+    snapshot_record=json.loads((out/'last-collection.json').read_text())
+    if any('prefill.log' not in snapshot_record['snapshots'][role]['mutable_log_prefixes'] for role in ('local','remote')):
+        raise ValueError('Growing engine logs were not snapshot-validated')
+    summary['growing_log_snapshots_validated']=True
     (out/'summary.json').write_text(json.dumps(summary,indent=2));return summary
 
 if __name__=='__main__':

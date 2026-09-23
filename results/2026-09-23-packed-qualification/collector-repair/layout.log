@@ -1,0 +1,99 @@
+INFO 09-23 08:40:32 [importing.py:98] Triton not installed or not compatible; certain GPU-related functions will not be available.
+INFO 09-23 08:40:35 [utils.py:306] Using LBHNC KV cache layout.
+INFO 09-23 08:40:35 [utils.py:306] Using BLHNC KV cache layout.
+INFO 09-23 08:40:35 [utils.py:306] Using BHLNC KV cache layout.
+{
+  "vllm_version": "0.29.0",
+  "native_cpu_allocation": true,
+  "native_environment_resolution": true,
+  "gpu_execution": false,
+  "registration_region_selection": "Source-derived model, not live NIXL registration",
+  "layouts": [
+    {
+      "layout": "LBHNC",
+      "bytes": 33554432,
+      "layer_shape": [
+        8,
+        2,
+        64,
+        256
+      ],
+      "layer_stride": [
+        32768,
+        16384,
+        256,
+        1
+      ],
+      "planned_layer_stride_bytes": 524288,
+      "planned_block_stride_bytes": 65536,
+      "inferred_registered_regions": 64,
+      "selected_descs_before_nixl_merging": 256,
+      "first_addresses_relative": [
+        196608,
+        131072,
+        65536,
+        0,
+        720896,
+        655360,
+        589824,
+        524288
+      ]
+    },
+    {
+      "layout": "BLHNC",
+      "bytes": 33554432,
+      "layer_shape": [
+        8,
+        2,
+        64,
+        256
+      ],
+      "layer_stride": [
+        2097152,
+        16384,
+        256,
+        1
+      ],
+      "planned_layer_stride_bytes": 65536,
+      "planned_block_stride_bytes": 4194304,
+      "inferred_registered_regions": 64,
+      "selected_descs_before_nixl_merging": 256,
+      "first_addresses_relative": [
+        12582912,
+        8388608,
+        4194304,
+        0,
+        12648448,
+        8454144,
+        4259840,
+        65536
+      ]
+    },
+    {
+      "layout": "BHLNC",
+      "bytes": 33554432,
+      "layer_shape": [
+        8,
+        2,
+        64,
+        256
+      ],
+      "layer_stride": [
+        2097152,
+        1048576,
+        256,
+        1
+      ],
+      "planned_layer_stride_bytes": 32768,
+      "planned_block_stride_bytes": 4194304,
+      "inferred_registered_regions": 1,
+      "selected_descs_before_nixl_merging": 4,
+      "first_addresses_relative": [
+        12582912,
+        8388608,
+        4194304,
+        0
+      ]
+    }
+  ]
+}
