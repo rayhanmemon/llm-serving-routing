@@ -42,16 +42,30 @@ def main():
   time.sleep(2)
  proof=json.loads((a.router_rehearsal/'summary.json').read_text())
  parity=json.loads((a.out.parent/'parity/summary.json').read_text())
- if not parity.get('passed') or parity['cases']!=42588 or parity['result_source_sha256']!=hashlib.sha256((HERE/'router-session-results.py').read_bytes()).hexdigest():raise ValueError('Policy-model parity proof is missing or stale')
+ if not parity.get('passed') or parity['cases']!=56108 or parity['result_source_sha256']!=hashlib.sha256((HERE/'router-session-results.py').read_bytes()).hexdigest():raise ValueError('Policy-model parity proof is missing or stale')
  volume=json.loads((a.out.parent/'volume-late/summary.json').read_text())
  if volume['raw_bytes']<1000000000 or volume['archive_seconds']>=45:raise ValueError('Late-run snapshot volume exceeds validated collection envelope')
  if not proof.get('real_router_rehearsed') or proof['recorded_requests']!=848 or proof.get('gpu_execution') is not False:raise ValueError('Wrong real-router rehearsal proof')
  if not proof.get('full_workflow_rehearsed') or len(proof.get('completed_trials',[]))!=40:raise ValueError('Full evaluation workflow not exercised')
  if not proof.get('growing_log_snapshots_validated') or not proof.get('live_identity_checked_each_trial'):
   raise ValueError('Replay must validate growing-log snapshots and live identities on every trial')
- host_guard_revalidated=False
+ host_guard_revalidated=False;grid_expansion=None
  for n in r.CODE:
   if proof['source_sha256'].get(n)==hashlib.sha256((HERE/n).read_bytes()).hexdigest():continue
+  if n=='router-session-plan.py':
+   original=json.loads((a.router_rehearsal/'paired/synthetic-workers.json').read_text())['items'][1]['data'][n]
+   if hashlib.sha256(original.encode()).hexdigest()!=proof['source_sha256'][n]:raise ValueError('Unbound original plan source')
+   def separate_grid(text):
+    tree=ast.parse(text);grid=None;body=[]
+    for node in tree.body:
+     if isinstance(node,ast.Assign) and any(isinstance(x,ast.Name) and x.id=='GRID' for x in node.targets):grid=ast.literal_eval(node.value)
+     else:body.append(node)
+    tree.body=body;return ast.dump(tree,include_attributes=False),grid
+   old_tree,old_grid=separate_grid(original);new_tree,new_grid=separate_grid((HERE/n).read_text())
+   expected={**old_grid,'weight':[.01,.05,*old_grid['weight']]}
+   if old_tree!=new_tree or new_grid!=expected:raise ValueError('Change exceeds the independently validated soft-weight expansion')
+   grid_expansion={'rehearsal_weights':old_grid['weight'],'current_weights':new_grid['weight'],'validation':'Additional Go policy parity and actual tuning/summary regression tests; workload and control-flow AST unchanged.'}
+   continue
   if n!='run-router-session.py':raise ValueError('Code changed after real-router rehearsal: '+n)
   # The local adapter substitutes job() to run AMD64 Docker outside ARM Kind.
   # A new Pod-identity check in that unexecuted method needs focused tests,
@@ -70,7 +84,7 @@ def main():
  (a.out/'guard-protocol.log').write_text(guard_test.stdout+guard_test.stderr);guard_test.check_returncode()
  files=[a.workload/n for n in ('config.json','suite.json.gz','qualification.json.gz','plan.json')]+[a.image]+[HERE/n for n in r.CODE]+sorted((HERE/'terraform-rdma').glob('*.tf'))
  record={k:True for k in ('combined_controller_rehearsed','real_router_rehearsed','native_perf_rehearsed','native_vllm_checked','manifests_validated','budget_bound_verified')}
- record.update(policy_model_parity=parity,late_collection_volume=volume,host_job_guard_revalidated_by_tests=host_guard_revalidated,cloud_actions=False,gpu_execution=False,tests_run=int(re.search(r'Ran (\d+) tests',tests.stderr).group(1)),router_rehearsal=proof,
+ record.update(soft_weight_grid_expansion=grid_expansion,policy_model_parity=parity,late_collection_volume=volume,host_job_guard_revalidated_by_tests=host_guard_revalidated,cloud_actions=False,gpu_execution=False,tests_run=int(re.search(r'Ran (\d+) tests',tests.stderr).group(1)),router_rehearsal=proof,
   chart_sha256=r.chart_digest(a.charts),sha256={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in files},
   limits=['Cloud provisioning/cleanup are command/phase substitutions in tests, not a fresh provider qualification.',
           'Real router is ARM64 on Kind; native AMD64 benchmark runs in Docker via port forwards; GPU workers are synthetic.',

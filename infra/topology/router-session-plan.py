@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import datetime,timedelta,timezone
 
 POLICIES=('none','hard','soft','absolute-cap','allowance')
-GRID={'allowance':[0,1,2,4],'cap':[0,1,4,8,9,16,24], 'weight':[0.1,0.25,0.5,1,2],
+GRID={'allowance':[0,1,2,4],'cap':[0,1,4,8,9,16,24], 'weight':[0.01,0.05,0.1,0.25,0.5,1,2],
       'idle_threshold':[0,1,2,8,9], 'max_busy_score':[0.5,1]}
 
 def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
