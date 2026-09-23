@@ -1,0 +1,11 @@
+{
+  "RESULT.md": "d470a473029ca1e421f2ebc30a58183e3e3fb7c76c3ba78c65a3d83eef14a3de",
+  "advice-at-admission.json": "e3220c34d9a1760b91a2d9369911e7fc3bfad9400494b42519e604bed14bb91b",
+  "capacity-after-block.json": "4b182433f953e720239d70ddf6d177392c788261693d065793da32281292e8b6",
+  "cleanup-check.txt": "87b10a894c5e1f2cc51ada40a3e5ed53a3afa64d4ef2406cb2f175ded5b05fe2",
+  "cleanup-verified.json": "45db9abad264ebf5c32b364c90a895c7b498e99cb6c8ac9b24f5e189e400d9c1",
+  "cloud-guard-ready.json": "9623f41937901a2bd96bd72f9feb7bb3e255dd716e380995b9e22caf6db1d449",
+  "cost-estimate.json": "1589c126e42e9f08a5735584aa591799ad2759ce9e94b1ab157ce98a48533370",
+  "cpu-operations.json": "bc4c02aa389adcd41587bedf39482ecef6aab592c2845fee752bfd9c9d4c6a4d",
+  "failure.json": "0569748b5ceceeff7066196120f7f50534b0bf83bf7e47da388f638179012628"
+}

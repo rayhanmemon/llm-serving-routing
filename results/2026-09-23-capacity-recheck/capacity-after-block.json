@@ -1,0 +1,1675 @@
+{
+  "items": [
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.986479Z",
+        "updated_at": "2026-09-23T15:31:59.986480Z"
+      },
+      "spec": {
+        "region": "us-central1",
+        "fabric": "us-central1-b",
+        "compute_instance": {
+          "platform": "gpu-b200-sxm",
+          "preset": {
+            "name": "1gpu-20vcpu-224gb",
+            "resources": {
+              "vcpu_count": 20,
+              "memory_gibibytes": 224,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 180
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 10,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.986766Z",
+        "updated_at": "2026-09-23T15:31:59.986766Z"
+      },
+      "spec": {
+        "region": "us-central1",
+        "fabric": "us-central1-b",
+        "compute_instance": {
+          "platform": "gpu-b200-sxm",
+          "preset": {
+            "name": "8gpu-160vcpu-1792gb",
+            "resources": {
+              "vcpu_count": 160,
+              "memory_gibibytes": 1792,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 180
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 1,
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 2,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.986920Z",
+        "updated_at": "2026-09-23T15:31:59.986920Z"
+      },
+      "spec": {
+        "region": "me-west1",
+        "fabric": "me-west1-a",
+        "compute_instance": {
+          "platform": "gpu-b200-sxm-a",
+          "preset": {
+            "name": "1gpu-20vcpu-224gb",
+            "resources": {
+              "vcpu_count": 20,
+              "memory_gibibytes": 224,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 180
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 23,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.987069Z",
+        "updated_at": "2026-09-23T15:31:59.987069Z"
+      },
+      "spec": {
+        "region": "me-west1",
+        "fabric": "me-west1-a",
+        "compute_instance": {
+          "platform": "gpu-b200-sxm-a",
+          "preset": {
+            "name": "8gpu-160vcpu-1792gb",
+            "resources": {
+              "vcpu_count": 160,
+              "memory_gibibytes": 1792,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 180
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 2,
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 3,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.987205Z",
+        "updated_at": "2026-09-23T15:31:59.987206Z"
+      },
+      "spec": {
+        "region": "eu-west2",
+        "fabric": "eu-west2-a",
+        "compute_instance": {
+          "platform": "gpu-b300-sxm",
+          "preset": {
+            "name": "1gpu-24vcpu-346gb",
+            "resources": {
+              "vcpu_count": 24,
+              "memory_gibibytes": 346,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 270
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.987340Z",
+        "updated_at": "2026-09-23T15:31:59.987340Z"
+      },
+      "spec": {
+        "region": "eu-west2",
+        "fabric": "eu-west2-a",
+        "compute_instance": {
+          "platform": "gpu-b300-sxm",
+          "preset": {
+            "name": "8gpu-192vcpu-2768gb",
+            "resources": {
+              "vcpu_count": 192,
+              "memory_gibibytes": 2768,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 270
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.987470Z",
+        "updated_at": "2026-09-23T15:31:59.987471Z"
+      },
+      "spec": {
+        "region": "uk-south1",
+        "fabric": "uk-south1-a",
+        "compute_instance": {
+          "platform": "gpu-b300-sxm",
+          "preset": {
+            "name": "1gpu-24vcpu-346gb",
+            "resources": {
+              "vcpu_count": 24,
+              "memory_gibibytes": 346,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 270
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 2,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.987602Z",
+        "updated_at": "2026-09-23T15:31:59.987602Z"
+      },
+      "spec": {
+        "region": "uk-south1",
+        "fabric": "uk-south1-a",
+        "compute_instance": {
+          "platform": "gpu-b300-sxm",
+          "preset": {
+            "name": "8gpu-192vcpu-2768gb",
+            "resources": {
+              "vcpu_count": 192,
+              "memory_gibibytes": 2768,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 270
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.987731Z",
+        "updated_at": "2026-09-23T15:31:59.987731Z"
+      },
+      "spec": {
+        "region": "us-north1",
+        "fabric": "us-north1-a",
+        "compute_instance": {
+          "platform": "gpu-b300-sxm",
+          "preset": {
+            "name": "1gpu-24vcpu-346gb",
+            "resources": {
+              "vcpu_count": 24,
+              "memory_gibibytes": 346,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 270
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.987862Z",
+        "updated_at": "2026-09-23T15:31:59.987862Z"
+      },
+      "spec": {
+        "region": "us-north1",
+        "fabric": "us-north1-a",
+        "compute_instance": {
+          "platform": "gpu-b300-sxm",
+          "preset": {
+            "name": "8gpu-192vcpu-2768gb",
+            "resources": {
+              "vcpu_count": 192,
+              "memory_gibibytes": 2768,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 270
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.987996Z",
+        "updated_at": "2026-09-23T15:31:59.987997Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "fabric": "fabric-2",
+        "compute_instance": {
+          "platform": "gpu-h100-sxm",
+          "preset": {
+            "name": "1gpu-16vcpu-200gb",
+            "resources": {
+              "vcpu_count": 16,
+              "memory_gibibytes": 200,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 80
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 32,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.988129Z",
+        "updated_at": "2026-09-23T15:31:59.988130Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "fabric": "fabric-3",
+        "compute_instance": {
+          "platform": "gpu-h100-sxm",
+          "preset": {
+            "name": "1gpu-16vcpu-200gb",
+            "resources": {
+              "vcpu_count": 16,
+              "memory_gibibytes": 200,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 80
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 21,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.988261Z",
+        "updated_at": "2026-09-23T15:31:59.988261Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "fabric": "fabric-4",
+        "compute_instance": {
+          "platform": "gpu-h100-sxm",
+          "preset": {
+            "name": "1gpu-16vcpu-200gb",
+            "resources": {
+              "vcpu_count": 16,
+              "memory_gibibytes": 200,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 80
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 12,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.988390Z",
+        "updated_at": "2026-09-23T15:31:59.988390Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "fabric": "fabric-6",
+        "compute_instance": {
+          "platform": "gpu-h100-sxm",
+          "preset": {
+            "name": "1gpu-16vcpu-200gb",
+            "resources": {
+              "vcpu_count": 16,
+              "memory_gibibytes": 200,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 80
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 26,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.988514Z",
+        "updated_at": "2026-09-23T15:31:59.988514Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "fabric": "fabric-2",
+        "compute_instance": {
+          "platform": "gpu-h100-sxm",
+          "preset": {
+            "name": "8gpu-128vcpu-1600gb",
+            "resources": {
+              "vcpu_count": 128,
+              "memory_gibibytes": 1600,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 80
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 1,
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 1,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.988643Z",
+        "updated_at": "2026-09-23T15:31:59.988644Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "fabric": "fabric-3",
+        "compute_instance": {
+          "platform": "gpu-h100-sxm",
+          "preset": {
+            "name": "8gpu-128vcpu-1600gb",
+            "resources": {
+              "vcpu_count": 128,
+              "memory_gibibytes": 1600,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 80
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.988770Z",
+        "updated_at": "2026-09-23T15:31:59.988771Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "fabric": "fabric-4",
+        "compute_instance": {
+          "platform": "gpu-h100-sxm",
+          "preset": {
+            "name": "8gpu-128vcpu-1600gb",
+            "resources": {
+              "vcpu_count": 128,
+              "memory_gibibytes": 1600,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 80
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.988899Z",
+        "updated_at": "2026-09-23T15:31:59.988900Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "fabric": "fabric-6",
+        "compute_instance": {
+          "platform": "gpu-h100-sxm",
+          "preset": {
+            "name": "8gpu-128vcpu-1600gb",
+            "resources": {
+              "vcpu_count": 128,
+              "memory_gibibytes": 1600,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 80
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 2,
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.989028Z",
+        "updated_at": "2026-09-23T15:31:59.989029Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "fabric": "fabric-7",
+        "compute_instance": {
+          "platform": "gpu-h200-sxm",
+          "preset": {
+            "name": "1gpu-16vcpu-200gb",
+            "resources": {
+              "vcpu_count": 16,
+              "memory_gibibytes": 200,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 141
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.989157Z",
+        "updated_at": "2026-09-23T15:31:59.989157Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "fabric": "fabric-7",
+        "compute_instance": {
+          "platform": "gpu-h200-sxm",
+          "preset": {
+            "name": "8gpu-128vcpu-1600gb",
+            "resources": {
+              "vcpu_count": 128,
+              "memory_gibibytes": 1600,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 141
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 1,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.989320Z",
+        "updated_at": "2026-09-23T15:31:59.989320Z"
+      },
+      "spec": {
+        "region": "eu-west1",
+        "fabric": "fabric-5",
+        "compute_instance": {
+          "platform": "gpu-h200-sxm",
+          "preset": {
+            "name": "1gpu-16vcpu-200gb",
+            "resources": {
+              "vcpu_count": 16,
+              "memory_gibibytes": 200,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 141
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 7,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.989456Z",
+        "updated_at": "2026-09-23T15:31:59.989456Z"
+      },
+      "spec": {
+        "region": "eu-west1",
+        "fabric": "fabric-5",
+        "compute_instance": {
+          "platform": "gpu-h200-sxm",
+          "preset": {
+            "name": "8gpu-128vcpu-1600gb",
+            "resources": {
+              "vcpu_count": 128,
+              "memory_gibibytes": 1600,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 141
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.989587Z",
+        "updated_at": "2026-09-23T15:31:59.989587Z"
+      },
+      "spec": {
+        "region": "us-central1",
+        "fabric": "us-central1-a",
+        "compute_instance": {
+          "platform": "gpu-h200-sxm",
+          "preset": {
+            "name": "1gpu-16vcpu-200gb",
+            "resources": {
+              "vcpu_count": 16,
+              "memory_gibibytes": 200,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 141
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 1,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.989716Z",
+        "updated_at": "2026-09-23T15:31:59.989716Z"
+      },
+      "spec": {
+        "region": "us-central1",
+        "fabric": "us-central1-a",
+        "compute_instance": {
+          "platform": "gpu-h200-sxm",
+          "preset": {
+            "name": "8gpu-128vcpu-1600gb",
+            "resources": {
+              "vcpu_count": 128,
+              "memory_gibibytes": 1600,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 141
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 3,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_MEDIUM",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.989843Z",
+        "updated_at": "2026-09-23T15:31:59.989843Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "compute_instance": {
+          "platform": "gpu-l40s-a",
+          "preset": {
+            "name": "1gpu-16vcpu-64gb",
+            "resources": {
+              "vcpu_count": 16,
+              "memory_gibibytes": 64,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 48
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 1,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 1,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.989972Z",
+        "updated_at": "2026-09-23T15:31:59.989972Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "compute_instance": {
+          "platform": "gpu-l40s-a",
+          "preset": {
+            "name": "1gpu-24vcpu-96gb",
+            "resources": {
+              "vcpu_count": 24,
+              "memory_gibibytes": 96,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 48
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 1,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 1,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.990101Z",
+        "updated_at": "2026-09-23T15:31:59.990102Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "compute_instance": {
+          "platform": "gpu-l40s-a",
+          "preset": {
+            "name": "1gpu-32vcpu-128gb",
+            "resources": {
+              "vcpu_count": 32,
+              "memory_gibibytes": 128,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 48
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 1,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 1,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.990230Z",
+        "updated_at": "2026-09-23T15:31:59.990230Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "compute_instance": {
+          "platform": "gpu-l40s-a",
+          "preset": {
+            "name": "1gpu-40vcpu-160gb",
+            "resources": {
+              "vcpu_count": 40,
+              "memory_gibibytes": 160,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 48
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 1,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 1,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.990369Z",
+        "updated_at": "2026-09-23T15:31:59.990370Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "compute_instance": {
+          "platform": "gpu-l40s-a",
+          "preset": {
+            "name": "1gpu-8vcpu-32gb",
+            "resources": {
+              "vcpu_count": 8,
+              "memory_gibibytes": 32,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 48
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 1,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 1,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.990512Z",
+        "updated_at": "2026-09-23T15:31:59.990512Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "compute_instance": {
+          "platform": "gpu-l40s-d",
+          "preset": {
+            "name": "1gpu-16vcpu-96gb",
+            "resources": {
+              "vcpu_count": 16,
+              "memory_gibibytes": 96,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 48
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.990646Z",
+        "updated_at": "2026-09-23T15:31:59.990646Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "compute_instance": {
+          "platform": "gpu-l40s-d",
+          "preset": {
+            "name": "1gpu-32vcpu-192gb",
+            "resources": {
+              "vcpu_count": 32,
+              "memory_gibibytes": 192,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 48
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.990774Z",
+        "updated_at": "2026-09-23T15:31:59.990775Z"
+      },
+      "spec": {
+        "region": "eu-north1",
+        "compute_instance": {
+          "platform": "gpu-l40s-d",
+          "preset": {
+            "name": "1gpu-48vcpu-288gb",
+            "resources": {
+              "vcpu_count": 48,
+              "memory_gibibytes": 288,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 48
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.990903Z",
+        "updated_at": "2026-09-23T15:31:59.990903Z"
+      },
+      "spec": {
+        "region": "us-central1",
+        "compute_instance": {
+          "platform": "gpu-rtx6000",
+          "preset": {
+            "name": "1gpu-24vcpu-218gb",
+            "resources": {
+              "vcpu_count": 24,
+              "memory_gibibytes": 218,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 96
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 2,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.991042Z",
+        "updated_at": "2026-09-23T15:31:59.991042Z"
+      },
+      "spec": {
+        "region": "us-central1",
+        "compute_instance": {
+          "platform": "gpu-rtx6000",
+          "preset": {
+            "name": "8gpu-192vcpu-1744gb",
+            "resources": {
+              "vcpu_count": 192,
+              "memory_gibibytes": 1744,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 96
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_LOW",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.991171Z",
+        "updated_at": "2026-09-23T15:31:59.991172Z"
+      },
+      "spec": {
+        "region": "eu-south1",
+        "compute_instance": {
+          "platform": "gpu-rtx6000-a",
+          "preset": {
+            "name": "1gpu-24vcpu-218gb",
+            "resources": {
+              "vcpu_count": 24,
+              "memory_gibibytes": 218,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 96
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 32,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.991299Z",
+        "updated_at": "2026-09-23T15:31:59.991300Z"
+      },
+      "spec": {
+        "region": "eu-south1",
+        "compute_instance": {
+          "platform": "gpu-rtx6000-a",
+          "preset": {
+            "name": "8gpu-192vcpu-1744gb",
+            "resources": {
+              "vcpu_count": 192,
+              "memory_gibibytes": 1744,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 96
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 4,
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.991426Z",
+        "updated_at": "2026-09-23T15:31:59.991426Z"
+      },
+      "spec": {
+        "region": "uk-south2",
+        "compute_instance": {
+          "platform": "gpu-rtx6000-a",
+          "preset": {
+            "name": "1gpu-24vcpu-218gb",
+            "resources": {
+              "vcpu_count": 24,
+              "memory_gibibytes": 218,
+              "gpu_count": 1
+            }
+          },
+          "gpu_memory_gigabytes": 96
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 32,
+          "limit": 32,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_FRESH",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T15:04:24.230Z"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "parent_id": "tenant-e00evgkv9j4px9vymy",
+        "resource_version": "1",
+        "created_at": "2026-09-23T15:31:59.991561Z",
+        "updated_at": "2026-09-23T15:31:59.991562Z"
+      },
+      "spec": {
+        "region": "uk-south2",
+        "compute_instance": {
+          "platform": "gpu-rtx6000-a",
+          "preset": {
+            "name": "8gpu-192vcpu-1744gb",
+            "resources": {
+              "vcpu_count": 192,
+              "memory_gibibytes": 1744,
+              "gpu_count": 8
+            }
+          },
+          "gpu_memory_gigabytes": 96
+        }
+      },
+      "status": {
+        "reserved": {
+          "data_state": "DATA_STATE_FRESH",
+          "availability_level": "AVAILABILITY_LEVEL_LIMIT_REACHED",
+          "effective_at": "2026-09-23T15:31:59.468937Z"
+        },
+        "on_demand": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 4,
+          "limit": 4,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        },
+        "preemptible": {
+          "data_state": "DATA_STATE_STALE",
+          "available": 8,
+          "limit": 8,
+          "availability_level": "AVAILABILITY_LEVEL_HIGH",
+          "effective_at": "2026-09-23T12:50:02.731Z"
+        }
+      }
+    }
+  ]
+}

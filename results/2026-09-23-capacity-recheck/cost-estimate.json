@@ -1,0 +1,10 @@
+{
+  "session_id": "20260923T151931Z-c74d32f1",
+  "estimate_usd_pretax": "0.1394551998333333333333333333",
+  "estimate_type": "conservative support allowance, not invoice-verified",
+  "gpu_usd": "0",
+  "support_rate_usd_per_hour": "0.50",
+  "started_unix": 1790176771.7750342,
+  "cleanup_verified_unix": 1790177775.852473,
+  "method": "CPU/control-plane preparation only; capacity became provider-STALE before local GPU request. No GPU request timestamp or GPU Terraform plan exists. Support allowance covers full admitted-to-verified-empty duration. Native CPU create/delete history retained."
+}
