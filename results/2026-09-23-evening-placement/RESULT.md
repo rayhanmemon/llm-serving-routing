@@ -1,0 +1,9 @@
+# GPU placement failed before inference
+
+Run `20260923T221801Z-971a76b9` passed the unchanged source/input checks, empty-project check, CPU preparation, cleanup-guard arming and a new provider-FRESH capacity check for two matching nodes. The first GPU VM nevertheless failed its native Create Instance operation with `NotEnoughResources`: the provider reported a VM scheduling timeout. The matching node-group event and complete operation history are retained. The Terraform allocation was interrupted promptly after the explicit failure; remote was never requested.
+
+No GPU successfully started, no model loaded, and no inference or policy comparison ran. This is a provider placement failure, not evidence about the router or transfer configuration. Advice did not reserve the advertised capacity.
+
+All five scoped paid resource types were independently empty at **2026-09-23 22:40:35 UTC**. Controller, desktop guard and task keep-awake exited. Complete GPU history contains only failed creation and successful deletion, so GPU compute is estimated zero; the full session receives the conservative $0.50/hour support allowance. Estimated run cost: **$0.19 before tax**, not an invoice. The approved $75 continuation pool has used about **$0.33**, leaving **$74.67**. Router-project lifecycle estimate: **$231.04**.
+
+Automatic monitoring remains active. Any next paid attempt must have a provider-FRESH measurement strictly newer than the failed operation at **22:33:55.120901 UTC**, enough budget, empty scoped resources and a fresh single-use approval/plan under the same standing authorization. The compact polling script and launcher both enforce the new observation requirement; three timestamp-boundary cases passed. Do not repeat placement using the same failed availability observation. Software and workload are unchanged.

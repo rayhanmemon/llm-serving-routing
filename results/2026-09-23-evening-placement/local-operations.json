@@ -1,0 +1,49 @@
+{
+  "operations": [
+    {
+      "id": "computeoperation-u00ybj8k8d5crmet92",
+      "description": "Delete Instance",
+      "created_at": "2026-09-23T22:35:02.157132Z",
+      "finished_at": "2026-09-23T22:35:11.870788Z",
+      "resource_id": "computeinstance-u00w2tswqqp0kebe4c",
+      "status": {},
+      "progress_tracker": {
+        "description": "Deleting instance",
+        "started_at": "2026-09-23T22:35:02.157132Z",
+        "finished_at": "2026-09-23T22:35:11.870788Z"
+      }
+    },
+    {
+      "id": "computeoperation-u00kwf1da1nfrcazm6",
+      "description": "Create Instance",
+      "created_at": "2026-09-23T22:28:08.291430Z",
+      "finished_at": "2026-09-23T22:33:55.120901Z",
+      "resource_id": "computeinstance-u00w2tswqqp0kebe4c",
+      "status": {
+        "code": 8,
+        "details": [
+          {
+            "@type": "type.googleapis.com/nebius.common.v1.ServiceError",
+            "service": "compute",
+            "code": "NotEnoughResources",
+            "not_enough_resources": {
+              "violations": [
+                {
+                  "resource_type": "virtualMachine",
+                  "message": "VM schedule timeout, most likely due to insufficient hardware resources, for more information see https://docs.nebius.com/compute/virtual-machines/not-enough-resources",
+                  "requested": "8gpu-128vcpu-1600gb"
+                }
+              ]
+            },
+            "retry_type": "NOTHING"
+          }
+        ]
+      },
+      "progress_tracker": {
+        "description": "Starting instance",
+        "started_at": "2026-09-23T22:28:08.291430Z",
+        "finished_at": "2026-09-23T22:33:55.120901Z"
+      }
+    }
+  ]
+}

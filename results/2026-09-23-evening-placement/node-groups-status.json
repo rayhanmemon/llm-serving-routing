@@ -1,0 +1,190 @@
+{
+  "items": [
+    {
+      "metadata": {
+        "id": "mk8snodegroup-u00da39dhtj1n9b7tm",
+        "parent_id": "mk8scluster-u00p1vf7vqrbey6xg1",
+        "name": "router-cpu",
+        "resource_version": "1",
+        "created_at": "2026-09-23T22:23:12Z",
+        "updated_at": "2026-09-23T22:23:12Z"
+      },
+      "spec": {
+        "fixed_node_count": "1",
+        "template": {
+          "resources": {
+            "platform": "cpu-d3",
+            "preset": "16vcpu-64gb"
+          },
+          "boot_disk": {
+            "size_gibibytes": "64",
+            "type": "NETWORK_SSD"
+          },
+          "network_interfaces": [
+            {
+              "subnet_id": "vpcsubnet-u00fjg7m2r4s10h9sb"
+            }
+          ],
+          "service_account_id": "serviceaccount-u00z5fq630hbbrd7ck"
+        },
+        "strategy": {
+          "drain_timeout": "60s"
+        }
+      },
+      "status": {
+        "state": "RUNNING",
+        "version": "v1.35.7-nebius-node.75",
+        "target_node_count": "1",
+        "node_count": "1",
+        "ready_node_count": "1",
+        "events": [
+          {
+            "first_occurred_at": "2026-09-23T22:23:14Z",
+            "last_occurrence": {
+              "occurred_at": "2026-09-23T22:23:14Z",
+              "level": "WARN",
+              "code": "ComputeInstanceStopped",
+              "message": "Compute instance is stopped for node mk8snodegroup-u00da39dhtj1n9b7tm-jxks6-9wh2x"
+            },
+            "occurrence_count": "1"
+          },
+          {
+            "first_occurred_at": "2026-09-23T22:23:59Z",
+            "last_occurrence": {
+              "occurred_at": "2026-09-23T22:23:59Z",
+              "level": "WARN",
+              "code": "NodeProvisioning",
+              "message": "Waiting for a node with matching ProviderID to exist for node mk8snodegroup-u00da39dhtj1n9b7tm-jxks6-9wh2x"
+            },
+            "occurrence_count": "1"
+          },
+          {
+            "first_occurred_at": "2026-09-23T22:24:40Z",
+            "last_occurrence": {
+              "occurred_at": "2026-09-23T22:24:40Z",
+              "level": "WARN",
+              "code": "NodeConditionsFailed",
+              "message": "Node condition Ready is False for node mk8snodegroup-u00da39dhtj1n9b7tm-jxks6-9wh2x"
+            },
+            "occurrence_count": "1"
+          }
+        ],
+        "strategy": {
+          "max_unavailable": {
+            "count": "1"
+          },
+          "max_surge": {
+            "count": "0"
+          },
+          "drain_timeout": "60s"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "id": "mk8snodegroup-u00pg1215c00bk9am2",
+        "parent_id": "mk8scluster-u00p1vf7vqrbey6xg1",
+        "name": "router-local",
+        "resource_version": "1",
+        "created_at": "2026-09-23T22:28:06Z",
+        "updated_at": "2026-09-23T22:28:06Z"
+      },
+      "spec": {
+        "version": "1.35",
+        "fixed_node_count": "1",
+        "template": {
+          "resources": {
+            "platform": "gpu-h200-sxm",
+            "preset": "8gpu-128vcpu-1600gb"
+          },
+          "boot_disk": {
+            "size_gibibytes": "256",
+            "type": "NETWORK_SSD"
+          },
+          "gpu_settings": {
+            "drivers_preset": "cuda13.0"
+          },
+          "gpu_cluster": {
+            "id": "computegpucluster-u00yhkhvzf3yq6fag3"
+          },
+          "network_interfaces": [
+            {
+              "subnet_id": "vpcsubnet-u00fjg7m2r4s10h9sb"
+            }
+          ],
+          "preemptible": {}
+        },
+        "strategy": {
+          "drain_timeout": "60s"
+        }
+      },
+      "status": {
+        "state": "PROVISIONING",
+        "target_node_count": "1",
+        "node_count": "1",
+        "events": [
+          {
+            "first_occurred_at": "2026-09-23T22:33:55Z",
+            "last_occurrence": {
+              "occurred_at": "2026-09-23T22:33:55Z",
+              "level": "ERROR",
+              "code": "ComputeInstanceOperationFailed",
+              "message": "Operation computeoperation-u00kwf1da1nfrcazm6 \"Create Instance\" of compute instance is failed for node mk8snodegroup-u00pg1215c00bk9am2-wjp6x-c8wb8",
+              "error": {
+                "code": 8,
+                "details": [
+                  {
+                    "@type": "type.googleapis.com/nebius.common.v1.ServiceError",
+                    "service": "compute",
+                    "code": "NotEnoughResources",
+                    "not_enough_resources": {
+                      "violations": [
+                        {
+                          "resource_type": "virtualMachine",
+                          "message": "VM schedule timeout, most likely due to insufficient hardware resources, for more information see https://docs.nebius.com/compute/virtual-machines/not-enough-resources",
+                          "requested": "8gpu-128vcpu-1600gb"
+                        }
+                      ]
+                    },
+                    "retry_type": "NOTHING"
+                  }
+                ]
+              }
+            },
+            "occurrence_count": "1"
+          },
+          {
+            "first_occurred_at": "2026-09-23T22:28:08Z",
+            "last_occurrence": {
+              "occurred_at": "2026-09-23T22:33:40Z",
+              "level": "WARN",
+              "code": "ComputeInstanceStopped",
+              "message": "Compute instance is stopped for node mk8snodegroup-u00pg1215c00bk9am2-wjp6x-c8wb8"
+            },
+            "occurrence_count": "2"
+          },
+          {
+            "first_occurred_at": "2026-09-23T22:28:07Z",
+            "last_occurrence": {
+              "occurred_at": "2026-09-23T22:28:07Z",
+              "level": "INFO",
+              "code": "WaitingForNodeRef",
+              "message": "WaitingForNodeRef for node mk8snodegroup-u00pg1215c00bk9am2-wjp6x-c8wb8"
+            },
+            "occurrence_count": "1"
+          }
+        ],
+        "strategy": {
+          "max_unavailable": {
+            "count": "1"
+          },
+          "max_surge": {
+            "count": "0"
+          },
+          "drain_timeout": "60s"
+        },
+        "reconciling": true
+      }
+    }
+  ]
+}
