@@ -1,0 +1,6 @@
+{
+  "time": 1790225226.077972,
+  "reason": "Native NotEnoughResources on remote node; stop owned apply promptly",
+  "pid": 8042,
+  "command": "terraform -chdir=/Users/rayhanmemon/disagg-boundary/infra/topology/terraform-rdma apply -input=false /Users/rayhanmemon/.codex/run-state/router-h100-pilot/runs/20260924T035558Z-c55b66c8/remote.tfplan"
+}
