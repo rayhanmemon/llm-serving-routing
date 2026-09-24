@@ -10,6 +10,21 @@ r=module('run-router-session');b=module('router-session-budget');p=module('route
 ROOT=HERE.parent.parent/'workloads/router-session'
 
 class CombinedTests(unittest.TestCase):
+ def test_graceful_stop_preserves_completed_trial_inventory(self):
+  with tempfile.TemporaryDirectory() as temp:
+   obj=object.__new__(r.Controller);obj.run=Path(temp)
+   obj.check_stop()
+   artifact=obj.run/'paired/client/trials/train-a/transfer-verified.json';artifact.parent.mkdir(parents=True);artifact.write_text('{}')
+   (obj.run/'frozen-tuning.json').write_text('{}')
+   (obj.run/'graceful-stop-request.json').write_text('{"reason":"weekly usage at96percent"}')
+   with self.assertRaisesRegex(RuntimeError,'Graceful stop'):obj.check_stop()
+   checkpoint=json.loads((obj.run/'graceful-stop-checkpoint.json').read_text())
+   self.assertTrue(checkpoint['frozen_tuning_saved']);self.assertEqual(len(checkpoint['verified_trial_artifacts']),1)
+   self.assertTrue(artifact.exists())
+   obj.call=Mock()
+   with self.assertRaisesRegex(RuntimeError,'Graceful stop'):obj.allocate('remote')
+   with self.assertRaisesRegex(RuntimeError,'Graceful stop'):obj.job('next',[],60)
+   obj.call.assert_not_called()
  def test_collection_error_is_bounded_and_does_not_embed_archive_bytes(self):
   import subprocess
   with tempfile.TemporaryDirectory() as temp:

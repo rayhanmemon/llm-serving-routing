@@ -58,6 +58,17 @@ class Controller(s.Controller):
         self.session_cap=budget.spending_cap(self.session['budget_snapshot']['remaining_before_attempt_usd_pretax'])
         self.original_target=self.session['deletion_target_unix'];self.context='router-topology';self.url='http://topology-epp.router-tp4.svc.cluster.local'
 
+    def check_stop(self):
+        """Stop between bounded jobs; completed trials are already copied off-host."""
+        request=self.run/'graceful-stop-request.json'
+        if request.exists():
+            saved=sorted(str(p.relative_to(self.run)) for p in self.run.glob('paired/client/trials/*/transfer-verified.json'))
+            pilot.write_json(self.run/'graceful-stop-checkpoint.json',{
+                'reason':pilot.read_json(request), 'verified_trial_artifacts':saved,
+                'frozen_tuning_saved':(self.run/'frozen-tuning.json').exists(),
+                'note':'Retain completed trials. New serving instances require requalification; incomplete matched blocks may need repeating.'})
+            raise RuntimeError('Graceful stop requested; preserve evidence and clean up')
+
     def reduce_deadline(self,record):
         self.session.update({k:record[k] for k in ('cleanup_start_deadline_unix','deletion_target_unix')})
         pilot.write_json(self.run/'session.json',self.session);pilot.write_json(self.run/'staged-budget.json',record)
@@ -74,6 +85,7 @@ class Controller(s.Controller):
         raise RuntimeError('Cloud guard did not acknowledge shorter deadline; remote remains unallocated')
 
     def allocate(self,role):
+        self.check_stop()
         if role=='local':
             # CPU/image preparation can outlive the initial availability snapshot.
             pilot.write_json(self.run/'capacity-before-local.json',fresh_capacity(minimum=2))
@@ -94,6 +106,7 @@ class Controller(s.Controller):
         self.apply(doc,role+'-retained-engine-manifest')
         until=min(time.time()+25*60,self.session['cleanup_start_deadline_unix']-120)
         while time.time()<until:
+            self.check_stop()
             pod=json.loads(self.call(self.k+['-n',s.tp4.NS,'get','pod',role,'-o','json'],role+'-pod').stdout)
             if pod.get('metadata',{}).get('deletionTimestamp') or pod.get('status',{}).get('phase') in ('Failed','Succeeded'):raise RuntimeError('GPU Pod failed')
             for c in pod.get('status',{}).get('containerStatuses',[]):
@@ -129,6 +142,7 @@ class Controller(s.Controller):
         return found
 
     def job(self,name,args,limit):
+        self.check_stop()
         if time.time()+limit+120>=self.session['cleanup_start_deadline_unix']:raise TimeoutError('Insufficient work/collection reserve')
         identity=self.live_identity()
         script=shlex.join(args)+f'; rc=$?; echo "$rc" > /results/{name}.exit.tmp; mv /results/{name}.exit.tmp /results/{name}.exit; exit "$rc"'
