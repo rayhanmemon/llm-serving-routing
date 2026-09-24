@@ -1,0 +1,8 @@
+{
+  "observed_unix": 1790214507.527481,
+  "reason": "Local node heartbeat lost; health endpoint timed out; native Stop Instance completed before cleanup deadline. Cause unknown; worker availability invalidates continuation.",
+  "controller_pid": 87262,
+  "local_instance": "computeinstance-u00cjsmcqwyfgtbhqd",
+  "remote_instance": "computeinstance-u00nghs581fwfx99qx",
+  "cleanup_deadline_unix": 1790217812
+}

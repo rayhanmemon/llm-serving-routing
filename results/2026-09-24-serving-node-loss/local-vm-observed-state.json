@@ -1,0 +1,5 @@
+{
+  "id": "computeinstance-u00cjsmcqwyfgtbhqd",
+  "observed_state": "RUNNING",
+  "scope": "Read before native stop completion; RUNNING did not establish guest responsiveness."
+}

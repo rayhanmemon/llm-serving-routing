@@ -1,0 +1,23 @@
+{
+  "session_id": "20260924T005415Z-9497d26c",
+  "estimate_usd_pretax": "21.67088326276388888888888888",
+  "estimate_type": "conservative native-lifecycle estimate, not invoice-verified",
+  "gpu_intervals": {
+    "local": {
+      "from": "2026-09-24T01:04:41.432135Z",
+      "to": "2026-09-24T01:46:14.047163Z",
+      "end_operation": "Stop Instance",
+      "estimated_usd": "13.57090404133333333333333333"
+    },
+    "remote": {
+      "from": "2026-09-24T01:27:20.798048Z",
+      "to": "2026-09-24T01:50:34.540645Z",
+      "end_operation": "Delete Instance",
+      "estimated_usd": "7.588154139222222222222222222"
+    }
+  },
+  "support_allowance_usd": "0.5118250822083333333333333333",
+  "support_rate_usd_per_hour": "0.50",
+  "cleanup_verified_unix": 1790214940.491498,
+  "method": "GPU billing conservatively starts at each create-operation start. Local ends at successful Stop Instance completion, remote at delete completion. Support allowance covers full admitted-to-final-verified-empty window, including cleanup-marker finalization. No further start operation is present in observed local history."
+}
