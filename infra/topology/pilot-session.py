@@ -1083,6 +1083,68 @@ def wait_guard_ready(run_dir: Path, process: subprocess.Popen) -> None:
     raise SessionError("Deadline guard did not become ready; Terraform apply was not started")
 
 
+def allocation_failure(run_dir: Path, session: dict, *, query_fn=subprocess.run):
+    """Read only this run's currently allocating GPU group; never mutate cloud state."""
+    role = Path(session['terraform_plan_path']).stem
+    if session_profile(session) != ROUTER_SESSION_PROFILE or role not in ('local', 'remote'):
+        return None
+    guard = read_json(run_dir / 'cloud-guard-ready.json')
+    cluster = guard['cluster']
+    response = query_fn([
+        str(Path.home() / '.nebius/bin/nebius'), 'mk8s', 'node-group', 'list',
+        '--parent-id', cluster, '--all', '--format', 'json', '--no-check-update',
+        '--no-browser', '--timeout', '5s',
+    ], capture_output=True, text=True, check=True, timeout=8)
+    data = json.loads(response.stdout)
+    if not isinstance(data, dict) or ('items' in data and not isinstance(data['items'], list)) or data.get('next_page_token'):
+        raise ValueError('Incomplete allocation status response')
+    write_json(run_dir / (role + '-allocation-status.json'), data)
+    matches = [x for x in data.get('items', []) if x['metadata']['name'] == 'router-' + role]
+    if len(matches) > 1:
+        raise ValueError('Ambiguous allocating node group')
+    for group in matches:
+        if group['metadata']['parent_id'] != cluster:
+            raise ValueError('Allocation status belongs to another cluster')
+        status = group.get('status', {})
+        failures = [e['last_occurrence'] for e in status.get('events', [])
+                    if e.get('last_occurrence', {}).get('level') == 'ERROR'
+                    and e['last_occurrence'].get('code') == 'ComputeInstanceOperationFailed']
+        if failures or status.get('state') in ('ERROR', 'DELETING'):
+            return {'role': role, 'group_id': group['metadata']['id'],
+                    'state': status.get('state'), 'events': failures}
+    return None
+
+
+def wait_for_allocation(process, run_dir, session, *, check_fn=allocation_failure, now_fn=time.monotonic):
+    """Poll native failure events without needing a model turn or heartbeat."""
+    deadline = now_fn() + session.get('placement_timeout_seconds', PLACEMENT_TIMEOUT_SECONDS)
+    errors = 0
+    while True:
+        remaining = deadline - now_fn()
+        if remaining <= 0:
+            raise subprocess.TimeoutExpired('terraform apply', session.get('placement_timeout_seconds', PLACEMENT_TIMEOUT_SECONDS))
+        try:
+            code = process.wait(timeout=min(10, remaining))
+        except subprocess.TimeoutExpired:
+            code = None
+        if code is not None:
+            return code
+        if (run_dir / 'graceful-stop-request.json').exists():
+            raise SessionError('Graceful stop requested during allocation')
+        try:
+            failure = check_fn(run_dir, session)
+            errors = 0
+        except (subprocess.SubprocessError, OSError, ValueError, KeyError, TypeError) as exc:
+            errors += 1
+            write_json(run_dir / 'allocation-query-error.json', {'consecutive_errors': errors, 'error': str(exc)[:1000]})
+            if errors >= 3:
+                raise SessionError('Cannot verify allocation status after three bounded checks') from exc
+            continue
+        if failure:
+            write_json(run_dir / 'allocation-failure.json', {'detected_unix': time.time(), **failure})
+            raise SessionError('Native GPU allocation failed; evidence saved')
+
+
 def apply_plan(
     run_dir: Path,
     session: dict,
@@ -1112,9 +1174,12 @@ def apply_plan(
         )
         timed_out = False
         try:
-            exit_code = process.wait(
-                timeout=session.get("placement_timeout_seconds", PLACEMENT_TIMEOUT_SECONDS)
-            )
+            if session_profile(session) == ROUTER_SESSION_PROFILE and plan.stem in ('local', 'remote'):
+                exit_code = wait_for_allocation(process, run_dir, session)
+            else:
+                exit_code = process.wait(
+                    timeout=session.get("placement_timeout_seconds", PLACEMENT_TIMEOUT_SECONDS)
+                )
         except subprocess.TimeoutExpired:
             timed_out = True
             process.send_signal(signal.SIGINT)
@@ -1124,6 +1189,15 @@ def apply_plan(
                 process.kill()
                 process.wait()
             exit_code = 124
+        except SessionError as exc:
+            write_json(run_dir / 'allocation-abort.json', {'reason': str(exc), 'detected_unix': time.time()})
+            process.send_signal(signal.SIGINT)
+            try:
+                process.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+            exit_code = 125
         except KeyboardInterrupt:
             process.send_signal(signal.SIGINT)
             try:

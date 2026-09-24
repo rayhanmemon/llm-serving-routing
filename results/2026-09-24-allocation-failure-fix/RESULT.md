@@ -1,0 +1,9 @@
+# Native allocation failure detection
+
+The allocation controller previously waited for Terraform completion or its long timeout. A ten-minute AI heartbeat noticed remote NotEnoughResources roughly11minutes after the provider failure, while the healthy local node remained billed.
+
+For local and remote GPU stages, the controller now checks the exact allocating node group every10seconds with a native CLI call bounded to8seconds. A reported ComputeInstanceOperationFailed, terminal group state, graceful-stop request, or three consecutive failed status checks interrupts only its owned Terraform process; after at most30seconds it kills an unresponsive apply process and invokes the existing cleanup path. Other groups and routine provisioning do not trigger an abort. The independent cloud and desktop deadlines remain unchanged.
+
+Validation:275 tests ran;272 passed on macOS and3 unchanged Linux-only tests were skipped (their earlier pinned-Linux evidence remains applicable). Seven targeted cases cover provider error data, correct-group selection, malformed/ambiguous responses, transient and persistent query errors, deadline and graceful stop, and an actual child process interrupted through the apply-to-cleanup path. That real-process test completed in about10seconds. No cloud resources were rented for these checks.
+
+This fixes detection latency; it does not fix cloud capacity. The maximum10seconds between checks plus up to8seconds for a successful query is a detection bound, not a guarantee of completed resource deletion within that time. The existing full848-request synthetic workflow was not repeated: request routing, model, workloads, measurement, tuning, evidence collection and cleanup implementation were unchanged. The source-bound preparation proof records this limited revalidation.
