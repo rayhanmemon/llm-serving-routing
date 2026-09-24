@@ -22,7 +22,7 @@ class CombinedTests(unittest.TestCase):
    self.assertTrue(checkpoint['frozen_tuning_saved']);self.assertEqual(len(checkpoint['verified_trial_artifacts']),1)
    self.assertTrue(artifact.exists())
    obj.call=Mock()
-   with self.assertRaisesRegex(RuntimeError,'Graceful stop'):obj.allocate('remote')
+   with self.assertRaisesRegex(RuntimeError,'Graceful stop'):obj.allocate_pair()
    with self.assertRaisesRegex(RuntimeError,'Graceful stop'):obj.job('next',[],60)
    obj.call.assert_not_called()
  def test_collection_error_is_bounded_and_does_not_embed_archive_bytes(self):
@@ -79,15 +79,6 @@ class CombinedTests(unittest.TestCase):
    record=advice(0);record['selected']['status']['preemptible']['data_state']=state
    with patch.object(r.layout,'verify_capacity',return_value=record),patch.object(r.time,'time',return_value=now):
     with self.assertRaises(ValueError):r.fresh_capacity(2)
-  with tempfile.TemporaryDirectory() as temp:
-   obj=object.__new__(r.Controller);obj.run=Path(temp);obj.local_requested=None;obj.remote_requested=None
-   with patch.object(r,'fresh_capacity',side_effect=ValueError('capacity disappeared')),patch.object(r.s.Controller,'allocate') as allocate:
-    with self.assertRaises(ValueError):obj.allocate('local')
-    allocate.assert_not_called();self.assertIsNone(obj.local_requested)
-    self.assertFalse((obj.run/'resource-request-times.json').exists())
-   with patch.object(r,'fresh_capacity',return_value=advice(0)) as check,patch.object(r.s.Controller,'allocate') as allocate:
-    obj.allocate('local');check.assert_called_once_with(minimum=2);allocate.assert_called_once_with('local')
-    self.assertTrue((obj.run/'capacity-before-local.json').exists())
  def test_budget_early_late_and_reserve(self):
   for local,now in [(0,0),(0,20*60),(8*60,30*60)]:
    d=b.admit_remote(0,local,now,180*60)
@@ -145,7 +136,7 @@ class CombinedTests(unittest.TestCase):
    self.assertTrue(all(x['case_id'].endswith('-1') for x in rows))
  def test_combined_orchestration_preserves_local_and_cleans_every_failure(self):
   # Real execute()/execute_admitted(); effects at external phase boundaries are substituted.
-  names=['bootstrap','local-allocate','local-deploy','client-apply','client-ready','image-import','local-qualify','remote-allocate','remote-deploy','remote-qualify','router-setup','trial','policy','collect']
+  names=['bootstrap','pair-allocate','pair-deploy','client-apply','client-ready','image-import','local-qualify','remote-qualify','router-setup','trial','policy','collect']
   for fault in [None,*names]:
    with self.subTest(fault=fault),tempfile.TemporaryDirectory() as temp:
     run=Path(temp);session={'cleanup_start_deadline_unix':time.time()+12000};events=[]
@@ -154,7 +145,7 @@ class CombinedTests(unittest.TestCase):
      events.append(name)
      if name==fault:raise RuntimeError('injected '+name)
      return value
-    obj.allocate=lambda role:event(role+'-allocate');obj.deploy=lambda role:event(role+'-deploy')
+    obj.allocate_pair=lambda:event('pair-allocate');obj.deploy_pair=lambda:event('pair-deploy')
     obj.apply=lambda *a,**k:event('client-apply');obj.call=lambda *a,**k:event('client-ready')
     obj.qualify=lambda role:event(role+'-qualify');obj.setup_router=lambda:event('router-setup');obj.import_picker=lambda:event('image-import')
     obj.trial=lambda t:event('trial',(dict(trial=t),[]));obj.picker=lambda *a:event('policy');obj.collect=lambda *a,**k:event('collect')
@@ -165,10 +156,11 @@ class CombinedTests(unittest.TestCase):
      else:r.execute_admitted(run,session,ROOT/'config.json',ROOT/'suite.json.gz',ROOT/'qualification.json.gz',Path('chart'),Path('image'),ROOT/'plan.json')
     self.assertEqual(events[-1],'cleanup')
     if fault is None:
-     self.assertEqual(events.count('local-deploy'),1);self.assertEqual(events.count('trial'),40)
-     self.assertLess(events.index('local-qualify'),events.index('remote-allocate'))
-     self.assertLess(events.index('client-ready'),events.index('local-allocate'));self.assertLess(events.index('image-import'),events.index('local-allocate'))
-    if fault=='local-qualify':self.assertNotIn('remote-allocate',events)
+     self.assertEqual(events.count('pair-deploy'),1);self.assertEqual(events.count('trial'),40)
+     self.assertLess(events.index('pair-allocate'),events.index('pair-deploy'));self.assertLess(events.index('pair-deploy'),events.index('local-qualify'))
+     self.assertLess(events.index('client-ready'),events.index('pair-allocate'));self.assertLess(events.index('image-import'),events.index('pair-allocate'))
+    if fault=='pair-allocate':self.assertNotIn('pair-deploy',events)
+    if fault=='local-qualify':self.assertNotIn('remote-qualify',events)
  def test_marker_hashes_and_sizes(self):
   doc=r.code_manifest(ROOT/'config.json',{'local':'node-a','remote':'node-b'})
   self.assertEqual(len([x for x in doc['items'] if x['kind']=='Pod']),2)

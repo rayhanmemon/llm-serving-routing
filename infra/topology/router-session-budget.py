@@ -41,3 +41,11 @@ def admit_remote(start,local,now,original_target,required_work_seconds=76*60,cap
     if result['cleanup_start_deadline_unix']-now < required_work_seconds:
         raise ValueError('Insufficient funded time for remote startup, minimum comparison and cleanup')
     return result
+
+
+def admit_pair(start,now,original_target,required_work_seconds=76*60,cap=CAP):
+    """Charge both hosts from the same request time; retain all cleanup reserves."""
+    result=deadlines(start,now,now,now,original_target,cap=cap)
+    if result['cleanup_start_deadline_unix']-now < required_work_seconds:
+        raise ValueError('Insufficient funded time for paired allocation, startup, comparison and cleanup')
+    return result

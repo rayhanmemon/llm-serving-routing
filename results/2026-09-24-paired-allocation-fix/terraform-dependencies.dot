@@ -1,0 +1,74 @@
+digraph {
+	compound = "true"
+	newrank = "true"
+	subgraph "root" {
+		"[root] nebius_compute_v1_gpu_cluster.local (expand)" [label = "nebius_compute_v1_gpu_cluster.local", shape = "box"]
+		"[root] nebius_iam_v1_access_permit.guard (expand)" [label = "nebius_iam_v1_access_permit.guard", shape = "box"]
+		"[root] nebius_iam_v1_group.guard (expand)" [label = "nebius_iam_v1_group.guard", shape = "box"]
+		"[root] nebius_iam_v1_group_membership.guard (expand)" [label = "nebius_iam_v1_group_membership.guard", shape = "box"]
+		"[root] nebius_iam_v1_service_account.guard (expand)" [label = "nebius_iam_v1_service_account.guard", shape = "box"]
+		"[root] nebius_mk8s_v1_cluster.topology (expand)" [label = "nebius_mk8s_v1_cluster.topology", shape = "box"]
+		"[root] nebius_mk8s_v1_node_group.cpu (expand)" [label = "nebius_mk8s_v1_node_group.cpu", shape = "box"]
+		"[root] nebius_mk8s_v1_node_group.local (expand)" [label = "nebius_mk8s_v1_node_group.local", shape = "box"]
+		"[root] nebius_mk8s_v1_node_group.remote (expand)" [label = "nebius_mk8s_v1_node_group.remote", shape = "box"]
+		"[root] provider[\"registry.terraform.io/nebius/nebius\"]" [label = "provider[\"registry.terraform.io/nebius/nebius\"]", shape = "diamond"]
+		"[root] var.cloud_guard" [label = "var.cloud_guard", shape = "note"]
+		"[root] var.existing_guard_service_account_id" [label = "var.existing_guard_service_account_id", shape = "note"]
+		"[root] var.gpu_platform" [label = "var.gpu_platform", shape = "note"]
+		"[root] var.gpu_preemptible" [label = "var.gpu_preemptible", shape = "note"]
+		"[root] var.infiniband_fabric" [label = "var.infiniband_fabric", shape = "note"]
+		"[root] var.ipc_diagnostic_only" [label = "var.ipc_diagnostic_only", shape = "note"]
+		"[root] var.nebius_profile" [label = "var.nebius_profile", shape = "note"]
+		"[root] var.project_id" [label = "var.project_id", shape = "note"]
+		"[root] var.single_gpu_host" [label = "var.single_gpu_host", shape = "note"]
+		"[root] var.subnet_id" [label = "var.subnet_id", shape = "note"]
+		"[root] local.gpu_shape (expand)" -> "[root] local.gpu_shapes (expand)"
+		"[root] local.gpu_shape (expand)" -> "[root] var.gpu_platform (validation)"
+		"[root] nebius_compute_v1_gpu_cluster.local (expand)" -> "[root] provider[\"registry.terraform.io/nebius/nebius\"]"
+		"[root] nebius_compute_v1_gpu_cluster.local (expand)" -> "[root] var.gpu_platform (validation)"
+		"[root] nebius_compute_v1_gpu_cluster.local (expand)" -> "[root] var.infiniband_fabric"
+		"[root] nebius_compute_v1_gpu_cluster.local (expand)" -> "[root] var.project_id"
+		"[root] nebius_iam_v1_access_permit.guard (expand)" -> "[root] nebius_iam_v1_group.guard (expand)"
+		"[root] nebius_iam_v1_group.guard (expand)" -> "[root] provider[\"registry.terraform.io/nebius/nebius\"]"
+		"[root] nebius_iam_v1_group.guard (expand)" -> "[root] var.cloud_guard"
+		"[root] nebius_iam_v1_group.guard (expand)" -> "[root] var.existing_guard_service_account_id"
+		"[root] nebius_iam_v1_group.guard (expand)" -> "[root] var.project_id"
+		"[root] nebius_iam_v1_group_membership.guard (expand)" -> "[root] nebius_iam_v1_group.guard (expand)"
+		"[root] nebius_iam_v1_group_membership.guard (expand)" -> "[root] nebius_iam_v1_service_account.guard (expand)"
+		"[root] nebius_iam_v1_service_account.guard (expand)" -> "[root] provider[\"registry.terraform.io/nebius/nebius\"]"
+		"[root] nebius_iam_v1_service_account.guard (expand)" -> "[root] var.cloud_guard"
+		"[root] nebius_iam_v1_service_account.guard (expand)" -> "[root] var.existing_guard_service_account_id"
+		"[root] nebius_iam_v1_service_account.guard (expand)" -> "[root] var.project_id"
+		"[root] nebius_mk8s_v1_cluster.topology (expand)" -> "[root] provider[\"registry.terraform.io/nebius/nebius\"]"
+		"[root] nebius_mk8s_v1_cluster.topology (expand)" -> "[root] var.project_id"
+		"[root] nebius_mk8s_v1_cluster.topology (expand)" -> "[root] var.subnet_id"
+		"[root] nebius_mk8s_v1_node_group.cpu (expand)" -> "[root] nebius_iam_v1_access_permit.guard (expand)"
+		"[root] nebius_mk8s_v1_node_group.cpu (expand)" -> "[root] nebius_iam_v1_group_membership.guard (expand)"
+		"[root] nebius_mk8s_v1_node_group.cpu (expand)" -> "[root] nebius_mk8s_v1_cluster.topology (expand)"
+		"[root] nebius_mk8s_v1_node_group.cpu (expand)" -> "[root] var.ipc_diagnostic_only"
+		"[root] nebius_mk8s_v1_node_group.local (expand)" -> "[root] local.gpu_shape (expand)"
+		"[root] nebius_mk8s_v1_node_group.local (expand)" -> "[root] nebius_compute_v1_gpu_cluster.local (expand)"
+		"[root] nebius_mk8s_v1_node_group.local (expand)" -> "[root] nebius_mk8s_v1_cluster.topology (expand)"
+		"[root] nebius_mk8s_v1_node_group.local (expand)" -> "[root] var.cloud_guard"
+		"[root] nebius_mk8s_v1_node_group.local (expand)" -> "[root] var.gpu_preemptible"
+		"[root] nebius_mk8s_v1_node_group.remote (expand)" -> "[root] local.gpu_shape (expand)"
+		"[root] nebius_mk8s_v1_node_group.remote (expand)" -> "[root] nebius_compute_v1_gpu_cluster.local (expand)"
+		"[root] nebius_mk8s_v1_node_group.remote (expand)" -> "[root] nebius_mk8s_v1_cluster.topology (expand)"
+		"[root] nebius_mk8s_v1_node_group.remote (expand)" -> "[root] var.cloud_guard"
+		"[root] nebius_mk8s_v1_node_group.remote (expand)" -> "[root] var.gpu_preemptible"
+		"[root] nebius_mk8s_v1_node_group.remote (expand)" -> "[root] var.ipc_diagnostic_only"
+		"[root] nebius_mk8s_v1_node_group.remote (expand)" -> "[root] var.single_gpu_host"
+		"[root] output.cluster_id (expand)" -> "[root] nebius_mk8s_v1_cluster.topology (expand)"
+		"[root] output.node_group_ids (expand)" -> "[root] nebius_mk8s_v1_node_group.cpu (expand)"
+		"[root] output.node_group_ids (expand)" -> "[root] nebius_mk8s_v1_node_group.local (expand)"
+		"[root] output.node_group_ids (expand)" -> "[root] nebius_mk8s_v1_node_group.remote (expand)"
+		"[root] provider[\"registry.terraform.io/nebius/nebius\"] (close)" -> "[root] nebius_mk8s_v1_node_group.cpu (expand)"
+		"[root] provider[\"registry.terraform.io/nebius/nebius\"] (close)" -> "[root] nebius_mk8s_v1_node_group.local (expand)"
+		"[root] provider[\"registry.terraform.io/nebius/nebius\"] (close)" -> "[root] nebius_mk8s_v1_node_group.remote (expand)"
+		"[root] provider[\"registry.terraform.io/nebius/nebius\"]" -> "[root] var.nebius_profile"
+		"[root] root" -> "[root] output.cluster_id (expand)"
+		"[root] root" -> "[root] output.node_group_ids (expand)"
+		"[root] root" -> "[root] provider[\"registry.terraform.io/nebius/nebius\"] (close)"
+		"[root] var.gpu_platform (validation)" -> "[root] var.gpu_platform"
+	}
+}

@@ -1086,7 +1086,7 @@ def wait_guard_ready(run_dir: Path, process: subprocess.Popen) -> None:
 def allocation_failure(run_dir: Path, session: dict, *, query_fn=subprocess.run):
     """Read only this run's currently allocating GPU group; never mutate cloud state."""
     role = Path(session['terraform_plan_path']).stem
-    if session_profile(session) != ROUTER_SESSION_PROFILE or role not in ('local', 'remote'):
+    if session_profile(session) != ROUTER_SESSION_PROFILE or role not in ('local', 'remote', 'gpu-pair'):
         return None
     guard = read_json(run_dir / 'cloud-guard-ready.json')
     cluster = guard['cluster']
@@ -1099,8 +1099,9 @@ def allocation_failure(run_dir: Path, session: dict, *, query_fn=subprocess.run)
     if not isinstance(data, dict) or ('items' in data and not isinstance(data['items'], list)) or data.get('next_page_token'):
         raise ValueError('Incomplete allocation status response')
     write_json(run_dir / (role + '-allocation-status.json'), data)
-    matches = [x for x in data.get('items', []) if x['metadata']['name'] == 'router-' + role]
-    if len(matches) > 1:
+    roles = ('local', 'remote') if role == 'gpu-pair' else (role,)
+    matches = [x for x in data.get('items', []) if x['metadata']['name'] in {'router-' + r for r in roles}]
+    if len({x['metadata']['name'] for x in matches}) != len(matches):
         raise ValueError('Ambiguous allocating node group')
     for group in matches:
         if group['metadata']['parent_id'] != cluster:
@@ -1110,7 +1111,7 @@ def allocation_failure(run_dir: Path, session: dict, *, query_fn=subprocess.run)
                     if e.get('last_occurrence', {}).get('level') == 'ERROR'
                     and e['last_occurrence'].get('code') == 'ComputeInstanceOperationFailed']
         if failures or status.get('state') in ('ERROR', 'DELETING'):
-            return {'role': role, 'group_id': group['metadata']['id'],
+            return {'role': group['metadata']['name'].removeprefix('router-'), 'group_id': group['metadata']['id'],
                     'state': status.get('state'), 'events': failures}
     return None
 
@@ -1174,7 +1175,7 @@ def apply_plan(
         )
         timed_out = False
         try:
-            if session_profile(session) == ROUTER_SESSION_PROFILE and plan.stem in ('local', 'remote'):
+            if session_profile(session) == ROUTER_SESSION_PROFILE and plan.stem in ('local', 'remote', 'gpu-pair'):
                 exit_code = wait_for_allocation(process, run_dir, session)
             else:
                 exit_code = process.wait(

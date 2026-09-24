@@ -79,49 +79,64 @@ class Controller(s.Controller):
             ack=self.call(self.k+['-n',s.tp4.NS,'exec','deadline-guard','--','cat','/results/guard-ready.json'],'shortened-guard-ack',20)
             obj=json.loads(ack.stdout)
             if obj.get('cluster')==self.cluster and obj.get('deadline')==self.session['cleanup_start_deadline_unix']:
-                if obj.get('gpu_groups_present_at_arm')!=['router-local']:raise ValueError('Unexpected GPU group before remote admission')
+                if obj.get('gpu_groups_present_at_arm')!=[]:raise ValueError('GPU groups exist before paired admission')
                 pilot.write_json(self.run/'shortened-guard-ready.json',obj);return
             self.sleep(2)
-        raise RuntimeError('Cloud guard did not acknowledge shorter deadline; remote remains unallocated')
+        raise RuntimeError('Cloud guard did not acknowledge shorter deadline; neither GPU group may be allocated')
 
-    def allocate(self,role):
+    def allocate_pair(self):
+        """One Terraform apply requests both groups concurrently, before model loading."""
         self.check_stop()
-        if role=='local':
-            # CPU/image preparation can outlive the initial availability snapshot.
-            pilot.write_json(self.run/'capacity-before-local.json',fresh_capacity(minimum=2))
-            self.local_requested=time.time()
-        else:
-            if not (self.run/'tp4-local-qualified.json').exists():raise ValueError('No verified local qualification')
-            # Recheck availability before committing the second node; never wait on a billed host.
-            pilot.write_json(self.run/'capacity-before-remote.json',fresh_capacity(minimum=1))
-            now=time.time();record=budget.admit_remote(self.session['started_unix'],self.local_requested,now,self.original_target,cap=self.session_cap)
-            self.reduce_deadline(record)
-            self.remote_requested=now
-        pilot.write_json(self.run/'resource-request-times.json',{'local':self.local_requested,'remote':self.remote_requested})
-        super().allocate(role)
+        targets={'local':'nebius_mk8s_v1_node_group.local',
+                 'remote':'nebius_mk8s_v1_node_group.remote[0]'}
+        plan=self.run/'gpu-pair.tfplan'
+        self.call(self.tf+['plan','-input=false',*['-target='+v for v in targets.values()],'-out='+str(plan)],'gpu-pair-plan',90)
+        data=json.loads(self.call(self.tf+['show','-json',str(plan)],'gpu-pair-plan-json').stdout)
+        s.validate_stage(self.original,data,set(targets.values())|{'nebius_compute_v1_gpu_cluster.local'})
+        # Check after planning, immediately before committing either GPU group.
+        pilot.write_json(self.run/'capacity-before-pair.json',fresh_capacity(minimum=2))
+        now=time.time()
+        record=budget.admit_pair(self.session['started_unix'],now,self.original_target,cap=self.session_cap)
+        self.reduce_deadline(record)
+        self.check_stop()
+        # Conservatively bill both from admission, including guard acknowledgement time.
+        self.local_requested=now;self.remote_requested=now
+        pilot.write_json(self.run/'resource-request-times.json',{'local':now,'remote':now})
+        self.session['terraform_plan_path']=str(plan);self.session['terraform_plan_sha256']=pilot.file_sha256(plan)
+        pilot.write_json(self.run/'session.json',self.session)
+        if pilot.apply_plan(self.run,self.session):raise RuntimeError('Paired GPU allocation failed')
+        state=json.loads(self.call(self.tf+['show','-json'],'gpu-pair-state').stdout)
+        resources=state['values']['root_module']['resources']
+        groups={role:next(x['values']['id'] for x in resources if x['address']==target) for role,target in targets.items()}
+        self.nodes_by_role.update(self.nodes(groups))
+        if set(self.nodes_by_role)!={'local','remote'}:raise ValueError('Both healthy GPU hosts are required before model loading')
 
-    def deploy(self,role):
-        doc=code_manifest(self.config_path,self.nodes_by_role)
-        if role=='remote':doc['items']=[x for x in doc['items'] if x['kind']=='Pod' and x['metadata']['name']=='remote']
-        self.apply(doc,role+'-retained-engine-manifest')
+    def deploy_pair(self):
+        self.check_stop()
+        if set(self.nodes_by_role)!={'local','remote'}:raise ValueError('Both GPU hosts must be allocated first')
+        # Submit both Pods together, so downloads/model initialization overlap.
+        self.apply(code_manifest(self.config_path,self.nodes_by_role),'paired-engine-manifest')
+        pending={'local','remote'}
         until=min(time.time()+25*60,self.session['cleanup_start_deadline_unix']-120)
-        while time.time()<until:
+        while pending and time.time()<until:
             self.check_stop()
-            pod=json.loads(self.call(self.k+['-n',s.tp4.NS,'get','pod',role,'-o','json'],role+'-pod').stdout)
-            if pod.get('metadata',{}).get('deletionTimestamp') or pod.get('status',{}).get('phase') in ('Failed','Succeeded'):raise RuntimeError('GPU Pod failed')
-            for c in pod.get('status',{}).get('containerStatuses',[]):
-                st=c.get('state',{})
-                if st.get('terminated') or st.get('waiting',{}).get('reason') in ('ErrImagePull','ImagePullBackOff','CreateContainerConfigError'):raise RuntimeError('GPU container failed')
-            ip=pod.get('status',{}).get('podIP')
-            if ip:
-                f=self.call(self.k+['-n',s.tp4.NS,'exec',role,'-c','engines','--','cat','/results/engine-failure.json'],role+'-failure',15,check=False)
-                if f.returncode==0:raise RuntimeError(f.stdout)
-                ports=(8100,8200,8300) if role=='local' else (8200,8300)
-                code='import urllib.request;'+ ';'.join(f'urllib.request.urlopen("http://127.0.0.1:{p}/'+('evidence' if p==8300 else 'v1/models')+'",timeout=4).read()' for p in ports)
-                r=self.call(self.k+['-n',s.tp4.NS,'exec',role,'-c','engines','--','python3','-c',code],role+'-ready',20,check=False)
-                if r.returncode==0:self.ips[role]=ip;return
-            self.sleep(3)
-        raise TimeoutError(role+' model startup exceeded allowance')
+            for role in sorted(pending):
+                pod=json.loads(self.call(self.k+['-n',s.tp4.NS,'get','pod',role,'-o','json'],role+'-pod').stdout)
+                if pod.get('metadata',{}).get('deletionTimestamp') or pod.get('status',{}).get('phase') in ('Failed','Succeeded'):raise RuntimeError(role+' GPU Pod failed')
+                for c in pod.get('status',{}).get('containerStatuses',[]):
+                    st=c.get('state',{})
+                    if st.get('terminated') or st.get('waiting',{}).get('reason') in ('ErrImagePull','ImagePullBackOff','CreateContainerConfigError'):raise RuntimeError(role+' GPU container failed')
+                ip=pod.get('status',{}).get('podIP')
+                if ip:
+                    self.ips[role]=ip  # Include both allocated Pods in failure evidence collection.
+                    f=self.call(self.k+['-n',s.tp4.NS,'exec',role,'-c','engines','--','cat','/results/engine-failure.json'],role+'-failure',15,check=False)
+                    if f.returncode==0:raise RuntimeError(f.stdout)
+                    ports=(8100,8200,8300) if role=='local' else (8200,8300)
+                    code='import urllib.request;'+ ';'.join(f'urllib.request.urlopen("http://127.0.0.1:{p}/'+('evidence' if p==8300 else 'v1/models')+'",timeout=4).read()' for p in ports)
+                    response=self.call(self.k+['-n',s.tp4.NS,'exec',role,'-c','engines','--','python3','-c',code],role+'-ready',20,check=False)
+                    if response.returncode==0:pending.remove(role)
+            if pending:self.sleep(3)
+        if pending:raise TimeoutError('Paired model startup exceeded allowance: '+','.join(sorted(pending)))
 
     def live_identity(self):
         state=json.loads(self.call(self.k+['-n',s.tp4.NS,'get','pods','-o','json'],'live-pods').stdout)
@@ -313,8 +328,8 @@ class Controller(s.Controller):
         self.apply(client_manifest(self.cpu_node,suite,qualification,self.plan_path),'session-client')
         self.call(self.k+['-n',s.tp4.NS,'wait','--for=condition=Ready','pod/client','--timeout=180s'],'client-ready',190)
         self.import_picker()
-        self.allocate('local');self.deploy('local');self.qualify('local')
-        self.allocate('remote');self.deploy('remote');self.qualify('remote');self.setup_router()
+        self.allocate_pair();self.deploy_pair()
+        self.qualify('local');self.qualify('remote');self.setup_router()
         self.evaluate()
 
     def evaluate(self):
