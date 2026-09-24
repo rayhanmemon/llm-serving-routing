@@ -1,0 +1,13 @@
+{
+  "session_id": "20260924T084558Z-50232672",
+  "estimate_usd_pretax": "10.55874105016666666666666667",
+  "local_gpu_usd": "10.189823126",
+  "remote_gpu_usd": "0",
+  "support_allowance_usd": "0.3689179241666666666666666667",
+  "method": "Conservative local successful-create operation start through successful deletion completion at19.60/hour; remote failed creation with no successful start estimated zero GPU compute; support0.50/hour admission through verified cleanup. Not invoice-verified.",
+  "local_interval": [
+    "2026-09-24T08:55:59.732153Z",
+    "2026-09-24T09:27:11.332319Z"
+  ],
+  "cleanup_verified_utc": "2026-09-24T09:30:14.994227+00:00"
+}

@@ -1,0 +1,34 @@
+{
+  "detected_unix": 1790241872.363316,
+  "events": [
+    {
+      "code": "ComputeInstanceOperationFailed",
+      "error": {
+        "code": 8,
+        "details": [
+          {
+            "@type": "type.googleapis.com/nebius.common.v1.ServiceError",
+            "code": "NotEnoughResources",
+            "not_enough_resources": {
+              "violations": [
+                {
+                  "message": "VM schedule timeout, most likely due to insufficient hardware resources, for more information see https://docs.nebius.com/compute/virtual-machines/not-enough-resources",
+                  "requested": "8gpu-128vcpu-1600gb",
+                  "resource_type": "virtualMachine"
+                }
+              ]
+            },
+            "retry_type": "NOTHING",
+            "service": "compute"
+          }
+        ]
+      },
+      "level": "ERROR",
+      "message": "Operation computeoperation-u00p3zn8kqb4r6nq5m \"Create Instance\" of compute instance is failed for node mk8snodegroup-u00mghaas4dy2h8svb-7j6js-7crl8",
+      "occurred_at": "2026-09-24T09:24:28Z"
+    }
+  ],
+  "group_id": "mk8snodegroup-u00mghaas4dy2h8svb",
+  "role": "remote",
+  "state": "PROVISIONING"
+}

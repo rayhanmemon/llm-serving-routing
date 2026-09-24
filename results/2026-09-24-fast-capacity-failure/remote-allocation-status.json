@@ -1,0 +1,213 @@
+{
+  "items": [
+    {
+      "metadata": {
+        "created_at": "2026-09-24T08:51:11Z",
+        "id": "mk8snodegroup-u00dwzy943ps1egvw9",
+        "name": "router-cpu",
+        "parent_id": "mk8scluster-u00aad0be0yce4eazm",
+        "resource_version": "1",
+        "updated_at": "2026-09-24T08:51:11Z"
+      },
+      "spec": {
+        "fixed_node_count": "1",
+        "strategy": {
+          "drain_timeout": "60s"
+        },
+        "template": {
+          "boot_disk": {
+            "size_gibibytes": "64",
+            "type": "NETWORK_SSD"
+          },
+          "network_interfaces": [
+            {
+              "subnet_id": "vpcsubnet-u00fjg7m2r4s10h9sb"
+            }
+          ],
+          "resources": {
+            "platform": "cpu-d3",
+            "preset": "16vcpu-64gb"
+          },
+          "service_account_id": "serviceaccount-u00z5fq630hbbrd7ck"
+        }
+      },
+      "status": {
+        "node_count": "1",
+        "ready_node_count": "1",
+        "state": "RUNNING",
+        "strategy": {
+          "drain_timeout": "60s",
+          "max_surge": {
+            "count": "0"
+          },
+          "max_unavailable": {
+            "count": "1"
+          }
+        },
+        "target_node_count": "1",
+        "version": "v1.35.7-nebius-node.75"
+      }
+    },
+    {
+      "metadata": {
+        "created_at": "2026-09-24T08:55:57Z",
+        "id": "mk8snodegroup-u00v11ndn2nm88689j",
+        "name": "router-local",
+        "parent_id": "mk8scluster-u00aad0be0yce4eazm",
+        "resource_version": "1",
+        "updated_at": "2026-09-24T08:55:57Z"
+      },
+      "spec": {
+        "fixed_node_count": "1",
+        "strategy": {
+          "drain_timeout": "60s"
+        },
+        "template": {
+          "boot_disk": {
+            "size_gibibytes": "256",
+            "type": "NETWORK_SSD"
+          },
+          "gpu_cluster": {
+            "id": "computegpucluster-u00dqn7ny0z8fjxmz7"
+          },
+          "gpu_settings": {
+            "drivers_preset": "cuda13.0"
+          },
+          "network_interfaces": [
+            {
+              "subnet_id": "vpcsubnet-u00fjg7m2r4s10h9sb"
+            }
+          ],
+          "preemptible": {},
+          "resources": {
+            "platform": "gpu-h200-sxm",
+            "preset": "8gpu-128vcpu-1600gb"
+          }
+        },
+        "version": "1.35"
+      },
+      "status": {
+        "node_count": "1",
+        "ready_node_count": "1",
+        "state": "RUNNING",
+        "strategy": {
+          "drain_timeout": "60s",
+          "max_surge": {
+            "count": "0"
+          },
+          "max_unavailable": {
+            "count": "1"
+          }
+        },
+        "target_node_count": "1",
+        "version": "v1.35.7-nebius-node.75"
+      }
+    },
+    {
+      "metadata": {
+        "created_at": "2026-09-24T09:18:38Z",
+        "id": "mk8snodegroup-u00mghaas4dy2h8svb",
+        "name": "router-remote",
+        "parent_id": "mk8scluster-u00aad0be0yce4eazm",
+        "resource_version": "1",
+        "updated_at": "2026-09-24T09:18:38Z"
+      },
+      "spec": {
+        "fixed_node_count": "1",
+        "strategy": {
+          "drain_timeout": "60s"
+        },
+        "template": {
+          "boot_disk": {
+            "size_gibibytes": "256",
+            "type": "NETWORK_SSD"
+          },
+          "gpu_cluster": {
+            "id": "computegpucluster-u00dqn7ny0z8fjxmz7"
+          },
+          "gpu_settings": {
+            "drivers_preset": "cuda13.0"
+          },
+          "network_interfaces": [
+            {
+              "subnet_id": "vpcsubnet-u00fjg7m2r4s10h9sb"
+            }
+          ],
+          "preemptible": {},
+          "resources": {
+            "platform": "gpu-h200-sxm",
+            "preset": "8gpu-128vcpu-1600gb"
+          }
+        },
+        "version": "1.35"
+      },
+      "status": {
+        "events": [
+          {
+            "first_occurred_at": "2026-09-24T09:24:28Z",
+            "last_occurrence": {
+              "code": "ComputeInstanceOperationFailed",
+              "error": {
+                "code": 8,
+                "details": [
+                  {
+                    "@type": "type.googleapis.com/nebius.common.v1.ServiceError",
+                    "code": "NotEnoughResources",
+                    "not_enough_resources": {
+                      "violations": [
+                        {
+                          "message": "VM schedule timeout, most likely due to insufficient hardware resources, for more information see https://docs.nebius.com/compute/virtual-machines/not-enough-resources",
+                          "requested": "8gpu-128vcpu-1600gb",
+                          "resource_type": "virtualMachine"
+                        }
+                      ]
+                    },
+                    "retry_type": "NOTHING",
+                    "service": "compute"
+                  }
+                ]
+              },
+              "level": "ERROR",
+              "message": "Operation computeoperation-u00p3zn8kqb4r6nq5m \"Create Instance\" of compute instance is failed for node mk8snodegroup-u00mghaas4dy2h8svb-7j6js-7crl8",
+              "occurred_at": "2026-09-24T09:24:28Z"
+            },
+            "occurrence_count": "1"
+          },
+          {
+            "first_occurred_at": "2026-09-24T09:18:41Z",
+            "last_occurrence": {
+              "code": "ComputeInstanceStopped",
+              "level": "WARN",
+              "message": "Compute instance is stopped for node mk8snodegroup-u00mghaas4dy2h8svb-7j6js-7crl8",
+              "occurred_at": "2026-09-24T09:24:13Z"
+            },
+            "occurrence_count": "2"
+          },
+          {
+            "first_occurred_at": "2026-09-24T09:18:39Z",
+            "last_occurrence": {
+              "code": "WaitingForNodeRef",
+              "level": "INFO",
+              "message": "WaitingForNodeRef for node mk8snodegroup-u00mghaas4dy2h8svb-7j6js-7crl8",
+              "occurred_at": "2026-09-24T09:18:39Z"
+            },
+            "occurrence_count": "1"
+          }
+        ],
+        "node_count": "1",
+        "reconciling": true,
+        "state": "PROVISIONING",
+        "strategy": {
+          "drain_timeout": "60s",
+          "max_surge": {
+            "count": "0"
+          },
+          "max_unavailable": {
+            "count": "1"
+          }
+        },
+        "target_node_count": "1"
+      }
+    }
+  ]
+}
