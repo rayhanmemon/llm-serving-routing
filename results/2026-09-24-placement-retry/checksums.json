@@ -1,0 +1,13 @@
+{
+  "resource-request-times.json": "1804655bfe856162cc8e13660ec269ad497befdb017cbd2422fa23dc5a5521dc",
+  "cost-estimate.json": "84e47010ee731826c8049a79ec0d2b8e0a7c7d3d3cda281e28a60a06389fd99d",
+  "RESULT.md": "ada72c3944dc8c7c49d9d441b32f7b6ddff167861ad41c963672700d12f0cba1",
+  "capacity-stop.json": "be97d7e70412a01d4dfe9cbd28ea9e110a696cfae7ec4c603efd26b61d847410",
+  "cleanup-verified.json": "e8f11932bd2b326277af21652e53570902d396e4cf2b18f35c92ce6acf319cbd",
+  "successful-placement-config-comparison.json": "ed0c0157a33271e143a8bed65c5754996e5de18250dea1c62ffa4ee09106d44d",
+  "cleanup-check.txt": "87b10a894c5e1f2cc51ada40a3e5ed53a3afa64d4ef2406cb2f175ded5b05fe2",
+  "local-operations.json": "05f1e55789552a595ca6165967c37075eb2bb92312f5a2bc9993f819068355b1",
+  "capacity-before-local.json": "1d45834850476b201c377e2d098b54ae9d315bd27abd550843afbb75a1245675",
+  "cpu-operations.json": "4b1a1e89f1d13b913514576fa39ebf8b6618d8c5e080bfbad0c743d29e813d60",
+  "node-groups-latest.json": "8fee9edb724de0542f5f9ff868b02d7fd1f437ea67756ce6400e7555b23b4d0d"
+}

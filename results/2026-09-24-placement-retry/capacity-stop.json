@@ -1,0 +1,10 @@
+{
+  "observed_unix": 1790208364.521056,
+  "reason": "Native Create Instance failed with NotEnoughResources; stop before workload",
+  "interrupted": [
+    {
+      "pid": 81844,
+      "args": "terraform -chdir=/Users/rayhanmemon/disagg-boundary/infra/topology/terraform-rdma apply -input=false /Users/rayhanmemon/.codex/run-state/router-h100-pilot/runs/20260923T234908Z-14a404af/local.tfplan"
+    }
+  ]
+}

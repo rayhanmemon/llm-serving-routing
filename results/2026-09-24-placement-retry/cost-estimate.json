@@ -1,0 +1,10 @@
+{
+  "session_id": "20260923T234908Z-14a404af",
+  "estimate_usd_pretax": "0.188900312375",
+  "estimate_type": "conservative lifecycle/support estimate, not invoice-verified",
+  "gpu_estimated_usd": "0",
+  "support_rate_usd_per_hour": "0.50",
+  "started_unix": 1790207348.5217369,
+  "cleanup_verified_unix": 1790208708.603986,
+  "method": "Complete GPU history contains failed Create Instance (NotEnoughResources) and successful deletion, no successful start. GPU compute estimated zero; support allowance covers full admitted-to-verified-empty interval. Planned GPU node/fabric settings match the last successful run."
+}
