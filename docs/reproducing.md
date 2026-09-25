@@ -1,25 +1,19 @@
-# Reproducing
+# Reproducing the saved routing result
 
-**Status: incomplete starting configuration.** The topology extension and its evaluation have not run. This page will gain verified commands for building the patched image, running tests, deploying the selected serving configuration, comparing policies, collecting results and tearing down resources.
+The completed Qwen3-32B TP4, two-host H200 policy comparison is documented in [the run report](../results/2026-09-25-full-router-comparison/RESULT.md). Its compact trial archive records completed per-request metrics, selected routes, sampled load, transfer checks and configuration choices. The full token-bearing native reports remain in private local run state; [hashes of those files](../results/2026-09-25-full-router-comparison/raw-source-hashes.json) are published. The compact data are enough to recompute the tuning and summary exactly.
 
-## Existing files
+With Python 3.12 or newer, from this repository root:
 
-The serving templates currently describe one prefiller and one decoder on two single-GPU L40S machines over TCP. **This is a legacy starting configuration, not a valid topology-policy test:** it has no simultaneous local and remote decode choices. Revise it for at least three independent physical GPU workers across two hosts; a fourth active worker can add a second local decoder. Verify actual transfer asymmetry, truthful topology labels and namespace/device requirements. No earlier measurements are imported. Re-derive workload rates, transfer-byte expectations and transport thresholds on the selected deployment, and pin all versions/image digests.
+```bash
+python3 results/2026-09-25-full-router-comparison/recompute.py
+```
 
-| File | Purpose and remaining integration |
-|---|---|
-| `infra/gpu.tf` | Two preemptible (spot) GPU nodes. This is a Terraform delta that refers to a base managed-Kubernetes configuration not included here; it cannot provision a cluster by itself. |
-| `infra/modelserver/kustomization.yaml` | The pinned llm-d vLLM base, image overrides, pool label and engine patches. |
-| `infra/modelserver/patch-prefill.yaml`, `patch-decode.yaml` | Startup probes, rollout strategy, side-channel settings, explicit engine knobs, transfer instrumentation and pod anti-affinity. Revise roles, replica counts and placement for the selected topology, then verify compatibility. |
-| `scenarios/scenario.yaml` | The llm-d-benchmark serving description. It must match the engine overlay when evaluating an already-standing deployment. |
-| `scenarios/spec.yaml.j2` | Benchmark entry point; replace the checkout and repository path placeholders. |
-| `workloads/rate_ladder.yaml.in` | A fixed-arrival-rate template with placeholder rates. Select workloads during router calibration; the existing transfer-capacity ladder does not establish the local-versus-remote decoder-load tradeoff. |
-| `infra/assert_transport.py` | Checks the remote-prefill path: routing decision, cache bytes and selected transport. Its existing assumptions are unvalidated for this project; revise bands for actual layout, destination cache and local/remote operation. |
-| `infra/results-scaffold.sh` | Creates a run directory and records machine identity. Hardware, model and transport are supplied as environment variables. |
-| `results/README.md` | Per-run layout, interruption handling and traceability. |
+The verified output is 16 calibration episodes, 24 comparison cells, soft as the selected existing reference, allowance 0, and `engineering_criterion_met: false`. This command is read-only and does not rent GPUs. It was run against the committed archive after the final experiment.
 
-The benchmark tool may set its own transport menu when deploying engines. Record the selected path in the actual serving process; a configuration file alone cannot prove which transport carried a request.
+## The live serving run
 
-## Completion target
+The deployed path lives under [`infra/topology/`](../infra/topology/): `run-router-session.py` orchestrates preflight, guarded two-host GPU allocation, real vLLM and llm-d sidecar startup, both transport qualifications, inference-perf traffic, evidence collection and cleanup. The frozen [plan](../workloads/router-session/plan.json) and [serving settings](../workloads/router-session/config.json) are committed. The source was exercised on Nebius H200 capacity, but the launch uses provider-specific Terraform, service accounts, cached images, resource IDs and a single-use authorization record held outside Git. It is **not** a turnkey command to reproduce on an arbitrary cloud account. No paid rerun is authorized by this document.
 
-A reader should be able to build and test the exact patch, run the policy comparison from committed configuration, obtain the reported metrics from raw output, and verify resource teardown. Until those commands have been executed for this project, the repository does not claim end-to-end reproducibility.
+## Historical starting templates
+
+The older single-prefiller/single-decoder L40S/TCP templates in `infra/`, `scenarios/` and `workloads/rate_ladder.yaml.in` remain historical scaffolding. They are not the qualified three-engine topology or the source of the reported performance numbers. Use the frozen files under `infra/topology/` and `workloads/router-session/` when reviewing the completed run.

@@ -1,51 +1,48 @@
-# disagg-boundary
+# llm-d prefill/decode routing: an evaluated systems contribution
 
-Request-sensitive topology routing for llm-d: keep decode near the selected prefill worker while the KV-transfer saving justifies extra local load, and widen the choice when a farther decoder is preferable.
+A real-model evaluation of **where to decode after prefill** in a disaggregated LLM serving system. This repository contains the deployment and measurement harness, router configurations, validation code and a completed comparison. The related llm-d-router code change is [draft PR #2870](https://github.com/llm-d/llm-d-router/pull/2870); it is **not merged**.
 
-**Status: [draft PR #2870](https://github.com/llm-d/llm-d-router/pull/2870) is open with the single-allowance implementation.** Prompt-size-dependent configuration and real-model evaluation remain unfinished. No performance improvement or merge is claimed. See [plugin/](plugin/README.md) for the decision and prior work.
+**Result:** the proposed fixed load allowance changed real routing decisions but **did not improve latency** in the tested configuration. Against the strongest existing policy selected during calibration, tuned soft locality scoring, it was **9.75–10.77% slower** in each of three matched comparison blocks. The complete [run report](results/2026-09-25-full-router-comparison/RESULT.md) states the protocol, evidence and limits. No performance improvement is claimed.
 
-**Latest measurements — September 21:** [Qwen3-32B at TP4](results/2026-09-21-tp4-locality/RESULT.md) completed 32 qualification calls and 96 timed requests through 120K input tokens. Local CUDA IPC and remote RDMA were verified on every receiving rank. Remote TTFT was lower on average, while local transfers were much faster with few memory descriptors. Submission cost dominated the many-descriptor local path. The next candidate test is the documented packed KV-block layout; routing-policy comparisons have not run. All rented resources are deleted.
+## What was built
 
-The September 15 [L40S](results/2026-09-15-topology-transfer/RESULT.md) and [H100](results/2026-09-15-h100-topology-transfer/RESULT.md) attempts both failed on multi-GPU placement. Cleanup was verified for each; neither produced inference measurements.
+- **Routing change:** an optional `loadAllowance` on llm-d-router's topology-affinity filter. After prefill is selected, the filter compares the least-loaded local and remote decoders. It keeps local candidates when the best local decoder's extra in-flight load is within the allowance; otherwise it lets all eligible decoders proceed to downstream load scoring. Existing behavior remains available when the option is omitted. The upstream implementation and review state live in [draft PR #2870](https://github.com/llm-d/llm-d-router/pull/2870).
+- **Real serving setup:** two rented eight-H200 hosts running Qwen3-32B in BF16 with tensor parallelism of four GPUs per engine. One host ran a prefiller and local decoder; the other ran a remote decoder. We verified local CUDA IPC/NVLink and cross-host RDMA/InfiniBand KV paths with the llm-d sidecar and vLLM.
+- **Measurement harness:** frozen request traces driven by inference-perf through Envoy and the real endpoint picker. The harness joins each response to Envoy's selected decoder, samples EPP in-flight counts and vLLM running/waiting load, verifies NIXL transfer bytes/failures, saves each completed trial off-host, and enforces independent cost and teardown deadlines. See [`infra/topology/`](infra/topology/) and the [visual walkthrough](docs/evaluation-visual.html).
 
-The [September 16 H100 run](results/2026-09-16-h100-transfer-qualification/RESULT.md) provisioned successfully and passed real-model direct/local/remote P/D correctness. The fast local transfer path remains unqualified after an IPC handle-open failure in an isolated diagnostic. No routing-performance benchmark or improvement is claimed; cleanup was verified.
+## The comparison
 
-The [September 16 H200 RDMA serving run](results/2026-09-16-h200-rdma-serving/RESULT.md) verified 32 requests, 8/8 direct/P/D parity and 16 real KV transfers over RDMA. Mixed mean connector time was 14.16 ms local and 14.43 ms remote; this RDMA-only fixture does not establish meaningful locality savings. Harness errors prevented the client-latency block. All resources were deleted; no policy gain is claimed.
+Serving integrity passed **12 local/remote qualification requests**. Calibration then forced both decode routes under four background-load states, twice each: **16 episodes**. It selected an allowance of **0** and tuned soft locality as the strongest existing reference. The held-out phase ran five actual router policies—unrestricted load, hard topology, soft topology, an absolute load cap, and the proposed allowance—on low and high background traces, followed by confirmation trials. All **24 policy cells** completed. In total, **40 benchmark trials and 848 client requests** have saved routing and KV-transfer verification.
 
-The [September 20 single-host run](results/2026-09-20-nvlink/RESULT.md) **verified actual P/D KV transfer over NVLink**: 16 calls, eight matching direct/P/D pairs, CUDA-IPC payload selection, and per-request hardware byte counters matching KV payloads while direct/idle controls stayed at zero. This uses Qwen3-0.6B and a shared two-GPU container. Remote client-TTFT and policy comparisons remain unfinished; cleanup is verified.
+| Matched block | Proposed allowance vs. tuned soft locality |
+|---|---:|
+| Held-out block 1 | **0.581 s / 9.87% slower** mean time to first token |
+| Held-out block 2 | **0.573 s / 9.75% slower** |
+| Confirmation block | **0.633 s / 10.77% slower** |
 
-## Evaluation
+Low-pressure times were nearly equal. Under high background load, the proposed rule sent more foreground probes to the remote decoder and had higher first-token latency. That association does not isolate every cause. The result covers **one model, topology and controlled workload**; it is not a theorem about every routing regime. It also does not support a speedup claim for this fixed setting.
 
-[Three-worker deployment draft](infra/topology/README.md): standalone infrastructure, routing policies and benchmark configuration, with local validation status and remaining checks.
+The [compact verified run](results/2026-09-25-full-router-comparison/) contains per-request records, routes, engine-load samples, transfer checks, configuration choices, native instance histories and cleanup evidence. The raw token-bearing native reports remain in local run state and are identified by hashes; they were too large to include in Git. The published compact data are sufficient to recompute the frozen tuning and 24-cell summary:
 
-The evaluation must first establish a real local-versus-remote transfer difference and a useful operating regime beyond tuned existing routing. The functional minimum is three independent GPU workers across two hosts: one prefiller, one local decoder and one remote decoder. A fourth active worker adds another local decoder. Count all rented capacity, including unused GPUs required by an instance preset.
+```bash
+python3 results/2026-09-25-full-router-comparison/recompute.py
+```
 
-Compare six policies on the same model, hardware, engine, transport and workload:
+The script was run successfully against the saved archive. It does not rent hardware.
 
-1. No topology preference.
-2. Existing hard topology filter.
-3. Existing soft topology scorer, tuned during calibration.
-4. A tuned load/capacity filter followed by topology affinity.
-5. The new gate with the best single global allowance.
-6. The new gate with two prompt-size allowances.
+## What this project demonstrates
 
-Three held-out workload families and three paired repeats give **54 short policy runs**, plus calibration. Measure client first-token latency, useful completed throughput, streaming gaps, failures, rejections and unfinished requests. Verify the selected workers, transferred blocks and actual transport. Publish regressions and neutral results with uncertainty. If two allowances cannot improve on one, simplify the rule.
+The practical question was not just whether local KV movement can be faster. It was whether a **specific routing rule** makes better *whole-request* decisions once prefill, KV transfer, decode queueing and background load all contribute to time to first token. The outcome forced a clear answer for this setup: the new fixed rule lost to a tuned existing scorer. The project documents the design, production-code patch, real P/D deployment, disciplined validation, failures corrected in the harness, and the decision **not** to claim an unsupported gain.
 
-Use the existing inference-perf harness, pinned versions and self-contained run records. The current one-prefill/one-decode templates are legacy starting files: they do not instantiate the local and remote choices required by this evaluation. Rework and validate them before use.
+The upstream PR is still a draft. Whether an optional threshold-based policy is useful despite this result is a maintainer decision. Further tuning on the same held-out measurements would be exploratory and would need a new hypothesis and fresh evaluation before any performance claim.
 
-## Layout
+## Pointers
 
-| Path | Contents |
-|---|---|
-| `plugin/` | Planned Go topology extension, design and tests; exact upstream status once available |
-| `scenarios/` | Serving descriptions in llm-d-benchmark’s format; current topology still needs revision |
-| `workloads/` | Input/output lengths, arrival profiles and dataset references |
-| `infra/` | Starting manifests, Terraform delta, transport checks and result capture; not yet a qualified deployment |
-| `results/` | One self-contained directory per run: environment, configuration, commands, raw data and analysis |
-| `docs/` | [Methodology](docs/methodology.md) · [Reproducing](docs/reproducing.md) |
+- [Visual architecture, harness and results](docs/evaluation-visual.html)
+- [Complete comparison and interpretation](results/2026-09-25-full-router-comparison/RESULT.md)
+- [Frozen workload plan](workloads/router-session/plan.json) and [serving configuration](workloads/router-session/config.json)
+- [Controller](infra/topology/run-router-session.py), [route and transfer checks](infra/topology/router-session-transfer.py), [measurement analysis](infra/topology/router-session-results.py)
+- [Upstream llm-d-router draft PR #2870](https://github.com/llm-d/llm-d-router/pull/2870)
+- [Original design and decision context](plugin/README.md)
 
-Every reported number will link to its run record. A result applies to the measured topology, workload and implementation; it does not establish a general architecture-wide disaggregation boundary.
-
-## Funding
-
-Self-funded. Actual evaluation spend will be published with results.
+The evaluation was self-funded. Estimated router-project cloud spending was **$371.95 before tax**, based on native resource lifecycles rather than an invoice. All scoped paid resources were verified deleted after the final run.
