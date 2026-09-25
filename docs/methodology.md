@@ -1,49 +1,23 @@
-# Methodology
+# Methodology for the completed routing comparison
 
-**Status: design outline.** No evaluation has run. Hardware qualification, implementation and frozen acceptance criteria remain unfinished.
+The [September 25 run](../results/2026-09-25-full-router-comparison/RESULT.md) tested whether a fixed load-aware topology filter improves client time to first token after prefill. The [frozen trial order, parameter grid and pass criterion](../workloads/router-session/plan.json) and [serving configuration](../workloads/router-session/config.json) are the source of exact settings. The configuration file retains some pre-run status notes; the completed run report records what actually executed.
 
-## Policy comparison
+## Deployment and qualification
 
-Compare six policies: no topology preference, existing hard topology, tuned soft topology, a tuned load/capacity filter followed by topology, the new gate with the best global allowance, and the gate with two prompt-size allowances. Preserve prefill-first selection in the primary comparison and use the same model, precision, physical GPU allocation, engine/connector settings, cache behavior, arrival profile and hard overload protections.
+One eight-H200 host ran the Qwen3-32B BF16 tensor-parallel-four prefiller and local decoder. A second eight-H200 host ran the tensor-parallel-four remote decoder. The prompt lengths were 4,096 and 122,880 tokens with 32 output tokens. The engines used the same model revision, KV layout and serving settings across routing policies; prefix caching was disabled. Six local and six remote qualification requests passed answer, route and per-rank KV-transfer checks. The local path used CUDA IPC/NVLink; the cross-host path used RDMA/InfiniBand. Those are observed transfer paths, not conclusions drawn from topology labels alone.
 
-Calibrate first, then freeze the policy parameters and evaluation workload. Three held-out families cover balanced traffic where locality can help, localized congestion/bursts where escape can help, and mixed prompt/output/cache behavior that challenges request-count estimates. Three paired repeats per family and policy give **54 short held-out runs**, plus separate calibration. Automate warmup, order, completion/drain and result extraction. Three run-level observations can leave wide uncertainty; report it and repeat only when needed to resolve a material conclusion.
+## Calibration, then evaluation
 
-Do not remove an inconvenient workload, force a speedup, or interpret an underpowered comparison as equivalence. Beating only the hard filter is insufficient. If the two-range rule cannot beat the best global allowance, simplify it.
+Calibration forced local and remote decode under four background-load states, with two repeats per state and route: **16 episodes**. It used client first-token timings and sampled load to choose the fixed allowance and tune the existing soft-locality and absolute-cap baselines before evaluating their real routing decisions. The selected allowance was **0**; soft locality was the preselected existing reference. The tuning procedure and its output are in [`frozen-tuning.json`](../results/2026-09-25-full-router-comparison/frozen-tuning.json).
 
-## Verify the execution path
+The held-out phase ran five actual router policies: unrestricted load scoring, hard topology filtering, tuned soft locality, an absolute load cap, and the proposed fixed allowance. Each policy ran under low and high background traces twice, for **20 cells**. Four more cells confirmed the proposed policy and preselected reference under both traces, giving **24 evaluation cells**. Their sequence and seeds were frozen in the plan. Each evaluation cell used four foreground probes; the reported **848 benchmark requests** across calibration and evaluation also count background traffic. They are not 848 independent comparisons of the proposed policy.
 
-Use at least one prefiller, one local decoder and one remote decoder on distinct physical GPUs across two hosts. A fourth active worker permits two local decoders. Verify output correctness, actual worker identities and reachable local congestion while hard eligibility still permits both choices.
+The pass criterion required more than 50 ms and 2% lower mean first-token latency in each matched block, within the predefined regression limits. The proposed rule was **9.75–10.77% slower** than the selected reference in the three matched blocks. The other policies were reported descriptively; small differences between them are not ranked as a stable winner.
 
-For each transfer path verify:
+## Measurement and limits
 
-1. **The split happened:** the actual request used the selected prefill and decode workers.
-2. **The expected state moved:** byte/block accounting reflects the model layout, connector and destination cache, not just the prefiller’s uncached input tokens.
-3. **The intended operation carried it:** inspect transfer diagnostics/counters, not merely available transports or topology labels.
+The harness joined client results to Envoy's selected decoder and sampled the endpoint picker's in-flight counts, vLLM running/waiting load and KV-transfer counters. It checked stream completion, worker identity, payload movement and transfer failures, then saved each completed trial off-host. The performance metric is client-observed **time to first token**, which includes prefill, transfer and decode waiting. A faster KV transfer by itself does not establish a faster request.
 
-Keep the chosen transfer mode, memory layout and transport configuration identical across routing policies. Enabling an existing fast connector path is baseline preparation; its gain is not attributed to the new router code. Physical host/fabric labels must describe actual placement. Controlled link throttling is a sensitivity experiment, not evidence about an ordinary production fabric.
+Preemptible-node interruptions and application failures were recorded separately. The protocol did not stitch surviving requests from an interrupted block into a complete comparison; a resumed attempt would repeat the entire affected block. The final run completed all planned cells, and the cloud cleanup was checked independently.
 
-Verify the gate’s observed inputs, local retention and remote escape after the full filter/scorer chain. Missing data is not zero load. Preserve and test disabled-mode behavior and endpoint lifecycle changes.
-
-## Metrics and outcome accounting
-
-Measure client time to first token, completed throughput under declared latency objectives, ongoing streaming behavior, failures/rejections, unfinished requests, actual output lengths, cache reuse, transfer bytes/times and endpoint-picker overhead. A pre-decode timestamp is not client first-token latency. If several tokens arrive per response chunk, label observed gaps as chunk gaps rather than exact inter-token latency.
-
-Include every offered request and drain or explicitly account for unfinished work. Set the minimum useful improvement and permitted regressions before held-out runs, informed by calibration noise and workload objectives. Use engine/connector telemetry to explain causality and client measurements for the reported serving result.
-
-## Interruptions and application failures
-
-Price startup, loading, calibration, runs, retries, storage and teardown before renting. With preemptible (spot) instances, retain interrupted attempts and costs, recheck physical placement/transport and repeat the complete affected paired block. Do not stitch surviving samples into a complete result. Application failures remain outcomes, not infrastructure interruptions to discard.
-
-Teardown verification requires successful resource listings. Preserve unrelated resources. Failure/recovery tests cover the actual change; a successful HTTP status alone does not establish a complete stream.
-
-## Reproduction record
-
-Every published result links to a self-contained directory under `results/` containing:
-
-- Hardware and physical worker placement, model, router/engine versions, image digests and actual transport.
-- Rendered configuration, workload, commands and seeds.
-- Calibration/evaluation designation, policy settings and tuned baseline choices.
-- Per-request output, routing decisions, transfer evidence and relevant telemetry.
-- Analysis, uncertainty, limitations, failures, interruptions and cost including unused rented capacity.
-
-Simulator output describes simulated behavior. Inference-performance claims require this project’s own real-model measurements. An independent reproduction check follows the published instructions before end-to-end reproducibility is claimed.
+This is one model, topology, implementation and controlled traffic mix, with request means rather than tail-latency estimates. Route shifts and latency differences are associated observations, not a causal decomposition of every millisecond. Prompt-dependent allowances were **not implemented or evaluated**. The [reproduction guide](reproducing.md) explains how to recompute the published result without renting GPUs and which pieces of the live deployment remain provider-specific.

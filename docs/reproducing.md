@@ -1,6 +1,6 @@
 # Reproducing the saved routing result
 
-The completed Qwen3-32B TP4, two-host H200 policy comparison is documented in [the run report](../results/2026-09-25-full-router-comparison/RESULT.md). Its compact trial archive records completed per-request metrics, selected routes, sampled load, transfer checks and configuration choices. The full token-bearing native reports remain in private local run state; [hashes of those files](../results/2026-09-25-full-router-comparison/raw-source-hashes.json) are published. The compact data are enough to recompute the tuning and summary exactly.
+The completed Qwen3-32B TP4, two-host H200 policy comparison is documented in [the run report](../results/2026-09-25-full-router-comparison/RESULT.md) and [methodology](methodology.md). Its compact trial archive records completed per-request metrics, selected routes, sampled load, transfer checks and configuration choices. The full token-bearing native reports are not published; [hashes of those files](../results/2026-09-25-full-router-comparison/raw-source-hashes.json) are available for evidence matching. The compact data are enough to recompute the tuning and summary exactly.
 
 With Python 3.12 or newer, from this repository root:
 

@@ -1,19 +1,39 @@
-# Complete real-model router comparison: allowance did not beat tuned soft locality
+# Real-model routing comparison: fixed allowance lost to tuned soft locality
 
-Run `20260925T050507Z-8b00979f` used two eight-H200 hosts, Qwen3-32B BF16 TP4, the packed BHLNC KV layout and the frozen 4K/120K-token foreground workloads. Source `4eb34bf` changed only the diagnostic calibration pin order; the five evaluated routing policies and selection criterion remained frozen. Six local and six remote serving qualifications passed. All 16 matched calibration episodes and all 24 held-out/confirmation policy cells completed, with 40 per-trial route and KV-transfer checks saved off-host. The real decoder queue-pressure and locality/load tradeoff screens both passed.
+This run compared decoder-routing policies in a prefill-first llm-d/vLLM deployment. One eight-H200 host ran Qwen3-32B BF16 with tensor-parallel-four prefill and local decode; a second eight-H200 host ran the remote decoder. The engines used the packed BHLNC KV layout. Foreground prompts were 4,096 or 122,880 tokens with 32 output tokens. The [frozen plan](../../workloads/router-session/plan.json) and [serving settings](../../workloads/router-session/config.json) define the workload and model. Run ID: `20260925T050507Z-8b00979f`; harness source: `4eb34bf`.
 
-Calibration selected **load allowance 0** for the proposed topology filter and **tuned soft locality scoring** as the strongest existing reference. The pre-registered engineering criterion required the allowance to improve mean time to first token by more than50ms and2% in each matched block, without the listed regressions. The complete comparison **did not meet that criterion**:
+Six local and six remote serving requests passed output, route and per-rank KV-transfer qualification. Calibration forced each route under four background-load states, twice each: **16 episodes**. From those measurements, the predeclared tuning procedure selected a fixed allowance of **0** and tuned soft locality as the existing reference. The evaluation then ran **20 held-out cells** covering five policies, two load traces and two repeats, plus **four confirmation cells** for the proposed rule and selected reference. All 24 cells completed. The 40 calibration and evaluation trials generated **848 benchmark requests, including background traffic**; the 12 serving-qualification requests are separate. Every completed trial has saved route and transfer checks.
 
-| Matched block | Allowance minus soft mean TTFT | Allowance relative to soft |
+The engineering criterion set before held-out evaluation required the allowance to improve mean time to first token by more than 50 ms and 2% in every matched block, within the stated regression limits. It **failed**. A positive difference below means the proposed rule was slower:
+
+| Matched block | Allowance minus soft mean TTFT | Relative to soft |
 |---|---:|---:|
-| First held-out block | +0.581 s | 9.87% slower |
-| Second held-out block | +0.573 s | 9.75% slower |
+| Held-out block 1 | +0.581 s | 9.87% slower |
+| Held-out block 2 | +0.573 s | 9.75% slower |
 | Confirmation block | +0.633 s | 10.77% slower |
 
-Across these three paired blocks, allowance was about **0.595 seconds / 10.13% slower** on the block mean. A positive number here means *worse* latency. The low-pressure traces were similar (soft5.66s; allowance5.66s); high-pressure traces differed (soft6.10s; allowance7.29s). The high-pressure allowance trials sent six foreground requests remote and six local across three blocks; tuned soft sent three remote and nine local. The long-prompt means were close, while short-prompt means differed more. Those route and timing associations are observations, not proof that one mechanism alone caused the latency gap.
+The three paired blocks averaged about **0.595 s / 10.13% worse** for the fixed allowance. The table below shows all five policies in the **two held-out repeats only**. Each policy/trace mean is based on two cells with four foreground probes per cell; these descriptive means are not a tail-latency estimate or a claim that small differences between baselines are stable.
 
-All five policies were reported. The two non-reference baselines have only two held-out repeats, while allowance and its selected soft reference have an additional confirmation block; their unpaired grand means should not be treated as a rank ordering. The scope is one deployment and controlled traces, using request means rather than tail-latency estimates. This result does **not** justify a performance-improvement claim for the fixed allowance. It does show that the contribution is mechanically correct and changes locality decisions, but acceptance and candidate value need reassessment on that honest basis.
+| Decode policy | Low-load mean TTFT | High-load mean TTFT |
+|---|---:|---:|
+| Unrestricted load scoring | 5.678 s | 7.302 s |
+| Hard topology filter | 5.644 s | 7.626 s |
+| Tuned soft locality | 5.659 s | 6.097 s |
+| Absolute load cap | 5.643 s | 6.081 s |
+| Fixed load allowance | 5.653 s | 7.257 s |
 
-The compact `verified-trials.tar.gz` contains complete per-request records, routes, aligned engine-load samples and transfer verifications for all40trials, excluding large token-bearing raw prompts. The `recompute.py` script independently reconstructed the frozen selection and complete 24-cell report byte-for-byte from that archive and the committed plan; it passed. SHA-256 hashes of the private full native files are in `raw-source-hashes.json`. The complete raw run remains at `/Users/rayhanmemon/.codex/run-state/router-h100-pilot/runs/20260925T050507Z-8b00979f` on this machine. No run was fabricated or reweighted after seeing the result.
+Low-load times were close. Across the three paired high-load blocks, the allowance sent six of 12 foreground probes remote, versus three of 12 for soft locality, while its mean first-token time was 7.29 s versus 6.10 s. The long-prompt means were close and the short-prompt means differed more. These route and latency observations occurred together; this experiment does not isolate which part of transfer, queueing, policy interaction or request order caused every millisecond. The result covers **one model, topology and controlled workload**, using request means rather than tail latency. It rejects a speedup claim for this fixed rule in that setting, not locality-aware routing in general.
 
-All five scoped paid resource types were independently empty at **2026-09-25T06:39:06.496814UTC**. Native instance histories give a conservative lifecycle estimate of **$52.99 before tax** for this successful run. The first of tonight's two authorized attempts failed GPU placement and cost an estimated$0.18; combined spend was about$53.17 from the$150pool, leaving **$96.83**. Estimated router-project cloud spend is **$371.95** before tax, not invoice-verified. Both paid attempts are consumed; monitoring is paused. No additional GPU sweep is authorized, and the negative result should be discussed before changing the feature or evaluation.
+## Evidence and reproduction
+
+The compact [`verified-trials.tar.gz`](verified-trials.tar.gz) contains per-request records, chosen decoders, aligned engine-load samples and transfer checks for all 40 trials, without the large token-bearing raw prompts. [`recompute.py`](recompute.py) reconstructs the frozen tuning choice and 24-cell summary from the published archive and plan; it passed against this saved run. Run it from the repository root with Python 3.12 or newer:
+
+```bash
+python3 results/2026-09-25-full-router-comparison/recompute.py
+```
+
+The expected result reports `calibration_episodes: 16`, `comparison_cells: 24`, `reference: "soft"`, `allowance: {"allowance": 0}` and `engineering_criterion_met: false`. The [reproduction guide](../../docs/reproducing.md) distinguishes this offline check from recreating the provider-specific GPU deployment. [Hashes of the private full native files](raw-source-hashes.json) and the [saved analysis](analysis.json) remain available for evidence matching; the complete token-bearing native reports are not published.
+
+## Resource record
+
+All five scoped paid resource types were independently empty at **2026-09-25 06:39:06 UTC**. Native instance histories yield a conservative **$52.99 before-tax lifecycle estimate** for this completed run, not an invoice. The broader project's cumulative cloud estimate is **$371.95 before tax**. The cost record is included for reproducibility and accounting; it is not part of the performance result.

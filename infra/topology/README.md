@@ -1,6 +1,10 @@
-# Controlled topology-transfer check
+# Topology deployment and router measurement
 
-**Status — September 16:** the closed RTX run retained 36 of 48 forced-route timing samples under the explicitly restricted TCP configuration. The experiment resources are deleted. [Results](../../results/2026-09-16-rtx-serving/RESULT.md). Routing-policy performance remains unmeasured.
+**Completed result:** the [September 25 real-model comparison](../../results/2026-09-25-full-router-comparison/RESULT.md) ran five routing policies across 16 calibration episodes and 24 evaluation cells. The fixed allowance lost to tuned soft locality in the tested workload. [`run-router-session.py`](run-router-session.py) orchestrates the completed path; [`router-session-transfer.py`](router-session-transfer.py) verifies route and KV movement; [`router-session-results.py`](router-session-results.py) analyzes the saved trials. The [methodology](../../docs/methodology.md) and [reproduction guide](../../docs/reproducing.md) describe the frozen protocol and its limits.
+
+## Earlier transport diagnostic
+
+The September 16 RTX run retained 36 of 48 forced-route timing samples under the explicitly restricted TCP configuration. Its resources were deleted. [Results](../../results/2026-09-16-rtx-serving/RESULT.md). That diagnostic did not measure routing-policy performance. The notes below document its earlier setup; use the completed result above for the final evaluation.
 
 Read [the deployment reference audit](DEPLOYMENT-REFERENCE.md) before another run. It records the official llm-d/provider sources, corrected renderer defaults and intentional experimental differences. Standard separate-pod GPU allocations do not guarantee CUDA IPC; the next fast-transfer baseline needs provider-correct RDMA qualification. [SESSION.md](SESSION.md) preserves the earlier run protocol; its hardware/deadline blocks are historical, not launch instructions for a new session.
 
