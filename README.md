@@ -1,4 +1,4 @@
-# llm-d prefill/decode routing: an evaluated systems contribution
+# LLM Serving Routing
 
 A real-model evaluation of **where to decode after prefill** in a disaggregated LLM serving system. This repository contains the deployment and measurement harness, router configurations, validation code and a completed comparison. The related llm-d-router code change is [draft PR #2870](https://github.com/llm-d/llm-d-router/pull/2870); it is **not merged**.
 
