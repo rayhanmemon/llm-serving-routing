@@ -24,7 +24,7 @@ def records(folder,require_counts=True):
             raise ValueError('Router in-flight observation missing')
         result.append({'request_key':key,'kind':p['kind'],'index':p['index'],'pin':p['pin'],'case_id':p['case_id'],
                        'input_tokens':len(body['prompt']),'output_tokens':usage['completion_tokens'],
-                       'start_unix':row['start_time'],'first_token_unix':times[0],'end_unix':row['end_time'],
+                       'start_perf_counter':row['start_time'],'first_token_perf_counter':times[0],'end_perf_counter':row['end_time'],
                        'ttft':times[0]-row['start_time'],'duration':row['end_time']-row['start_time'],
                        'maximum_chunk_gap':max([b-a for a,b in zip(times,times[1:])],default=0),
                        'counts':counts,'request_hash':hashlib.sha256(row['request'].encode()).hexdigest()})
@@ -36,19 +36,30 @@ def engine_load_samples(path):
     if not isinstance(samples,list) or not samples:
         raise ValueError('Engine load observations must be a nonempty JSON array')
     if any(not isinstance(sample,dict) or not isinstance(sample.get('unix'),(int,float))
-           or not isinstance(sample.get('workers'),dict) for sample in samples):
+           or not (isinstance(sample.get('workers'),dict) or isinstance(sample.get('error'),str))
+           for sample in samples):
         raise ValueError('Malformed engine load observation')
+    # Individual metric timeouts remain visible but do not poison a trial if
+    # nearby valid samples still cover every foreground request.
     return samples
 
 def probe_load_timelines(rows,samples):
-    valid=[x for x in samples if x.get('workers')]
+    # inference-perf's request/chunk times use time.perf_counter() in the client
+    # process. The load observer runs in the same Pod and samples that clock too.
+    valid=[x for x in samples if x.get('workers') and isinstance(x.get('perf_counter'),(int,float))
+           and math.isfinite(x['perf_counter'])]
+    if not valid:raise ValueError('No engine load samples on the benchmark performance clock')
     def nearest(at):
-        sample=min(valid,key=lambda x:abs(x['unix']-at),default=None)
-        return sample if sample and abs(sample['unix']-at)<=2 else None
-    return [{'request_key':r['request_key'],'input_tokens':r['input_tokens'],'pin':r['pin'],
-             'at_dispatch':nearest(r['start_unix']),'near_first_token':nearest(r['first_token_unix']),
-             'scope':'Nearest sample within two seconds; first token is not an exact decoder-arrival timestamp.'}
+        sample=min(valid,key=lambda x:abs(x['perf_counter']-at),default=None)
+        return sample if sample and abs(sample['perf_counter']-at)<=2 else None
+    result=[{'request_key':r['request_key'],'input_tokens':r['input_tokens'],'pin':r['pin'],
+             'at_dispatch':nearest(r['start_perf_counter']),
+             'near_first_token':nearest(r['first_token_perf_counter']),
+             'scope':'Nearest sample within two seconds on the client performance clock; first token is not exact decoder arrival.'}
             for r in rows if r['kind']=='foreground']
+    if any(x['at_dispatch'] is None or x['near_first_token'] is None for x in result):
+        raise ValueError('Engine load observations do not align with foreground request times')
+    return result
 
 def choose(policy,params,local,remote):
     if policy=='hard':return ['local']

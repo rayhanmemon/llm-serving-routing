@@ -10,15 +10,30 @@ r=module('run-router-session');b=module('router-session-budget');p=module('route
 ROOT=HERE.parent.parent/'workloads/router-session'
 
 class CombinedTests(unittest.TestCase):
- def test_real_engine_load_is_an_array_and_yields_probe_timelines(self):
+ def test_client_load_observer_records_benchmark_clock(self):
+  client=r.module('router-session-client');fake=Mock();fake.RUNNING='running';fake.WAITING='waiting';fake.snapshot.return_value={'local':{'values':{'running':8,'waiting':1}}}
+  start=time.perf_counter();sample=client.observe_engine_load(fake,{'local':'ip'});end=time.perf_counter()
+  self.assertLessEqual(start,sample['perf_counter']);self.assertLessEqual(sample['perf_counter'],end)
+  self.assertEqual(sample['workers']['local'],{'running':8,'waiting':1})
+  fake.snapshot.side_effect=TimeoutError('metric timeout');error=client.observe_engine_load(fake,{'local':'ip'})
+  self.assertEqual(error['error'],'TimeoutError');self.assertIn('perf_counter',error)
+ def test_archived_load_samples_expose_clock_mismatch_and_repaired_alignment(self):
   source=HERE.parent.parent/'results/2026-09-25-paired-calibration-failure/first-trial-engine-load.json'
   samples=r.result.engine_load_samples(source)
   self.assertEqual(len(samples),53)
   self.assertEqual(set(samples[0]['workers']),{'prefill','local','remote'})
   rows=[{'request_key':'real-sample','kind':'foreground','input_tokens':4096,'pin':'local',
-         'start_unix':samples[0]['unix'],'first_token_unix':samples[1]['unix']}]
-  timeline=r.result.probe_load_timelines(rows,samples)
+         'start_perf_counter':1922.424939213,'first_token_perf_counter':1922.625827433}]
+  with self.assertRaisesRegex(ValueError,'performance clock'):
+   r.result.probe_load_timelines(rows,samples)
+  repaired=[{**samples[0],'perf_counter':rows[0]['start_perf_counter']},
+            {**samples[1],'perf_counter':rows[0]['first_token_perf_counter']}]
+  timeline=r.result.probe_load_timelines(rows,repaired)
   self.assertEqual(len(timeline),1);self.assertIsNotNone(timeline[0]['at_dispatch'])
+  error={'unix':samples[0]['unix'],'perf_counter':rows[0]['start_perf_counter']+100,'error':'TimeoutError'}
+  self.assertEqual(len(r.result.probe_load_timelines(rows,[*repaired,error])),1)
+  with self.assertRaisesRegex(ValueError,'do not align'):
+   r.result.probe_load_timelines(rows,[{**repaired[0],'perf_counter':0}])
   with tempfile.TemporaryDirectory() as temp:
    bad=Path(temp)/'engine-load.json';bad.write_text('{}')
    with self.assertRaisesRegex(ValueError,'JSON array'):r.result.engine_load_samples(bad)

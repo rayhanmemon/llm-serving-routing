@@ -19,5 +19,8 @@
     }
   },
   "mean_foreground_ttft_s": 5.614878067500058,
-  "scope": "One forced-local calibration episode, not a policy comparison or statistical estimate."
+  "scope": "One forced-local calibration episode. Routes and KV transfer counters valid; load-to-request timing from this archived episode is unusable because sampler and benchmark used different clocks. Not a policy comparison or statistical estimate.",
+  "aligned_probe_timelines": 0,
+  "load_timing_usable": false,
+  "clock_mismatch_found_after_initial_offline_check": true
 }

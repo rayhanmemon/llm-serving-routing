@@ -1,0 +1,14 @@
+{
+  "gpu_execution": false,
+  "scope": "Replay saved native synthetic client results through production gpu_checks=True validation with constructed transfer counters and load observations. No cloud or live GPU data; no performance claim.",
+  "source_trials": 40,
+  "completed_trials": 40,
+  "queue_pressure_signal_observed": true,
+  "tradeoff_observed": true,
+  "policy_restarts": 24,
+  "call_counts": {
+    "jobs": 40,
+    "picker": 24
+  }
+}
+comparison_complete True cells 24

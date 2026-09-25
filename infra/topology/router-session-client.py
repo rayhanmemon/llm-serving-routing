@@ -13,6 +13,17 @@ def finish_observation(observer,stop,samples,path,timeout=8):
     if observer.is_alive():raise TimeoutError('Load observer did not finish; no completion marker')
     module('tp4-client').write(path,samples)
 
+def observe_engine_load(client,hosts):
+    try:
+        snapshot=client.snapshot(hosts,timeout=2)
+        return {'perf_counter':time.perf_counter(),'unix':time.time(),
+                'workers':{role:{'running':value['values'][client.RUNNING],
+                                 'waiting':value['values'][client.WAITING]}
+                           for role,value in snapshot.items()}}
+    except Exception as error:
+        return {'perf_counter':time.perf_counter(),'unix':time.time(),
+                'error':type(error).__name__}
+
 def execute(plan,suite,trial,out,url,metrics,pins,deadline,hosts=None):
     if time.time()+trial['max_seconds']+120>=deadline:raise TimeoutError('Trial would consume collection reserve')
     root=out/trial['id'];doc=p.make_trial(plan,trial,suite['cases'],root,url,pins)
@@ -21,10 +32,7 @@ def execute(plan,suite,trial,out,url,metrics,pins,deadline,hosts=None):
     stop=threading.Event();samples=[]
     def sample_load():
         while not stop.is_set():
-            try:
-                snap=c.snapshot(hosts,timeout=2)
-                samples.append({'unix':time.time(),'workers':{role:{'running':v['values'][c.RUNNING],'waiting':v['values'][c.WAITING]} for role,v in snap.items()}})
-            except Exception as error:samples.append({'unix':time.time(),'error':type(error).__name__})
+            samples.append(observe_engine_load(c,hosts))
             stop.wait(.5)
     observer=threading.Thread(target=sample_load,daemon=True) if hosts else None
     if observer:observer.start()

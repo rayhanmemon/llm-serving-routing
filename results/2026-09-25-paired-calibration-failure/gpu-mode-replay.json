@@ -1,0 +1,280 @@
+{
+  "gpu_execution": false,
+  "scope": "Replay saved native synthetic client results through production gpu_checks=True validation with constructed transfer counters and load observations. No cloud or live GPU data; no performance claim.",
+  "source_trials": 40,
+  "completed_trials": 40,
+  "queue_pressure_signal_observed": true,
+  "tradeoff_observed": true,
+  "policy_restarts": 24,
+  "comparison": {
+    "blocks": [
+      {
+        "gain_percent": 1.749334266745837,
+        "mean_gain_seconds": 0.006459952972363681,
+        "passes": false,
+        "repeat": 0
+      },
+      {
+        "gain_percent": 5.291129775142723,
+        "mean_gain_seconds": 0.019764349213801324,
+        "passes": false,
+        "repeat": 1
+      },
+      {
+        "gain_percent": 6.116697780577752,
+        "mean_gain_seconds": 0.02311536474735476,
+        "passes": false,
+        "repeat": 2
+      }
+    ],
+    "cells": [
+      {
+        "background": 36,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.14229412493295968,
+        "mean_background_duration": 11.337527569884616,
+        "mean_ttft": 0.4242827920243144,
+        "policy": "allowance",
+        "repeat": 0,
+        "trace": "high"
+      },
+      {
+        "background": 36,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.030148457968607545,
+        "mean_background_duration": 11.278738223915248,
+        "mean_ttft": 0.43768167722737417,
+        "policy": "absolute-cap",
+        "repeat": 0,
+        "trace": "high"
+      },
+      {
+        "background": 36,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.18014550011139363,
+        "mean_background_duration": 11.378046083965778,
+        "mean_ttft": 0.44541713551734574,
+        "policy": "none",
+        "repeat": 0,
+        "trace": "high"
+      },
+      {
+        "background": 36,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.02906762494239956,
+        "mean_background_duration": 11.291171926610534,
+        "mean_ttft": 0.7888291564886458,
+        "policy": "hard",
+        "repeat": 0,
+        "trace": "high"
+      },
+      {
+        "background": 36,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.11983416695147753,
+        "mean_background_duration": 11.377594270129016,
+        "mean_ttft": 0.4383882712281775,
+        "policy": "soft",
+        "repeat": 0,
+        "trace": "high"
+      },
+      {
+        "background": 4,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.1556648750556633,
+        "mean_background_duration": 11.371301932493225,
+        "mean_ttft": 0.30135860448353924,
+        "policy": "allowance",
+        "repeat": 0,
+        "trace": "low"
+      },
+      {
+        "background": 4,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.029719749931246042,
+        "mean_background_duration": 11.293417567998404,
+        "mean_ttft": 0.19199832298909314,
+        "policy": "absolute-cap",
+        "repeat": 0,
+        "trace": "low"
+      },
+      {
+        "background": 4,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.08173162501771003,
+        "mean_background_duration": 11.373157880239887,
+        "mean_ttft": 0.30017303122440353,
+        "policy": "soft",
+        "repeat": 0,
+        "trace": "low"
+      },
+      {
+        "background": 4,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.03144733398221433,
+        "mean_background_duration": 11.31914331720327,
+        "mean_ttft": 0.19482383324066177,
+        "policy": "hard",
+        "repeat": 0,
+        "trace": "low"
+      },
+      {
+        "background": 4,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.05356237490195781,
+        "mean_background_duration": 11.365187088231323,
+        "mean_ttft": 0.24647742696106434,
+        "policy": "none",
+        "repeat": 0,
+        "trace": "low"
+      },
+      {
+        "background": 4,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.02870300004724413,
+        "mean_background_duration": 11.301223286776803,
+        "mean_ttft": 0.2979074582690373,
+        "policy": "allowance",
+        "repeat": 1,
+        "trace": "low"
+      },
+      {
+        "background": 4,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.06360895896796137,
+        "mean_background_duration": 11.326563005510252,
+        "mean_ttft": 0.19003127122414298,
+        "policy": "hard",
+        "repeat": 1,
+        "trace": "low"
+      },
+      {
+        "background": 4,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.0318867500172928,
+        "mean_background_duration": 11.295710036472883,
+        "mean_ttft": 0.3343548124830704,
+        "policy": "none",
+        "repeat": 1,
+        "trace": "low"
+      },
+      {
+        "background": 4,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.0320711670210585,
+        "mean_background_duration": 11.298552328255028,
+        "mean_ttft": 0.18732246872968972,
+        "policy": "absolute-cap",
+        "repeat": 1,
+        "trace": "low"
+      },
+      {
+        "background": 4,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.034168916987255216,
+        "mean_background_duration": 11.310826963774161,
+        "mean_ttft": 0.3078808647405822,
+        "policy": "soft",
+        "repeat": 1,
+        "trace": "low"
+      },
+      {
+        "background": 36,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.12224524992052466,
+        "mean_background_duration": 11.368979837143948,
+        "mean_ttft": 0.4096386667806655,
+        "policy": "allowance",
+        "repeat": 1,
+        "trace": "high"
+      },
+      {
+        "background": 36,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.20897420798428357,
+        "mean_background_duration": 11.452498151943372,
+        "mean_ttft": 0.4391939587367233,
+        "policy": "soft",
+        "repeat": 1,
+        "trace": "high"
+      },
+      {
+        "background": 36,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.2844459580956027,
+        "mean_background_duration": 11.491482221880384,
+        "mean_ttft": 0.4446055417356547,
+        "policy": "absolute-cap",
+        "repeat": 1,
+        "trace": "high"
+      },
+      {
+        "background": 36,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.03159870801027864,
+        "mean_background_duration": 11.290418271272857,
+        "mean_ttft": 0.5274318962183315,
+        "policy": "none",
+        "repeat": 1,
+        "trace": "high"
+      },
+      {
+        "background": 36,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.03151616593822837,
+        "mean_background_duration": 11.301524618614671,
+        "mean_ttft": 0.7930102090176661,
+        "policy": "hard",
+        "repeat": 1,
+        "trace": "high"
+      },
+      {
+        "background": 4,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.025113082956522703,
+        "mean_background_duration": 11.308957964007277,
+        "mean_ttft": 0.298918354237685,
+        "policy": "allowance",
+        "repeat": 2,
+        "trace": "low"
+      },
+      {
+        "background": 4,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.17124083393719047,
+        "mean_background_duration": 11.460076150950044,
+        "mean_ttft": 0.2984663232055027,
+        "policy": "soft",
+        "repeat": 2,
+        "trace": "low"
+      },
+      {
+        "background": 36,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.14699975005351007,
+        "mean_background_duration": 11.416624936883132,
+        "mean_ttft": 0.4106628127046861,
+        "policy": "allowance",
+        "repeat": 2,
+        "trace": "high"
+      },
+      {
+        "background": 36,
+        "foreground": 4,
+        "max_background_chunk_gap": 0.20162158296443522,
+        "mean_background_duration": 11.477907404504045,
+        "mean_ttft": 0.4573455732315779,
+        "policy": "soft",
+        "repeat": 2,
+        "trace": "high"
+      }
+    ],
+    "claim_limit": "Observed controlled means in one deployment; no tail or broad no-regression claim.",
+    "complete": true,
+    "engineering_criterion_met": false
+  },
+  "call_counts": {
+    "jobs": 40,
+    "picker": 24
+  }
+}
