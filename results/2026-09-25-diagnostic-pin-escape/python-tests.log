@@ -1,0 +1,61 @@
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 503: 'Service Unavailable'>
+  _warnings.warn(self.warn_message, ResourceWarning)
+PASS: collection saved to /var/folders/87/6_d5qltx6y31wctm89tjzl7r0000gn/T/tmp6lh3b39v/collection
+Collection success does not establish request success, correct pins or improved performance.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+packed-doc engines ready.
+packed engines ready.
+default-b engines ready.
+Cloud guard armed before GPU allocation.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Healthy local GPU host allocated.
+default-a engines ready.
+Cloud guard armed before GPU allocation.
+Both transports and 8/8 four-route parity passed; starting warmups.
+Completed load0-512-0
+Completed load0-8192-0
+Cloud guard armed before GPU allocation.
+Engines ready; qualification client started.
+Cloud guard armed before GPU allocation.
+Engines ready; qualification client started.
+PASS RDMA and functional parity; starting timings
+PASS RDMA and functional parity; starting timings
+PASS RDMA and functional parity; starting timings
+pilot-session: Combined profile requires run-router-session.py; full-plan apply is forbidden
+failed-evidence-ready
+{"saved_off_box": true, "archive_sha256": "da202465049a43226aa345103ee1b733a9262e9651ea1b7092ff3bbbdfc0ab80", "worker_succeeded": false, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+evidence-ready
+{"saved_off_box": true, "archive_sha256": "dd8de16dc8f609262ea3d730a95ea60e0629f134ff43486616d029fcd34178c1", "worker_succeeded": true, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+evidence-ready
+{"saved_off_box": true, "archive_sha256": "dd8de16dc8f609262ea3d730a95ea60e0629f134ff43486616d029fcd34178c1", "worker_succeeded": true, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+evidence-ready
+{"saved_off_box": true, "archive_sha256": "dd8de16dc8f609262ea3d730a95ea60e0629f134ff43486616d029fcd34178c1", "worker_succeeded": true, "requires_nvlink_counter_review": true, "cloud_cleanup_required": true}
+Healthy local GPU host allocated.
+----------------------------------------------------------------------
+Ran 287 tests in 29.136s
+
+OK (skipped=3)
