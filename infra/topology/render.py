@@ -84,11 +84,15 @@ def epp_config(policy, allowance, weight, absolute_cap, absolute_cap_fallback_on
                                     'decode-filter', 'inflight-load-producer', 'token-load-scorer',
                                     'active-request-scorer', 'max-score-picker']]
     plugins.append({'type': 'disagg-profile-handler', 'parameters': {'stageOrder': 'prefill-first'}})
-    decode = [{'pluginRef': p} for p in ['decode-filter', 'utilization-detector']]
+    decode = [{'pluginRef': 'decode-filter'}]
     if policy == 'diagnostic':
         plugins.append({'type': 'session-affinity-filter', 'name': 'diagnostic-pin',
                         'parameters': {'encodedEndpointHeaderConfig': {'header': 'x-benchmark-decoder'}}})
         decode.append({'pluginRef': 'diagnostic-pin'})
+    # Pin diagnostic calibration traffic before the saturation filter. On a
+    # single pinned candidate, utilization-detector's fail-open behavior keeps
+    # the forced route even when its waiting queue exceeds the default limit.
+    decode.append({'pluginRef': 'utilization-detector'})
     if policy in ('hard', 'allowance'):
         params = {'minAffinity': 'host'}
         if policy == 'allowance':

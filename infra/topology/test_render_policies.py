@@ -30,6 +30,15 @@ class PolicyConfigTest(unittest.TestCase):
         return [p['pluginRef'] for p in next(p for p in config['schedulingProfiles']
                                               if p['name'] == 'decode')['plugins']]
 
+    def test_diagnostic_pin_precedes_saturation_without_changing_evaluated_profiles(self):
+        diagnostic=self.decode_refs(self.config('diagnostic'))
+        self.assertLess(diagnostic.index('decode-filter'),diagnostic.index('diagnostic-pin'))
+        self.assertLess(diagnostic.index('diagnostic-pin'),diagnostic.index('utilization-detector'))
+        for policy in ('none','hard','soft','absolute-cap','allowance'):
+            refs=self.decode_refs(self.config(policy))
+            self.assertEqual(refs[:2],['decode-filter','utilization-detector'])
+            self.assertNotIn('diagnostic-pin',refs)
+
     def test_diagnostic_pin_is_isolated_from_evaluated_policies(self):
         diagnostic = self.config('diagnostic')
         self.assertEqual(self.plugin(diagnostic, 'diagnostic-pin')['type'], 'session-affinity-filter')

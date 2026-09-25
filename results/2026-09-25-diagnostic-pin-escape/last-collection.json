@@ -1,0 +1,57 @@
+{
+  "complete": true,
+  "errors": [],
+  "snapshots": {
+    "client": {
+      "files_verified": 84,
+      "logs_changed_during_snapshot": [],
+      "mutable_log_prefixes": [
+        "qualify-local.log",
+        "qualify-remote.log",
+        "train-0-0-local.log",
+        "train-0-0-remote.log",
+        "train-0-1-local.log",
+        "train-0-1-remote.log",
+        "train-0-2-local.log",
+        "trials/train-0-0-local/native.log",
+        "trials/train-0-0-remote/native.log",
+        "trials/train-0-1-local/native.log",
+        "trials/train-0-1-remote/native.log",
+        "trials/train-0-2-local/native.log"
+      ],
+      "source_root": "/results"
+    },
+    "local": {
+      "files_verified": 24,
+      "logs_changed_during_snapshot": [],
+      "mutable_log_prefixes": [
+        "decode.log",
+        "prefill.log",
+        "ucx-decode.2776.log",
+        "ucx-decode.3227.log",
+        "ucx-decode.3228.log",
+        "ucx-decode.3229.log",
+        "ucx-decode.3230.log",
+        "ucx-prefill.2703.log",
+        "ucx-prefill.2997.log",
+        "ucx-prefill.2998.log",
+        "ucx-prefill.2999.log",
+        "ucx-prefill.3000.log"
+      ],
+      "source_root": "/results"
+    },
+    "remote": {
+      "files_verified": 14,
+      "logs_changed_during_snapshot": [],
+      "mutable_log_prefixes": [
+        "decode.log",
+        "ucx-decode.2122.log",
+        "ucx-decode.2329.log",
+        "ucx-decode.2330.log",
+        "ucx-decode.2331.log",
+        "ucx-decode.2332.log"
+      ],
+      "source_root": "/results"
+    }
+  }
+}

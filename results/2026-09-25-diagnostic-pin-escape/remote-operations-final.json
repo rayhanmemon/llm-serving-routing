@@ -1,0 +1,30 @@
+{
+  "operations": [
+    {
+      "id": "computeoperation-u00ts98fk5premn8ja",
+      "description": "Delete Instance",
+      "created_at": "2026-09-25T03:24:23.842819Z",
+      "finished_at": "2026-09-25T03:26:27.572368Z",
+      "resource_id": "computeinstance-u00nr1mxreefrzg46n",
+      "status": {},
+      "progress_tracker": {
+        "description": "Deleting instance",
+        "started_at": "2026-09-25T03:24:23.842819Z",
+        "finished_at": "2026-09-25T03:26:27.572368Z"
+      }
+    },
+    {
+      "id": "computeoperation-u00k7e5682pawdxvhp",
+      "description": "Create Instance",
+      "created_at": "2026-09-25T02:55:28.209494Z",
+      "finished_at": "2026-09-25T02:56:26.040550Z",
+      "resource_id": "computeinstance-u00nr1mxreefrzg46n",
+      "status": {},
+      "progress_tracker": {
+        "description": "Starting instance",
+        "started_at": "2026-09-25T02:55:28.209494Z",
+        "finished_at": "2026-09-25T02:56:26.040550Z"
+      }
+    }
+  ]
+}
