@@ -1,0 +1,9 @@
+{
+  "session_id": "20260925T004615Z-a6cf555f",
+  "estimate_usd_pretax": "20.47628259147222222222222222",
+  "gpu_local_usd": "10.05668446922222222222222222",
+  "gpu_remote_usd": "10.05030087988888888888888889",
+  "support_upper_allowance_usd": "0.3692972423611111111111111111",
+  "method": "Conservative GPU lifecycle estimate from native Create Instance operation start through Delete Instance completion at19.60USD/hour per host, plus0.50USD/hour support allowance from admission through verified cleanup. Not an invoice.",
+  "cleanup_verified_utc": "2026-09-25T01:30:34.701498+00:00"
+}

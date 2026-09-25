@@ -1,0 +1,23 @@
+{
+  "trial": "train-0-0-local",
+  "requests": 3,
+  "foreground": 2,
+  "engine_load_samples": 53,
+  "probe_timelines": 2,
+  "matched_routes": 3,
+  "transfer": {
+    "validated": true,
+    "expected": {
+      "local": {
+        "requests": 3,
+        "bytes": 34359738368
+      },
+      "remote": {
+        "requests": 0,
+        "bytes": 0
+      }
+    }
+  },
+  "mean_foreground_ttft_s": 5.614878067500058,
+  "scope": "One forced-local calibration episode, not a policy comparison or statistical estimate."
+}

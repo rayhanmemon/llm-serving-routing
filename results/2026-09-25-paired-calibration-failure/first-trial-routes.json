@@ -1,0 +1,35 @@
+{
+  "c18964df-0c61-4476-94fa-75dc51db3960": {
+    "duration_ms": 11273,
+    "endpoint_scores": null,
+    "request_id": "c18964df-0c61-4476-94fa-75dc51db3960",
+    "requested_decoder": "cm91dGVyLXRwNC9sb2NhbC1yYW5rLTA=",
+    "response_flags": "-",
+    "run_id": "train-0-0-local",
+    "selected_decoder": "cm91dGVyLXRwNC9sb2NhbC1yYW5rLTA=",
+    "status": 200,
+    "upstream_host": "10.97.112.80:8000"
+  },
+  "dd801a9c-cb0f-4a2b-8006-11f30ab09791": {
+    "duration_ms": 422,
+    "endpoint_scores": null,
+    "request_id": "dd801a9c-cb0f-4a2b-8006-11f30ab09791",
+    "requested_decoder": "cm91dGVyLXRwNC9sb2NhbC1yYW5rLTA=",
+    "response_flags": "-",
+    "run_id": "train-0-0-local",
+    "selected_decoder": "cm91dGVyLXRwNC9sb2NhbC1yYW5rLTA=",
+    "status": 200,
+    "upstream_host": "10.97.112.80:8000"
+  },
+  "ea8912dd-67aa-4dd6-a800-3082a34b5521": {
+    "duration_ms": 7466,
+    "endpoint_scores": null,
+    "request_id": "ea8912dd-67aa-4dd6-a800-3082a34b5521",
+    "requested_decoder": "cm91dGVyLXRwNC9sb2NhbC1yYW5rLTA=",
+    "response_flags": "-",
+    "run_id": "train-0-0-local",
+    "selected_decoder": "cm91dGVyLXRwNC9sb2NhbC1yYW5rLTA=",
+    "status": 200,
+    "upstream_host": "10.97.112.80:8000"
+  }
+}

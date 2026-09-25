@@ -30,6 +30,16 @@ def records(folder,require_counts=True):
                        'counts':counts,'request_hash':hashlib.sha256(row['request'].encode()).hexdigest()})
     return doc,result
 
+def engine_load_samples(path):
+    """The client writes a JSON array of timestamped engine observations."""
+    samples=json.loads(path.read_text())
+    if not isinstance(samples,list) or not samples:
+        raise ValueError('Engine load observations must be a nonempty JSON array')
+    if any(not isinstance(sample,dict) or not isinstance(sample.get('unix'),(int,float))
+           or not isinstance(sample.get('workers'),dict) for sample in samples):
+        raise ValueError('Malformed engine load observation')
+    return samples
+
 def probe_load_timelines(rows,samples):
     valid=[x for x in samples if x.get('workers')]
     def nearest(at):

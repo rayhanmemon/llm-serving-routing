@@ -10,6 +10,18 @@ r=module('run-router-session');b=module('router-session-budget');p=module('route
 ROOT=HERE.parent.parent/'workloads/router-session'
 
 class CombinedTests(unittest.TestCase):
+ def test_real_engine_load_is_an_array_and_yields_probe_timelines(self):
+  source=HERE.parent.parent/'results/2026-09-25-paired-calibration-failure/first-trial-engine-load.json'
+  samples=r.result.engine_load_samples(source)
+  self.assertEqual(len(samples),53)
+  self.assertEqual(set(samples[0]['workers']),{'prefill','local','remote'})
+  rows=[{'request_key':'real-sample','kind':'foreground','input_tokens':4096,'pin':'local',
+         'start_unix':samples[0]['unix'],'first_token_unix':samples[1]['unix']}]
+  timeline=r.result.probe_load_timelines(rows,samples)
+  self.assertEqual(len(timeline),1);self.assertIsNotNone(timeline[0]['at_dispatch'])
+  with tempfile.TemporaryDirectory() as temp:
+   bad=Path(temp)/'engine-load.json';bad.write_text('{}')
+   with self.assertRaisesRegex(ValueError,'JSON array'):r.result.engine_load_samples(bad)
  def test_graceful_stop_preserves_completed_trial_inventory(self):
   with tempfile.TemporaryDirectory() as temp:
    obj=object.__new__(r.Controller);obj.run=Path(temp)

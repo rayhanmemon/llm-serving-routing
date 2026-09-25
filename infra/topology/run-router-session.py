@@ -313,7 +313,7 @@ class Controller(s.Controller):
         pilot.write_json(folder/'routes.json',matched)
         pilot.write_json(folder/'sampled-inflight-counts.json',{'scope':'Router gauges sampled just before client request timing; not exact internal scheduling snapshots','requests':{row['request_key']:row['counts'] for row in rows}})
         if self.gpu_checks:
-            samples=pilot.read_json(folder/'engine-load.json')
+            samples=result.engine_load_samples(folder/'engine-load.json')
             pilot.write_json(folder/'probe-load-timelines.json',result.probe_load_timelines(rows,samples))
             _,architecture=s.tp4.load_config(self.config_path)
             checked=transfer.verify(pilot.read_json(folder/'metrics-before.json'),pilot.read_json(folder/'metrics-after.json'),rows,matched,self.ips,architecture)
@@ -338,7 +338,7 @@ class Controller(s.Controller):
             training.append(self.trial(t))
         self.tuning=result.tune(training,self.plan)
         if self.gpu_checks:
-            loads=[sample for path in (self.out/'client/trials').glob('train-*/engine-load.json') for sample in json.loads(path.read_text())]
+            loads=[sample for path in (self.out/'client/trials').glob('train-*/engine-load.json') for sample in result.engine_load_samples(path)]
             queued=result.decoder_queue_observed(loads,self.plan['decoder_max_num_seqs'])
             self.tuning['real_decoder_queue_observed']=queued
             self.tuning['tradeoff_observed'] &= queued
