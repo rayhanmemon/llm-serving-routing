@@ -1,0 +1,19 @@
+# Complete real-model router comparison: allowance did not beat tuned soft locality
+
+Run `20260925T050507Z-8b00979f` used two eight-H200 hosts, Qwen3-32B BF16 TP4, the packed BHLNC KV layout and the frozen 4K/120K-token foreground workloads. Source `4eb34bf` changed only the diagnostic calibration pin order; the five evaluated routing policies and selection criterion remained frozen. Six local and six remote serving qualifications passed. All 16 matched calibration episodes and all 24 held-out/confirmation policy cells completed, with 40 per-trial route and KV-transfer checks saved off-host. The real decoder queue-pressure and locality/load tradeoff screens both passed.
+
+Calibration selected **load allowance 0** for the proposed topology filter and **tuned soft locality scoring** as the strongest existing reference. The pre-registered engineering criterion required the allowance to improve mean time to first token by more than50ms and2% in each matched block, without the listed regressions. The complete comparison **did not meet that criterion**:
+
+| Matched block | Allowance minus soft mean TTFT | Allowance relative to soft |
+|---|---:|---:|
+| First held-out block | +0.581 s | 9.87% slower |
+| Second held-out block | +0.573 s | 9.75% slower |
+| Confirmation block | +0.633 s | 10.77% slower |
+
+Across these three paired blocks, allowance was about **0.595 seconds / 10.13% slower** on the block mean. A positive number here means *worse* latency. The low-pressure traces were similar (soft5.66s; allowance5.66s); high-pressure traces differed (soft6.10s; allowance7.29s). The high-pressure allowance trials sent six foreground requests remote and six local across three blocks; tuned soft sent three remote and nine local. The long-prompt means were close, while short-prompt means differed more. Those route and timing associations are observations, not proof that one mechanism alone caused the latency gap.
+
+All five policies were reported. The two non-reference baselines have only two held-out repeats, while allowance and its selected soft reference have an additional confirmation block; their unpaired grand means should not be treated as a rank ordering. The scope is one deployment and controlled traces, using request means rather than tail-latency estimates. This result does **not** justify a performance-improvement claim for the fixed allowance. It does show that the contribution is mechanically correct and changes locality decisions, but acceptance and candidate value need reassessment on that honest basis.
+
+The compact `verified-trials.tar.gz` contains complete per-request records, routes, aligned engine-load samples and transfer verifications for all40trials, excluding large token-bearing raw prompts. The `recompute.py` script independently reconstructed the frozen selection and complete 24-cell report byte-for-byte from that archive and the committed plan; it passed. SHA-256 hashes of the private full native files are in `raw-source-hashes.json`. The complete raw run remains at `/Users/rayhanmemon/.codex/run-state/router-h100-pilot/runs/20260925T050507Z-8b00979f` on this machine. No run was fabricated or reweighted after seeing the result.
+
+All five scoped paid resource types were independently empty at **2026-09-25T06:39:06.496814UTC**. Native instance histories give a conservative lifecycle estimate of **$52.99 before tax** for this successful run. The first of tonight's two authorized attempts failed GPU placement and cost an estimated$0.18; combined spend was about$53.17 from the$150pool, leaving **$96.83**. Estimated router-project cloud spend is **$371.95** before tax, not invoice-verified. Both paid attempts are consumed; monitoring is paused. No additional GPU sweep is authorized, and the negative result should be discussed before changing the feature or evaluation.

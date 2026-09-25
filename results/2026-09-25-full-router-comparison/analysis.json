@@ -1,0 +1,59 @@
+{
+  "scope": "One Qwen3-32B BF16 TP4, H200 two-host packed-layout deployment, controlled traces; request means, no tail or general production claim",
+  "complete": true,
+  "engineered_gain_criterion_met": false,
+  "training_reference": "soft",
+  "training_allowance": {
+    "allowance": 0
+  },
+  "training_tradeoff_observed": true,
+  "real_decoder_queue_observed": true,
+  "block_gains_vs_training_selected_reference": [
+    {
+      "gain_percent": -9.870993006877697,
+      "mean_gain_seconds": -0.5806245371249474,
+      "passes": false,
+      "repeat": 0
+    },
+    {
+      "gain_percent": -9.74969299553963,
+      "mean_gain_seconds": -0.5727577288749899,
+      "passes": false,
+      "repeat": 1
+    },
+    {
+      "gain_percent": -10.766173313548116,
+      "mean_gain_seconds": -0.632988576624939,
+      "passes": false,
+      "repeat": 2
+    }
+  ],
+  "paired_mean_difference_seconds": -0.5954569475416255,
+  "paired_mean_gain_percent": -10.128953105321814,
+  "policy_cell_means_seconds": {
+    "absolute-cap": 5.86192334987507,
+    "allowance": 6.47418109616666,
+    "hard": 6.634991987250004,
+    "none": 6.489852806687566,
+    "soft": 5.878724148625035
+  },
+  "policy_trace_means_seconds": {
+    "absolute-cap_high": 6.080934131250103,
+    "absolute-cap_low": 5.642912568500037,
+    "allowance_high": 7.291487200416668,
+    "allowance_low": 5.656874991916652,
+    "hard_high": 7.626032761375086,
+    "hard_low": 5.643951213124922,
+    "none_high": 7.301547999500144,
+    "none_low": 5.678157613874987,
+    "soft_high": 6.097281200416622,
+    "soft_low": 5.660167096833447
+  },
+  "qualification_requests": 12,
+  "calibration_episodes": 16,
+  "evaluation_cells": 24,
+  "verified_trials": 40,
+  "cleanup_verified_utc": "2026-09-25T06:39:06.496814+00:00",
+  "run_cost_estimate_usd_pretax": "52.98689315416666666666666666",
+  "raw_evidence_private_path": "/Users/rayhanmemon/.codex/run-state/router-h100-pilot/runs/20260925T050507Z-8b00979f"
+}
